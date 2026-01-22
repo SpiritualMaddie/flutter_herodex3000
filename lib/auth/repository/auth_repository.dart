@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
  
 class AuthRepository {
   final FirebaseAuth _firebaseAuth;
@@ -13,8 +14,11 @@ class AuthRepository {
   Future<void> signIn({required String email, required String password}) async {
     try {
       await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
-    } on FirebaseAuthException catch (e) {
-      throw Exception(e.message);
+    } on FirebaseAuthException catch (e, st) {
+      debugPrint("🔴 Error: $e Stacktrace: $st");
+      throw FirebaseAuthException(code: e.code, message: e.message, email: e.email);
+    }catch(e, st){
+      rethrow;
     }
   }
  

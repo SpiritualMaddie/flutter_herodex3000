@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'flutter-herodex3000.firebasestorage.app',
     measurementId: 'G-DXBF3NKDQW',
   );
+
 }
