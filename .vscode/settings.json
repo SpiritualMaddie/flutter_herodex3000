@@ -1,0 +1,6 @@
+{
+    "inlineChat.lineNaturalLanguageHint": false,
+    "inlineChat.holdToSpeech": false,
+    "github.copilot.inlineSuggest.enable": false,
+    "editor.suggest.showInlineDetails": false
+}

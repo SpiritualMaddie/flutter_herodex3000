@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "735541068067",
+    "project_id": "flutter-herodex3000",
+    "storage_bucket": "flutter-herodex3000.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:735541068067:android:1d0eec15eb09f967634c96",
+        "android_client_info": {
+          "package_name": "com.example.flutter_herodex3000"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKpr3wWUUjCPX7hMobgK8E7EPRuOXoeX8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
