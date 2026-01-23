@@ -5,6 +5,13 @@ class SearchScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+      appBar: AppBar(title: Text("Search")),
+      body: Column(
+        children: [
+          SearchBar(hintText: "Search for a hero or villain...",),
+        ],
+      ),
+    );
   }
 }
