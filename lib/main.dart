@@ -8,6 +8,7 @@ import 'package:flutter_herodex3000/auth/cubit/auth_cubit.dart';
 import 'package:flutter_herodex3000/auth/cubit/auth_state.dart';
 import 'package:flutter_herodex3000/auth/repository/auth_repository.dart';
 import 'package:flutter_herodex3000/firebase_options.dart';
+import 'package:flutter_herodex3000/screens/login_screen.dart';
 import 'barrel_files/screens.dart';
 import 'package:go_router/go_router.dart';
 

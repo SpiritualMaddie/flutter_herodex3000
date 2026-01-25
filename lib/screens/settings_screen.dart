@@ -4,7 +4,7 @@ import 'package:flutter_herodex3000/auth/cubit/auth_cubit.dart';
 import 'package:flutter_herodex3000/widgets/custom_card.dart';
 import 'package:go_router/go_router.dart';
 
-// TODO Some error with ParatDataWidget, some Expanded thats at fault?
+// TODO Some error with ParentDataWidget, some Expanded thats at fault? Could be in main?
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
