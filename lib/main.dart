@@ -68,10 +68,10 @@ class HeroDex extends StatelessWidget {
                       builder: (context, state) => const SearchScreen(),
                     ),
                     GoRoute(
-                      path: "/heroesAndVillains",
-                      name: "Heroes/Villains",
+                      path: "/roster",
+                      name: "Roster",
                       builder: (context, state) =>
-                          const HeroesAndVillainsScreen(),
+                          const RosterScreen(),
                     ),
                     GoRoute(
                       path: "/settings",
@@ -138,7 +138,7 @@ class RootNavigation extends StatelessWidget {
 
     if (location.startsWith("/home")) currentIndex = 0;
     if (location.startsWith("/search")) currentIndex = 1;
-    if (location.startsWith("/roesAndVillains")) currentIndex = 2;
+    if (location.startsWith("/roster")) currentIndex = 2;
     if (location.startsWith("/settings")) currentIndex = 3;
 
     return Scaffold(
@@ -154,7 +154,7 @@ class RootNavigation extends StatelessWidget {
               context.go("/search");
               break;
             case 2:
-              context.go("/heroesAndVillains");
+              context.go("/roster");
               break;
             case 3:
               context.go("/settings");
@@ -162,13 +162,13 @@ class RootNavigation extends StatelessWidget {
           }
         },
         destinations: [
-          NavigationDestination(icon: Icon(Icons.home), label: "Home"),
-          NavigationDestination(icon: Icon(Icons.search), label: "Search"),
+          NavigationDestination(icon: Icon(Icons.home), label: "HUB"),
+          NavigationDestination(icon: Icon(Icons.radar), label: "SCAN"),
           NavigationDestination(
-            icon: Icon(Icons.attribution),
-            label: "Cards",
+            icon: Icon(Icons.shield),
+            label: "AGENTS",
           ),
-          NavigationDestination(icon: Icon(Icons.settings), label: "Settings"),
+          NavigationDestination(icon: Icon(Icons.settings), label: "SETTINGS"),
         ],
       ),
     );

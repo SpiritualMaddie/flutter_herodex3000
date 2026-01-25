@@ -6,10 +6,10 @@ class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
 
   @override
-  State<SearchScreen> createState() => _HeroSearchScreenState();
+  State<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _HeroSearchScreenState extends State<SearchScreen> {
+class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   bool _isLoading = false;
