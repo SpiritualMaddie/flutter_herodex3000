@@ -48,7 +48,7 @@ class HeroDex extends StatelessWidget {
                 GoRoute(
                   path: "/login",
                   name: "Login",
-                  builder: (context, state) => const LoginScreen(),
+                  builder: (context, state) => const LoginScreen2(),
                 ),
 
                 // bottom tab bar (only for authenticated routes)
@@ -186,7 +186,7 @@ class AuthFlow extends StatelessWidget {
           return const HomeScreen();
         }
         if (state is AuthUnauthenticated) {
-          return const LoginScreen();
+          return const LoginScreen2();
         }
         return const SplashScreen();
       },
