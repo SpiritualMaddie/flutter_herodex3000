@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_herodex3000/auth/cubit/auth_cubit.dart';
-import 'package:flutter_herodex3000/widgets/custom_card.dart';
-import 'package:go_router/go_router.dart';
 
 // TODO Some error with ParentDataWidget, some Expanded thats at fault? Could be in main?
 class SettingsScreen extends StatelessWidget {
