@@ -1,122 +1,263 @@
+import 'dart:async';
+
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_herodex3000/auth/cubit/auth_cubit.dart';
+import 'package:flutter_herodex3000/auth/cubit/auth_state.dart';
+import 'package:flutter_herodex3000/auth/repository/auth_repository.dart';
+import 'package:flutter_herodex3000/firebase_options.dart';
+import 'package:flutter_herodex3000/managers/settings_manager.dart';
+import 'package:flutter_herodex3000/screens/onboarding_screen.dart';
+import 'package:flutter_herodex3000/services/shared_preferences_service.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'barrel_files/screens.dart';
+import 'package:go_router/go_router.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  final prefsService = SharedPreferencesService();
+  await prefsService.init();
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
+  // Enable debug mode for analytics
+  await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<SharedPreferencesService>.value(value: prefsService),
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+        ChangeNotifierProvider<SettingsManager>(
+          create: (context) =>
+              SettingsManager(context.read<SharedPreferencesService>()),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+
+        RepositoryProvider<AuthRepository>(create: (_) => AuthRepository()),
+
+        BlocProvider<AuthCubit>(
+          create: (context) => AuthCubit(context.read<AuthRepository>()),
+        ),
+      ],
+      child: HeroDex(),
+    ),
+  );
+}
+
+class HeroDex extends StatelessWidget {
+  const HeroDex({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+
+            final authCubit = context.read<AuthCubit>();
+            final settingsManager = context.read<SettingsManager>();
+            final refresh = AppRouterRefresh(authCubit, settingsManager);
+
+            final router = GoRouter(
+              initialLocation: "/",
+              refreshListenable: refresh,
+              routes: [
+                // splash screen and login are outside shell
+                GoRoute(
+                  path: "/",
+                  name: "Splash",
+                  builder: (context, state) => const SplashScreen(),
+                ),
+                GoRoute(
+                  path: "/login",
+                  name: "Login",
+                  builder: (context, state) => const LoginScreen2(),
+                ),
+                GoRoute(
+                  path: "/onboarding",
+                  name: "Onboarding",
+                  builder: (context, state) => const OnboardingScreen(),
+                ),
+
+                // bottom tab bar (only for authenticated routes)
+                ShellRoute(
+                  builder: (context, state, child) {
+                    return RootNavigation(child: child);
+                  },
+                  routes: [
+                    GoRoute(
+                      path: "/home",
+                      name: "Home",
+                      builder: (context, state) => const HomeScreen(),
+                    ),
+                    GoRoute(
+                      path: "/search",
+                      name: "Search",
+                      builder: (context, state) => const SearchScreen(),
+                    ),
+                    GoRoute(
+                      path: "/roster",
+                      name: "Roster",
+                      builder: (context, state) => const RosterScreen(),
+                    ),
+                    GoRoute(
+                      path: "/settings",
+                      name: "Settings",
+                      builder: (context, state) => const SettingsScreen(),
+                    ),
+                  ],
+                ),
+
+                // details view (can be navigated to from shell routes)
+                GoRoute(
+                  path: "/details/:id",
+                  name: "details",
+                  builder: (context, state) {
+                    final id = state.pathParameters["id"]!;
+                    return DetailScreen(id: id);
+                  },
+                ),
+              ],
+              redirect: (context, state) {
+                final authState = context.read<AuthCubit>().state;
+                final settings = context.read<SettingsManager>();
+
+                final onboardingCompleted = settings.onboardingCompleted;
+
+                final goingToLogin = state.uri.path == ("/login");
+                final goingToOnboarding = state.uri.path == "/onboarding";
+                final atSplash = state.uri.path == "/";
+
+                if (authState is AuthAuthenticated) {
+                  // if authenticated, and not completed onboarding then to onboarding
+                  if (!onboardingCompleted && !goingToOnboarding) {
+                    return "/onboarding";
+                  }
+                  // if authenticated, and completed onboarding then to home
+                  if (onboardingCompleted && (goingToLogin || atSplash)) {
+                    return "/home";
+                  }
+                  return null;
+                }
+
+                if (authState is AuthUnauthenticated) {
+                  // if unauthenticated, always go to login (unless already there)
+                  if (!goingToLogin) return "/login";
+                  return null;
+                }
+
+                // unknown/loading --> show splash
+                if (!atSplash) return "/";
+                return null;
+              },
+            );
+
+            return MaterialApp.router(
+              debugShowCheckedModeBanner: false,
+              title: "HeroDex3000",
+              routerConfig: router,
+            );
+  }
+}
+
+class RootNavigation extends StatelessWidget {
+  final Widget child;
+  const RootNavigation({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final location = GoRouterState.of(context).uri.toString();
+
+    int currentIndex = 0;
+
+    if (location.startsWith("/home")) currentIndex = 0;
+    if (location.startsWith("/search")) currentIndex = 1;
+    if (location.startsWith("/roster")) currentIndex = 2;
+    if (location.startsWith("/settings")) currentIndex = 3;
+
+    return Scaffold(
+      body: child,
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: currentIndex,
+        onDestinationSelected: (index) {
+          switch (index) {
+            case 0:
+              context.go("/home");
+              break;
+            case 1:
+              context.go("/search");
+              break;
+            case 2:
+              context.go("/roster");
+              break;
+            case 3:
+              context.go("/settings");
+              break;
+          }
+        },
+        destinations: [
+          NavigationDestination(icon: Icon(Icons.home), label: "HUB"),
+          NavigationDestination(icon: Icon(Icons.radar), label: "SCAN"),
+          NavigationDestination(icon: Icon(Icons.shield), label: "AGENTS"),
+          NavigationDestination(icon: Icon(Icons.settings), label: "SETTINGS"),
+        ],
       ),
     );
   }
 }
+
+class AuthFlow extends StatelessWidget {
+  const AuthFlow({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, state) {
+        if (state is AuthAuthenticated) {
+          return const HomeScreen();
+        }
+        if (state is AuthUnauthenticated) {
+          return const LoginScreen2(); // TODO change to LoginScreen and clean up
+        }
+        return const SplashScreen();
+      },
+    );
+  }
+}
+
+class AppRouterRefresh extends ChangeNotifier {
+  AppRouterRefresh(this.authCubit, this.settingsManager) {
+    // listen to auth and Settings Mananger changes
+    _authSub = authCubit.stream.listen((_) {
+      notifyListeners();
+    });
+
+    // listen to settings changes
+    settingsManager.addListener(notifyListeners);
+  }
+
+  final AuthCubit authCubit;
+  final SettingsManager settingsManager;
+
+  late final StreamSubscription _authSub;
+
+  @override
+  void dispose() {
+    _authSub.cancel();
+    settingsManager.removeListener(notifyListeners);
+    super.dispose();
+  }
+}
+
+// class _AuthChangeNotifier extends ChangeNotifier {
+//   final AuthCubit cubit;
+//   late final StreamSubscription _sub;
+//   _AuthChangeNotifier(this.cubit) {
+//     _sub = cubit.stream.listen((_) => notifyListeners());
+//   }
+
+//   @override
+//   void dispose() {
+//     _sub.cancel();
+//     super.dispose();
+//   }
+// }
