@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_herodex3000/auth/cubit/auth_cubit.dart';
+import 'package:flutter_herodex3000/managers/settings_manager.dart';
 
 // TODO Some error with ParentDataWidget, some Expanded thats at fault? Could be in main?
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
   @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  @override
   Widget build(BuildContext context) {
+    final settings = context.watch<SettingsManager>();
+
     return Scaffold(
       appBar: AppBar(
         title: Text("SETTINGS", style: TextStyle(letterSpacing: 2)),
@@ -21,19 +29,28 @@ class SettingsScreen extends StatelessWidget {
           children: [
             _buildSectionHeader("APP ALIGNMENT"),
             _buildThemeToggle(),
-            SizedBox(height: 24),
+            SizedBox(height: 14),
             _buildSectionHeader("DATA PROTOCOLS"), // TODO analytics agreement
             _buildProtocolTile(
               Icons.analytics,
               "Analytics Tracking",
-              "STATUS: OPERATIONAL",
-              true,
+              "STATUS: ${_authorizedPermission(settings.analyticsEnabled)}",
+              settings.analyticsEnabled,
+              (val) => settings.saveAnalyticsPreferences(value: val),
+            ),
+            _buildProtocolTile(
+              Icons.analytics,
+              "Crash Tracking",
+              "STATUS: ${_authorizedPermission(settings.crashlyticsEnabled)}",
+              settings.crashlyticsEnabled,
+              (val) => settings.saveCrashAnalyticsPreferences(value: val),
             ),
             _buildProtocolTile(
               Icons.location_on,
-              "Global Positioning",
-              "STATUS: AUTHORIZED",
-              true,
+              "Location Tracking",
+              "STATUS: ${_authorizedPermission(settings.locationEnabled)}",
+              settings.locationEnabled,
+              (val) => settings.saveLocationAnalyticsPreferences(value: val),
             ),
             _buildSectionHeader("SYSTEM MANIFEST"),
             _buildSystemManifest(),
@@ -43,6 +60,9 @@ class SettingsScreen extends StatelessWidget {
       ),
     );
   }
+
+String _authorizedPermission(bool permission) {
+  return permission ? "AUTHORIZED" : "DISABLED";
 }
 
 Widget _buildSectionHeader(String title) {
@@ -82,9 +102,13 @@ Widget _buildToggleButton(String label, bool isSelected) {
   return Container(
     padding: const EdgeInsets.symmetric(vertical: 12),
     decoration: BoxDecoration(
-      color: isSelected ? const Color(0xFF00E5FF).withAlpha(20) : Colors.transparent,
+      color: isSelected
+          ? const Color(0xFF00E5FF).withAlpha(20)
+          : Colors.transparent,
       borderRadius: BorderRadius.circular(8),
-      border: isSelected ? Border.all(color: const Color(0xFF00E5FF).withAlpha(40)) : null,
+      border: isSelected
+          ? Border.all(color: const Color(0xFF00E5FF).withAlpha(40))
+          : null,
     ),
     child: Center(
       child: Text(
@@ -105,6 +129,7 @@ Widget _buildProtocolTile(
   String title,
   String subtitle,
   bool value,
+  Function(bool) onChanged,
 ) {
   return Container(
     margin: EdgeInsets.only(bottom: 12),
@@ -145,9 +170,9 @@ Widget _buildProtocolTile(
         ),
         Switch(
           value: value,
-          onChanged: (val) {},
-          activeThumbColor: Colors.white,
-          activeTrackColor: Color(0xFF00E5FF),
+          onChanged: onChanged, // TODO change in real time and in shared prefs
+          activeThumbColor: Colors.cyan,
+          activeTrackColor: Colors.cyan.withAlpha(20),
         ),
       ],
     ),
@@ -166,7 +191,10 @@ Widget _buildSystemManifest() {
       children: [
         _buildManifestRow("APPLICATION", "HERODEX 3000"),
         const Divider(color: Color(0xFF1A2E3D), height: 24),
-        _buildManifestRow("VERSION", "v3.0.1-STABLE"), // TODO change version dynamically
+        _buildManifestRow(
+          "VERSION",
+          "v3.0.1-STABLE",
+        ), // TODO change version dynamically
         const Divider(color: Color(0xFF1A2E3D), height: 24),
         _buildManifestRow("CREATOR", "SPIRITUALMADDIE"), // TODO link to github?
         const Divider(color: Color(0xFF1A2E3D), height: 24),
@@ -180,36 +208,59 @@ Widget _buildManifestRow(String label, String value) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
-      Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 10, fontWeight: FontWeight.bold)),
-      Text(value, style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
+      Text(
+        label,
+        style: TextStyle(
+          color: Colors.grey[500],
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      Text(
+        value,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontFamily: 'monospace',
+        ),
+      ),
     ],
   );
 }
 
 Widget _buildLogoutButton(BuildContext context) {
-  return Padding(
-    padding: const EdgeInsets.only(top: 24.0, bottom: 16.0),
-    child: OutlinedButton(
-      onPressed: () {
-        context.read<AuthCubit>().signOut();
-      },
-      style: OutlinedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 56),
-        side: const BorderSide(color: Colors.redAccent, width: 1, style: BorderStyle.solid),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: Colors.redAccent.withAlpha(10),
+  return OutlinedButton(
+    onPressed: () async {
+      await context.read<AuthCubit>().signOut();
+    },
+    style: OutlinedButton.styleFrom(
+      minimumSize: const Size(double.infinity, 56),
+      side: const BorderSide(
+        color: Colors.redAccent,
+        width: 1,
+        style: BorderStyle.solid,
       ),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.logout, color: Colors.redAccent, size: 20),
-          SizedBox(width: 12),
-          Text(
-            "LOGOUT",
-            style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      backgroundColor: Colors.redAccent.withAlpha(10),
+    ),
+    child: const Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.logout, color: Colors.redAccent, size: 20),
+        SizedBox(width: 12),
+        Text(
+          "LOGOUT",
+          style: TextStyle(
+            color: Colors.redAccent,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.5,
           ),
-        ],
-      ),
+        ),
+      ],
     ),
   );
+}
+
 }

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_herodex3000/auth/cubit/auth_cubit.dart';
 
+
+// TODO spinner when logging in
 class LoginScreen2 extends StatefulWidget {
   const LoginScreen2({super.key});
 
@@ -26,7 +28,7 @@ class _LoginScreen2State extends State<LoginScreen2> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.blue,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(

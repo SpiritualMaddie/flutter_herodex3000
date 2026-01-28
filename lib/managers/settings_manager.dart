@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_herodex3000/services/shared_preferences_service.dart';
 
-class SettingsManager extends ChangeNotifier{
+class SettingsManager extends ChangeNotifier {
   final SharedPreferencesService _prefs;
   SettingsManager(this._prefs);
 
@@ -18,13 +18,26 @@ class SettingsManager extends ChangeNotifier{
     notifyListeners();
   }
 
+  Future<void> saveAnalyticsPreferences({required bool value}) async {
+    await _prefs.setAnalyticsToApproved(value);
+    notifyListeners();
+  }
+
+  Future<void> saveCrashAnalyticsPreferences({required bool value}) async {
+    await _prefs.setCrashlyticsToApproved(value);
+    notifyListeners();
+  }
+
+  Future<void> saveLocationAnalyticsPreferences({required bool value}) async {
+    await _prefs.setLocationAnalyticsToApproved(value);
+    notifyListeners();
+  }
+
   bool get analyticsEnabled => _prefs.analyticsIsApproved;
   bool get crashlyticsEnabled => _prefs.crashlyticsIsApproved;
   bool get locationEnabled => _prefs.locationAnalyticsIsApproved;
   bool get onboardingCompleted => _prefs.onboardingIsCompleted;
 }
-
-
 
 //4. Visa valen i Settings-vyn
 // class SettingsScreen extends StatelessWidget {

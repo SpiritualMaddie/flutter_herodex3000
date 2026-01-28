@@ -11,6 +11,7 @@ import 'package:flutter_herodex3000/firebase_options.dart';
 import 'package:flutter_herodex3000/managers/settings_manager.dart';
 import 'package:flutter_herodex3000/screens/onboarding_screen.dart';
 import 'package:flutter_herodex3000/services/shared_preferences_service.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'barrel_files/screens.dart';
 import 'package:go_router/go_router.dart';
@@ -35,12 +36,19 @@ Future<void> main() async {
   // Enable debug mode for analytics
   await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
   runApp(
-    MultiRepositoryProvider(
+    MultiProvider(
       providers: [
-        RepositoryProvider.value(value: prefsService),
-        RepositoryProvider(
+        Provider<SharedPreferencesService>.value(value: prefsService),
+
+        ChangeNotifierProvider<SettingsManager>(
           create: (context) =>
               SettingsManager(context.read<SharedPreferencesService>()),
+        ),
+
+        RepositoryProvider<AuthRepository>(create: (_) => AuthRepository()),
+
+        BlocProvider<AuthCubit>(
+          create: (context) => AuthCubit(context.read<AuthRepository>()),
         ),
       ],
       child: HeroDex(),
@@ -53,12 +61,7 @@ class HeroDex extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider(
-      create: (context) => AuthRepository(),
-      child: BlocProvider(
-        create: (context) => AuthCubit(context.read<AuthRepository>()),
-        child: Builder(
-          builder: (context) {
+
             final authCubit = context.read<AuthCubit>();
             final settingsManager = context.read<SettingsManager>();
             final refresh = AppRouterRefresh(authCubit, settingsManager);
@@ -142,7 +145,7 @@ class HeroDex extends StatelessWidget {
                   if (onboardingCompleted && (goingToLogin || atSplash)) {
                     return "/home";
                   }
-                  return "/";
+                  return null;
                 }
 
                 if (authState is AuthUnauthenticated) {
@@ -162,10 +165,6 @@ class HeroDex extends StatelessWidget {
               title: "HeroDex3000",
               routerConfig: router,
             );
-          },
-        ),
-      ),
-    );
   }
 }
 
@@ -226,7 +225,7 @@ class AuthFlow extends StatelessWidget {
           return const HomeScreen();
         }
         if (state is AuthUnauthenticated) {
-          return const LoginScreen2();
+          return const LoginScreen2(); // TODO change to LoginScreen and clean up
         }
         return const SplashScreen();
       },
@@ -236,7 +235,7 @@ class AuthFlow extends StatelessWidget {
 
 class AppRouterRefresh extends ChangeNotifier {
   AppRouterRefresh(this.authCubit, this.settingsManager) {
-    // listen to auth changes
+    // listen to auth and Settings Mananger changes
     _authSub = authCubit.stream.listen((_) {
       notifyListeners();
     });
@@ -257,7 +256,6 @@ class AppRouterRefresh extends ChangeNotifier {
     super.dispose();
   }
 }
-
 
 // class _AuthChangeNotifier extends ChangeNotifier {
 //   final AuthCubit cubit;

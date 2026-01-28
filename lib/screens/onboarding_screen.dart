@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_herodex3000/managers/settings_manager.dart';
-import 'package:go_router/go_router.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -114,11 +113,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget _buildStoryPage() {
     return _OnboardingPageLayout(
-      title: "THE INVASION HAS BEGUN",
+      title: "THE INVASION IS NOT OVER YET",
       body:
-          "Heroes and villains are appearing across the world.\n\n"
+          "Heroes and villains are re-appearing across the world.\n\n"
           "HERODEX3000 is your command interface — track, scan, and recruit "
-          "operatives before it’s too late.",
+          "your fellow to rebuild the world again.",
       buttonText: "NEXT",
       onNext: _nextPage,
     );
@@ -182,31 +181,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildPermissionSection() {
+
     return Column(
       children: [
-              Text(
-                "The time has come to make a decision. Are you ready to join the forces to rebuild?",
-                style: const TextStyle(
-                  color: Colors.cyan,
-                  fontSize: 24,
-                  letterSpacing: 2,
-                ),
-              ),
-              const SizedBox(height: 34),
+        Text(
+          "The time has come to make a decision. Are you ready to join the forces to rebuild?",
+          style: const TextStyle(
+            color: Colors.cyan,
+            fontSize: 24,
+            letterSpacing: 2,
+          ),
+        ),
+        const SizedBox(height: 34),
         _buildPermissionTile(
-          "USER ANALYTICS",
+          "ANALYTICS TRACKING",
           "Helps us gather analytics about your usage.",
           _analyticsEnabled,
           (val) => setState(() => _analyticsEnabled = val),
         ),
         _buildPermissionTile(
-          "CRASH MONITORING",
-          "Sends crash reports.",
+          "CRASH TRACKING",
+          "Helps us gather analytics about crash reports.",
           _crashlyticsEnabled,
           (val) => setState(() => _crashlyticsEnabled = val),
         ),
         _buildPermissionTile(
-          "GEOSPATIAL TRACKING",
+          "LOCATION TRACKING",
           "Maps your location for local hero support.",
           _locationEnabled,
           (val) => setState(() => _locationEnabled = val),
@@ -269,17 +269,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Padding(
       padding: const EdgeInsets.only(top: 24.0, bottom: 16.0),
       child: OutlinedButton(
-        onPressed: () async {
+        onPressed: () async { // TODO splash and/or spinner
           // Saves values locally
           await context.read<SettingsManager>().saveOnboardingPreferences(
             analytics: _analyticsEnabled,
             crashlytics: _crashlyticsEnabled,
             location: _locationEnabled,
           );
-          // Navigate to /home
-          // if (mounted) {
-          //   context.go('/home');
-          // }
         },
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(double.infinity, 56),
