@@ -18,18 +18,9 @@ import 'package:go_router/go_router.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferencesWithCache.create(
-    cacheOptions: const SharedPreferencesWithCacheOptions(
-      allowList: {
-        "onboarding_completed",
-        "analytics_approved",
-        "crashlytics_approved",
-        "location_analytics_approved",
-        "ios_att_approved",
-      },
-    ),
-  );
-  final prefsService = SharedPreferencesService(prefs);
+  
+  final prefsService = SharedPreferencesService();
+  await prefsService.init();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 

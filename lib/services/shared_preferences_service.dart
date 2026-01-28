@@ -1,9 +1,32 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPreferencesService {
-  final SharedPreferencesWithCache _prefs;
+  SharedPreferencesService._internal();
 
-  SharedPreferencesService(this._prefs);
+  static final SharedPreferencesService _instance = SharedPreferencesService._internal();
+
+  factory SharedPreferencesService() => _instance;
+
+  late final SharedPreferencesWithCache _prefs;
+  bool _initialized = false;
+
+  Future<void> init() async{
+    if(_initialized) return;
+
+    _prefs = await SharedPreferencesWithCache.create(
+    cacheOptions: const SharedPreferencesWithCacheOptions(
+      allowList: {
+        "onboarding_completed",
+        "analytics_approved",
+        "crashlytics_approved",
+        "location_analytics_approved",
+        "ios_att_approved",
+      },
+    ),
+  );
+
+  _initialized = true;
+  }
 
   // --- SET - Analytics permissions ---
   Future<void> setAnalyticsToApproved(bool value) =>

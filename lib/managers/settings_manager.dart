@@ -10,12 +10,12 @@ class SettingsManager extends ChangeNotifier {
     required bool crashlytics,
     required bool location,
     //bool? iosAtt, // TODO make sure we check for ios first
-  }) async {
+  }) async { // TODO make it faster?
     await _prefs.setAnalyticsToApproved(analytics);
     await _prefs.setCrashlyticsToApproved(crashlytics);
     await _prefs.setLocationAnalyticsToApproved(location);
     await _prefs.setOnboardingToCompleted(true);
-    notifyListeners();
+    notifyListeners(); // TODO is it not refreshing as it should?
   }
 
   Future<void> saveAnalyticsPreferences({required bool value}) async {

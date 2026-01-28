@@ -14,11 +14,11 @@ class HomeScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
               children: [
-                _buildSingleStatCard("HEROES", "1,240", Colors.cyan),
+                Expanded(child: _buildSingleStatCard("HEROES", "1,240", Colors.cyan)),
                 const SizedBox(width: 12, height: 8),
-                _buildSingleStatCard("VILLAINS", "890", Colors.red),
+                Expanded(child: _buildSingleStatCard("VILLAINS", "890", Colors.red)),
                 const SizedBox(width: 12, height: 8),
-                _buildSingleStatCard("POWER", "15,4M", Colors.cyan),
+                Expanded(child: _buildSingleStatCard("POWER", "15,4M", Colors.cyan)),
               ],
             ),
           ),
@@ -51,43 +51,41 @@ class HomeScreen extends StatelessWidget {
 }
 
 Widget _buildSingleStatCard(String label, String value, Color accentColor) {
-  return Expanded(
-    child: Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: .circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(15),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: .circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withAlpha(15),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: .start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: .bold,
+            color: Colors.grey[600],
+            letterSpacing: 1.2,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: .start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: .bold,
-              color: Colors.grey[600],
-              letterSpacing: 1.2,
-            ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: .w900,
+            color: accentColor,
           ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: .w900,
-              color: accentColor,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     ),
   );
 }
@@ -98,39 +96,37 @@ Widget _buildCardWithTitleAndText(
   Color textColor,
   Color labelColor,
 ) {
-  return Expanded(
-    child: Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: .circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: .circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withAlpha(3),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: .start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 21,
+            fontWeight: .bold,
+            color: labelColor,
+            letterSpacing: 1.2,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: .start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 21,
-              fontWeight: .bold,
-              color: labelColor,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            text,
-            style: TextStyle(fontSize: 12, fontWeight: .w500, color: textColor),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          text,
+          style: TextStyle(fontSize: 12, fontWeight: .w500, color: textColor),
+        ),
+      ],
     ),
   );
 }
