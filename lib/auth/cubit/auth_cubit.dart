@@ -21,7 +21,7 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> signIn(String email, String password) async {
-    await analytics.logLogin(loginMethod: "email");
+    await analytics.logLogin(loginMethod: "email"); // TODO analytics
     await analytics.logEvent(
       name: "login_email_user",
       parameters: {

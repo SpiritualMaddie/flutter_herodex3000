@@ -8,17 +8,52 @@ import 'package:flutter_herodex3000/auth/cubit/auth_cubit.dart';
 import 'package:flutter_herodex3000/auth/cubit/auth_state.dart';
 import 'package:flutter_herodex3000/auth/repository/auth_repository.dart';
 import 'package:flutter_herodex3000/firebase_options.dart';
-import 'package:flutter_herodex3000/screens/login_screen.dart';
+import 'package:flutter_herodex3000/managers/settings_manager.dart';
+import 'package:flutter_herodex3000/screens/onboarding_screen.dart';
+import 'package:flutter_herodex3000/services/shared_preferences_service.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'barrel_files/screens.dart';
 import 'package:go_router/go_router.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferencesWithCache.create(
+    cacheOptions: const SharedPreferencesWithCacheOptions(
+      allowList: {
+        "onboarding_completed",
+        "analytics_approved",
+        "crashlytics_approved",
+        "location_analytics_approved",
+        "ios_att_approved",
+      },
+    ),
+  );
+  final prefsService = SharedPreferencesService(prefs);
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Enable debug mode for analytics
   await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
-  runApp(HeroDex());
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<SharedPreferencesService>.value(value: prefsService),
+
+        ChangeNotifierProvider<SettingsManager>(
+          create: (context) =>
+              SettingsManager(context.read<SharedPreferencesService>()),
+        ),
+
+        RepositoryProvider<AuthRepository>(create: (_) => AuthRepository()),
+
+        BlocProvider<AuthCubit>(
+          create: (context) => AuthCubit(context.read<AuthRepository>()),
+        ),
+      ],
+      child: HeroDex(),
+    ),
+  );
 }
 
 class HeroDex extends StatelessWidget {
@@ -26,14 +61,10 @@ class HeroDex extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider(
-      create: (context) => AuthRepository(),
-      child: BlocProvider(
-        create: (context) => AuthCubit(context.read<AuthRepository>()),
-        child: Builder(
-          builder: (context) {
+
             final authCubit = context.read<AuthCubit>();
-            final refresh = _AuthChangeNotifier(authCubit);
+            final settingsManager = context.read<SettingsManager>();
+            final refresh = AppRouterRefresh(authCubit, settingsManager);
 
             final router = GoRouter(
               initialLocation: "/",
@@ -49,6 +80,11 @@ class HeroDex extends StatelessWidget {
                   path: "/login",
                   name: "Login",
                   builder: (context, state) => const LoginScreen2(),
+                ),
+                GoRoute(
+                  path: "/onboarding",
+                  name: "Onboarding",
+                  builder: (context, state) => const OnboardingScreen(),
                 ),
 
                 // bottom tab bar (only for authenticated routes)
@@ -70,8 +106,7 @@ class HeroDex extends StatelessWidget {
                     GoRoute(
                       path: "/roster",
                       name: "Roster",
-                      builder: (context, state) =>
-                          const RosterScreen(),
+                      builder: (context, state) => const RosterScreen(),
                     ),
                     GoRoute(
                       path: "/settings",
@@ -93,12 +128,23 @@ class HeroDex extends StatelessWidget {
               ],
               redirect: (context, state) {
                 final authState = context.read<AuthCubit>().state;
+                final settings = context.read<SettingsManager>();
+
+                final onboardingCompleted = settings.onboardingCompleted;
+
                 final goingToLogin = state.uri.path == ("/login");
+                final goingToOnboarding = state.uri.path == "/onboarding";
                 final atSplash = state.uri.path == "/";
 
                 if (authState is AuthAuthenticated) {
-                  // if authenticated, dont allow going to login or splash
-                  if (goingToLogin || atSplash) return "/home";
+                  // if authenticated, and not completed onboarding then to onboarding
+                  if (!onboardingCompleted && !goingToOnboarding) {
+                    return "/onboarding";
+                  }
+                  // if authenticated, and completed onboarding then to home
+                  if (onboardingCompleted && (goingToLogin || atSplash)) {
+                    return "/home";
+                  }
                   return null;
                 }
 
@@ -108,7 +154,7 @@ class HeroDex extends StatelessWidget {
                   return null;
                 }
 
-                // while unknown/loading --> show splash
+                // unknown/loading --> show splash
                 if (!atSplash) return "/";
                 return null;
               },
@@ -119,10 +165,6 @@ class HeroDex extends StatelessWidget {
               title: "HeroDex3000",
               routerConfig: router,
             );
-          },
-        ),
-      ),
-    );
   }
 }
 
@@ -164,10 +206,7 @@ class RootNavigation extends StatelessWidget {
         destinations: [
           NavigationDestination(icon: Icon(Icons.home), label: "HUB"),
           NavigationDestination(icon: Icon(Icons.radar), label: "SCAN"),
-          NavigationDestination(
-            icon: Icon(Icons.shield),
-            label: "AGENTS",
-          ),
+          NavigationDestination(icon: Icon(Icons.shield), label: "AGENTS"),
           NavigationDestination(icon: Icon(Icons.settings), label: "SETTINGS"),
         ],
       ),
@@ -186,7 +225,7 @@ class AuthFlow extends StatelessWidget {
           return const HomeScreen();
         }
         if (state is AuthUnauthenticated) {
-          return const LoginScreen2();
+          return const LoginScreen2(); // TODO change to LoginScreen and clean up
         }
         return const SplashScreen();
       },
@@ -194,16 +233,40 @@ class AuthFlow extends StatelessWidget {
   }
 }
 
-class _AuthChangeNotifier extends ChangeNotifier {
-  final AuthCubit cubit;
-  late final StreamSubscription _sub;
-  _AuthChangeNotifier(this.cubit) {
-    _sub = cubit.stream.listen((_) => notifyListeners());
+class AppRouterRefresh extends ChangeNotifier {
+  AppRouterRefresh(this.authCubit, this.settingsManager) {
+    // listen to auth and Settings Mananger changes
+    _authSub = authCubit.stream.listen((_) {
+      notifyListeners();
+    });
+
+    // listen to settings changes
+    settingsManager.addListener(notifyListeners);
   }
+
+  final AuthCubit authCubit;
+  final SettingsManager settingsManager;
+
+  late final StreamSubscription _authSub;
 
   @override
   void dispose() {
-    _sub.cancel();
+    _authSub.cancel();
+    settingsManager.removeListener(notifyListeners);
     super.dispose();
   }
 }
+
+// class _AuthChangeNotifier extends ChangeNotifier {
+//   final AuthCubit cubit;
+//   late final StreamSubscription _sub;
+//   _AuthChangeNotifier(this.cubit) {
+//     _sub = cubit.stream.listen((_) => notifyListeners());
+//   }
+
+//   @override
+//   void dispose() {
+//     _sub.cancel();
+//     super.dispose();
+//   }
+// }
