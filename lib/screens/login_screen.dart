@@ -62,49 +62,58 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: const Color(0xFF0A111A),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image(
-                  image: const AssetImage("assets/icons/app_icon.png"),
-                  width: 80,
-                  height: 80,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  "HERODEX 3000",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 4,
+          child: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: height - MediaQuery.of(context).padding.vertical),
+              child: IntrinsicHeight(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    
+                    mainAxisAlignment: .center,
+                    children: [
+                      Image(
+                        image: const AssetImage("assets/icons/app_icon.png"),
+                        width: 80,
+                        height: 80,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        "HERODEX 3000",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 4,
+                        ),
+                      ),
+                      Text(
+                        "REBUILDING THE WORLD, ONE HERO AT A TIME",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.cyan[200],
+                          fontSize: 10,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 48),
+                      _buildTerminalField("EMAIL ADDRESS", _emailController, false),
+                      const SizedBox(height: 16),
+                      _buildTerminalField("PASSWORD", _passwordController, true),
+                      const SizedBox(height: 32),
+                      _buildPrimaryButton("ACCESS TERMINAL", _handleSignIn),
+                      const SizedBox(height: 12),
+                      _buildSecondaryButton("SIGN UP NEW AGENT", _showEnlistModal),
+                    ],
                   ),
                 ),
-                Text(
-                  "REBUILDING THE WORLD, ONE HERO AT A TIME",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.cyan[200],
-                    fontSize: 10,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 48),
-                _buildTerminalField("EMAIL ADDRESS", _emailController, false),
-                const SizedBox(height: 16),
-                _buildTerminalField("ACCESS CODE", _passwordController, true),
-                const SizedBox(height: 32),
-                _buildPrimaryButton("ACCESS TERMINAL", _handleSignIn),
-                const SizedBox(height: 12),
-                _buildSecondaryButton("ENLIST NEW AGENT", _showEnlistModal),
-              ],
+              ),
             ),
           ),
         ),
@@ -278,6 +287,7 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
 
   @override
   Widget build(BuildContext context) {
+    
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state){
         if(state is AuthAuthenticated){
