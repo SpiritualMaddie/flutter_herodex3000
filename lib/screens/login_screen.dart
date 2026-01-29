@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_herodex3000/auth/cubit/auth_cubit.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -8,14 +10,43 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
   void _showEnlistModal() {
     showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (context) => const EnlistAgentModal(),
+      builder: (context) => EnlistAgentModal(),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSignIn() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    try {
+      await context.read<AuthCubit>().signIn(email, password);
+      // On success, AuthCubit should emit authenticated and router will redirect.
+    } catch (e) {
+      // show error to user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   @override
@@ -23,54 +54,48 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0A111A),
       body: Container(
-        // decoration: BoxDecoration(
-        //   image: DecorationImage(
-        //     image: const AssetImage('assets/icons/app_icon.png'), // Valfritt
-        //     opacity: 0.1,
-        //     repeat: ImageRepeat.noRepeat,
-        //   ),
-        // ),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image(
-                  image: AssetImage("assets/icons/app_icon.png"),
-                  width: 80,
-                  height: 80,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  "HERODEX 3000",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 4,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image(
+                    image: const AssetImage("assets/icons/app_icon.png"),
+                    width: 80,
+                    height: 80,
                   ),
-                ),
-                Text(
-                  "REBUILDING THE WORLD, ONE HERO AT A TIME",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.cyan[200],
-                    fontSize: 10,
-                    letterSpacing: 1.2,
+                  const SizedBox(height: 16),
+                  const Text(
+                    "HERODEX 3000",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 4,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 48),
-                _buildTerminalField("EMAIL ADDRESS", _emailController, false),
-                const SizedBox(height: 16),
-                _buildTerminalField("ACCESS CODE", _passwordController, true),
-                const SizedBox(height: 32),
-                _buildPrimaryButton("ACCESS TERMINAL", () {
-                  // Login logik här
-                }),
-                const SizedBox(height: 12),
-                _buildSecondaryButton("ENLIST NEW AGENT", _showEnlistModal),
-              ],
+                  Text(
+                    "REBUILDING THE WORLD, ONE HERO AT A TIME",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.cyan[200],
+                      fontSize: 10,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 48),
+                  _buildTerminalField("EMAIL ADDRESS", _emailController, false),
+                  const SizedBox(height: 16),
+                  _buildTerminalField("ACCESS CODE", _passwordController, true),
+                  const SizedBox(height: 32),
+                  _buildPrimaryButton("ACCESS TERMINAL", _handleSignIn),
+                  const SizedBox(height: 12),
+                  _buildSecondaryButton("ENLIST NEW AGENT", _showEnlistModal),
+                ],
+              ),
             ),
           ),
         ),
@@ -95,10 +120,19 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        TextField(
+        TextFormField(
           controller: controller,
           obscureText: isPassword,
           style: const TextStyle(color: Colors.white),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Required';
+            }
+            if (!isPassword && !value.contains('@')) {
+              return 'Enter a valid email';
+            }
+            return null;
+          },
           decoration: InputDecoration(
             filled: true,
             fillColor: const Color(0xFF121F2B),
@@ -155,21 +189,29 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// 2. Enlist New Agent (Modal med Blur & Snackbar) Denna widget visas som en popup och hanterar bekräftelse via Snackbars.
+// Enlist New Agent modal — keeps the original visual style but wires sign up logic.
+// Converted to StatefulWidget so controllers are disposed and async signUp can be handled.
+class EnlistAgentModal extends StatefulWidget {
+  EnlistAgentModal({super.key});
 
-class EnlistAgentModal extends StatelessWidget {
-  const EnlistAgentModal({super.key});
+  @override
+  State<EnlistAgentModal> createState() => _EnlistAgentModalState();
+}
 
-  void _showStatusSnackbar(BuildContext context, bool success) {
+class _EnlistAgentModalState extends State<EnlistAgentModal> {
+  final _formKeySignUp = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _loading = false;
+
+  void _showStatusSnackbar(BuildContext context, bool success, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: success ? Colors.greenAccent : Colors.redAccent,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(20),
         content: Text(
-          success
-              ? "AGENT ENROLLED SUCCESSFULLY. WELCOME."
-              : "ENLISTMENT FAILED: CODE MATCH ERROR",
+          message,
           style: const TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
@@ -179,6 +221,30 @@ class EnlistAgentModal extends StatelessWidget {
     );
 
     if (success) Navigator.pop(context);
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSignUp() async {
+    if (!_formKeySignUp.currentState!.validate()) return;
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    setState(() => _loading = true);
+    try {
+      await context.read<AuthCubit>().signUp(email, password);
+      _showStatusSnackbar(context, true, "AGENT ENROLLED SUCCESSFULLY. WELCOME.");
+    } catch (e) {
+      _showStatusSnackbar(context, false, "ENLISTMENT FAILED: ${e.toString()}");
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -206,23 +272,35 @@ class EnlistAgentModal extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              _buildModalField("AGENT CODENAME"),
-              const SizedBox(height: 12),
-              _buildModalField("EMAIL ADDRESS"),
-              const SizedBox(height: 12),
-              _buildModalField("ACCESS CODE", isPassword: true),
+              Form(
+                key: _formKeySignUp,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildModalField("EMAIL ADDRESS", _emailController),
+                    const SizedBox(height: 12),
+                    _buildModalField("PASSWORD", _passwordController, isPassword: true),
+                  ],
+                ),
+              ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: () => _showStatusSnackbar(context, true),
+                onPressed: _loading ? null : _handleSignUp,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF00E5FF).withAlpha(20),
                   minimumSize: const Size(double.infinity, 50),
                   side: const BorderSide(color: Color(0xFF00E5FF)),
                 ),
-                child: const Text(
-                  "COMMENCE ENLISTMENT",
-                  style: TextStyle(color: Color(0xFF00E5FF)),
-                ),
+                child: _loading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text(
+                        "SIGN UP",
+                        style: TextStyle(color: Color(0xFF00E5FF)),
+                      ),
               ),
             ],
           ),
@@ -231,10 +309,17 @@ class EnlistAgentModal extends StatelessWidget {
     );
   }
 
-  Widget _buildModalField(String label, {bool isPassword = false}) {
-    return TextField(
+  Widget _buildModalField(String label, TextEditingController controller, {bool isPassword = false}) {
+    return TextFormField(
+      controller: controller,
       obscureText: isPassword,
       style: const TextStyle(color: Colors.white, fontSize: 14),
+      validator: (value) {
+        if (value == null || value.trim().isEmpty) return 'Required';
+        if (!isPassword && !value.contains('@')) return 'Enter a valid email';
+        if (isPassword && value.length < 6) return 'Password too short';
+        return null;
+      },
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Colors.grey, fontSize: 12),

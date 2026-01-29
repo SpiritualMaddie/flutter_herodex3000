@@ -9,6 +9,7 @@ import 'package:flutter_herodex3000/auth/cubit/auth_state.dart';
 import 'package:flutter_herodex3000/auth/repository/auth_repository.dart';
 import 'package:flutter_herodex3000/firebase_options.dart';
 import 'package:flutter_herodex3000/managers/settings_manager.dart';
+import 'package:flutter_herodex3000/screens/login_screen.dart';
 import 'package:flutter_herodex3000/screens/onboarding_screen.dart';
 import 'package:flutter_herodex3000/services/shared_preferences_service.dart';
 import 'package:provider/provider.dart';
@@ -70,7 +71,7 @@ class HeroDex extends StatelessWidget {
                 GoRoute(
                   path: "/login",
                   name: "Login",
-                  builder: (context, state) => const LoginScreen2(),
+                  builder: (context, state) => const LoginScreen(),
                 ),
                 GoRoute(
                   path: "/onboarding",
@@ -216,7 +217,7 @@ class AuthFlow extends StatelessWidget {
           return const HomeScreen();
         }
         if (state is AuthUnauthenticated) {
-          return const LoginScreen2(); // TODO change to LoginScreen and clean up
+          return const LoginScreen(); // TODO change to LoginScreen and clean up
         }
         return const SplashScreen();
       },
