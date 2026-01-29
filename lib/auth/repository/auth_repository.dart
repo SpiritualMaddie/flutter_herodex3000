@@ -15,22 +15,36 @@ class AuthRepository { // TODO error handling deluxe in detail it CAN NOT crash,
     try {
       await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
     } on FirebaseAuthException catch (e, st) {
-      debugPrint("🔴 Error: $e Stacktrace: $st");
-      throw FirebaseAuthException(code: e.code, message: e.message, email: e.email);
-    }catch(e, st){
-      rethrow;
+      debugPrint('🔴 AuthRepository.signIn FirebaseAuthException: code=${e.code} message=${e.message}\n$st');
+      // keep original exception so callers can inspect e.code
+      throw e;
+    } catch (e, st) {
+      debugPrint('🔴 AuthRepository.signIn unexpected error: $e\n$st');
+      throw Exception('Sign in failed: $e');
     }
   }
  
   Future<void> signUp({required String email, required String password}) async {
     try {
       await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-    } on FirebaseAuthException catch (e) {
-      throw Exception(e.message);
+    } on FirebaseAuthException catch (e, st) {
+      debugPrint('🔴 AuthRepository.signUp FirebaseAuthException: code=${e.code} message=${e.message}\n$st');
+      throw e;
+    } catch (e, st) {
+      debugPrint('🔴 AuthRepository.signUp unexpected error: $e\n$st');
+      throw Exception('Sign up failed: $e');
     }
   }
  
   Future<void> signOut() async {
-    await _firebaseAuth.signOut();
+    try {
+      await _firebaseAuth.signOut();
+    } on FirebaseAuthException catch (e, st) {
+      debugPrint('🔴 AuthRepository.signOut FirebaseAuthException: code=${e.code} message=${e.message}\n$st');
+      throw e;
+    } catch (e, st) {
+      debugPrint('🔴 AuthRepository.signOut unexpected error: $e\n$st');
+      throw Exception('Sign out failed: $e');
+    }
   }
 }

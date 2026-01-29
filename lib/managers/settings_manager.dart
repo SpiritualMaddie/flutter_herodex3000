@@ -10,7 +10,7 @@ class SettingsManager extends ChangeNotifier {
     required bool crashlytics,
     required bool location,
     //bool? iosAtt, // TODO make sure we check for ios first
-  }) async { // TODO make it faster?
+  }) async { // TODO make it faster? // Add specific user to these preferences
     await _prefs.setAnalyticsToApproved(analytics);
     await _prefs.setCrashlyticsToApproved(crashlytics);
     await _prefs.setLocationAnalyticsToApproved(location);
