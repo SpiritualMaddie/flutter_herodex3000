@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_herodex3000/auth/cubit/auth_cubit.dart';
+import 'package:flutter_herodex3000/auth/cubit/auth_state.dart';
 import 'package:flutter_herodex3000/managers/settings_manager.dart';
+import 'package:go_router/go_router.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -269,13 +272,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Padding(
       padding: const EdgeInsets.only(top: 24.0, bottom: 16.0),
       child: OutlinedButton(
-        onPressed: () async { // TODO splash and/or spinner
+        onPressed: () async { // TODO splash and/or spinner?
           // Saves values locally
           await context.read<SettingsManager>().saveOnboardingPreferences(
             analytics: _analyticsEnabled,
             crashlytics: _crashlyticsEnabled,
             location: _locationEnabled,
           );
+
+          if(!mounted) return; // TODO good or bad idea?
+          final authState = context.read<AuthCubit>().state;
+          if(authState is AuthAuthenticated){
+            context.go("/home");
+          }else{
+            context.go("login");
+          }
         },
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(double.infinity, 56),

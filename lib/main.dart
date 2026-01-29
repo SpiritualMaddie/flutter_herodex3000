@@ -13,13 +13,12 @@ import 'package:flutter_herodex3000/screens/login_screen.dart';
 import 'package:flutter_herodex3000/screens/onboarding_screen.dart';
 import 'package:flutter_herodex3000/services/shared_preferences_service.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'barrel_files/screens.dart';
 import 'package:go_router/go_router.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   final prefsService = SharedPreferencesService();
   await prefsService.init();
 
@@ -48,115 +47,135 @@ Future<void> main() async {
   );
 }
 
-class HeroDex extends StatelessWidget {
+class HeroDex extends StatefulWidget {
   const HeroDex({super.key});
 
   @override
+  State<HeroDex> createState() => _HeroDexState();
+}
+
+class _HeroDexState extends State<HeroDex> {
+  late final AppRouterRefresh _refresh;
+  late final AuthCubit _authCubit;
+  late final SettingsManager _settingsManager;
+  
+  @override
+  void initState() {
+    super.initState();
+    _authCubit = context.read<AuthCubit>();
+    _settingsManager = context.read<SettingsManager>();
+    _refresh = AppRouterRefresh(_authCubit, _settingsManager);
+  }
+
+  @override
+  void dispose() {
+    _refresh.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // TODO separate stuff
 
-            final authCubit = context.read<AuthCubit>();
-            final settingsManager = context.read<SettingsManager>();
-            final refresh = AppRouterRefresh(authCubit, settingsManager);
+    final router = GoRouter(
+      initialLocation: "/",
+      refreshListenable: _refresh,
+      routes: [
+        // splash screen and login are outside shell
+        GoRoute(
+          path: "/",
+          name: "Splash",
+          builder: (context, state) => const SplashScreen(),
+        ),
+        GoRoute(
+          path: "/login",
+          name: "Login",
+          builder: (context, state) => const LoginScreen(),
+        ),
+        GoRoute(
+          path: "/onboarding",
+          name: "Onboarding",
+          builder: (context, state) => const OnboardingScreen(),
+        ),
 
-            final router = GoRouter(
-              initialLocation: "/",
-              refreshListenable: refresh,
-              routes: [
-                // splash screen and login are outside shell
-                GoRoute(
-                  path: "/",
-                  name: "Splash",
-                  builder: (context, state) => const SplashScreen(),
-                ),
-                GoRoute(
-                  path: "/login",
-                  name: "Login",
-                  builder: (context, state) => const LoginScreen(),
-                ),
-                GoRoute(
-                  path: "/onboarding",
-                  name: "Onboarding",
-                  builder: (context, state) => const OnboardingScreen(),
-                ),
+        // bottom tab bar (only for authenticated routes)
+        ShellRoute(
+          builder: (context, state, child) {
+            return RootNavigation(child: child);
+          },
+          routes: [
+            GoRoute(
+              path: "/home",
+              name: "Home",
+              builder: (context, state) => const HomeScreen(),
+            ),
+            GoRoute(
+              path: "/search",
+              name: "Search",
+              builder: (context, state) => const SearchScreen(),
+            ),
+            GoRoute(
+              path: "/roster",
+              name: "Roster",
+              builder: (context, state) => const RosterScreen(),
+            ),
+            GoRoute(
+              path: "/settings",
+              name: "Settings",
+              builder: (context, state) => const SettingsScreen(),
+            ),
+          ],
+        ),
 
-                // bottom tab bar (only for authenticated routes)
-                ShellRoute(
-                  builder: (context, state, child) {
-                    return RootNavigation(child: child);
-                  },
-                  routes: [
-                    GoRoute(
-                      path: "/home",
-                      name: "Home",
-                      builder: (context, state) => const HomeScreen(),
-                    ),
-                    GoRoute(
-                      path: "/search",
-                      name: "Search",
-                      builder: (context, state) => const SearchScreen(),
-                    ),
-                    GoRoute(
-                      path: "/roster",
-                      name: "Roster",
-                      builder: (context, state) => const RosterScreen(),
-                    ),
-                    GoRoute(
-                      path: "/settings",
-                      name: "Settings",
-                      builder: (context, state) => const SettingsScreen(),
-                    ),
-                  ],
-                ),
+        // details view (can be navigated to from shell routes)
+        GoRoute(
+          path: "/details/:id",
+          name: "details",
+          builder: (context, state) {
+            final id = state.pathParameters["id"]!;
+            return DetailScreen(id: id);
+          },
+        ),
+      ],
+      redirect: (context, state) {
+        final authState = context.read<AuthCubit>().state;
+        final settings = context.read<SettingsManager>();
 
-                // details view (can be navigated to from shell routes)
-                GoRoute(
-                  path: "/details/:id",
-                  name: "details",
-                  builder: (context, state) {
-                    final id = state.pathParameters["id"]!;
-                    return DetailScreen(id: id);
-                  },
-                ),
-              ],
-              redirect: (context, state) {
-                final authState = context.read<AuthCubit>().state;
-                final settings = context.read<SettingsManager>();
+        final onboardingCompleted = settings.onboardingCompleted;
 
-                final onboardingCompleted = settings.onboardingCompleted;
+        final goingToLogin = state.uri.path == ("/login");
+        final goingToOnboarding = state.uri.path == "/onboarding";
+        final atSplash = state.uri.path == "/";
 
-                final goingToLogin = state.uri.path == ("/login");
-                final goingToOnboarding = state.uri.path == "/onboarding";
-                final atSplash = state.uri.path == "/";
+        if (authState is AuthAuthenticated) {
+          // if authenticated, and not completed onboarding then to onboarding
+          if (!onboardingCompleted && !goingToOnboarding) {
+            return "/onboarding";
+          }
+          // if authenticated, and completed onboarding then to home
+          if (onboardingCompleted && (goingToLogin || atSplash)) {
+            return "/home";
+          }
+          return null;
+        }
 
-                if (authState is AuthAuthenticated) {
-                  // if authenticated, and not completed onboarding then to onboarding
-                  if (!onboardingCompleted && !goingToOnboarding) {
-                    return "/onboarding";
-                  }
-                  // if authenticated, and completed onboarding then to home
-                  if (onboardingCompleted && (goingToLogin || atSplash)) {
-                    return "/home";
-                  }
-                  return null;
-                }
+        if (authState is AuthUnauthenticated) {
+          // if unauthenticated, always go to login (unless already there)
+          if (!goingToLogin) return "/login";
+          return null;
+        }
 
-                if (authState is AuthUnauthenticated) {
-                  // if unauthenticated, always go to login (unless already there)
-                  if (!goingToLogin) return "/login";
-                  return null;
-                }
+        // unknown/loading --> show splash
+        if (!atSplash) return "/";
+        return null;
+      },
+    );
 
-                // unknown/loading --> show splash
-                if (!atSplash) return "/";
-                return null;
-              },
-            );
-
-            return MaterialApp.router(
-              debugShowCheckedModeBanner: false,
-              title: "HeroDex3000",
-              routerConfig: router,
-            );
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      title: "HeroDex3000",
+      routerConfig: router,
+    );
   }
 }
 
