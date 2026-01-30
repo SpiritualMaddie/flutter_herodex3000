@@ -18,6 +18,9 @@ import 'package:provider/provider.dart';
 import 'barrel_files/screens.dart';
 import 'package:go_router/go_router.dart';
 
+AppTheme _themeFromString(String s) =>
+    s.toLowerCase() == 'dark' ? AppTheme.dark : AppTheme.light;
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -44,9 +47,14 @@ Future<void> main() async {
           create: (context) => AuthCubit(context.read<AuthRepository>()),
         ),
 
-        BlocProvider(create: (_) => ThemeCubit()),
+        BlocProvider<ThemeCubit>(
+          create: (context) {
+            final settings = context.read<SettingsManager>();
+            return ThemeCubit(initial: _themeFromString(settings.appTheme));
+          },
+        ),
       ],
-      child: HeroDex(),
+      child: const HeroDex(),
     ),
   );
 }
@@ -59,31 +67,22 @@ class HeroDex extends StatefulWidget {
 }
 
 class _HeroDexState extends State<HeroDex> {
-  late final AppRouterRefresh _refresh;
-  late final AuthCubit _authCubit;
-  late final SettingsManager _settingsManager;
+  late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
-    _authCubit = context.read<AuthCubit>();
-    _settingsManager = context.read<SettingsManager>();
-    _refresh = AppRouterRefresh(_authCubit, _settingsManager);
+    _router = _createRouter();
   }
 
-  @override
-  void dispose() {
-    _refresh.dispose();
-    super.dispose();
-  }
+  GoRouter _createRouter(){
+    final authCubit = context.read<AuthCubit>();
+    final settingsManager = context.read<SettingsManager>();
+    final refresh = AppRouterRefresh(authCubit, settingsManager);
 
-  @override
-  Widget build(BuildContext context) {
-    // TODO separate stuff
-
-    final router = GoRouter(
+    return GoRouter(
       initialLocation: "/",
-      refreshListenable: _refresh,
+      refreshListenable: refresh,
       routes: [
         // splash screen and login are outside shell
         GoRoute(
@@ -131,7 +130,7 @@ class _HeroDexState extends State<HeroDex> {
           ],
         ),
 
-        // details view (can be navigated to from shell routes)
+        // details view (can be navigated to from shell routes) // TODO might be removed
         GoRoute(
           path: "/details/:id",
           name: "details",
@@ -142,22 +141,20 @@ class _HeroDexState extends State<HeroDex> {
         ),
       ],
       redirect: (context, state) {
-        final authState = context.read<AuthCubit>().state;
-        final settings = context.read<SettingsManager>();
-
-        final onboardingCompleted = settings.onboardingCompleted;
+        final authState = authCubit.state;
+        final onboardingCompleted = settingsManager.onboardingCompleted;
 
         final goingToLogin = state.uri.path == ("/login");
         final goingToOnboarding = state.uri.path == "/onboarding";
         final atSplash = state.uri.path == "/";
 
         if (authState is AuthAuthenticated) {
-          // if authenticated, and not completed onboarding then to onboarding
+          // if authenticated, and not completed onboarding, go to onboarding
           if (!onboardingCompleted && !goingToOnboarding) {
             return "/onboarding";
           }
-          // if authenticated, and completed onboarding then to home
-          if (onboardingCompleted && (goingToLogin || atSplash)) {
+          // if authenticated, and completed onboarding, go to home
+          if (onboardingCompleted && (goingToLogin || atSplash || goingToOnboarding)) {
             return "/home";
           }
           return null;
@@ -165,7 +162,7 @@ class _HeroDexState extends State<HeroDex> {
 
         if (authState is AuthUnauthenticated) {
           // if unauthenticated, always go to login (unless already there)
-          if (!goingToLogin) return "/login";
+          if (!goingToLogin) return "/login"; // show splash for 10 secs
           return null;
         }
 
@@ -174,14 +171,22 @@ class _HeroDexState extends State<HeroDex> {
         return null;
       },
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
 
     return BlocBuilder<ThemeCubit, AppTheme>(
-      builder: (context, theme) {
+      builder: (context, themeState) {
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,
           title: "HeroDex3000",
-          theme: theme == AppTheme.light ? AppThemes.dark : AppThemes.light,
-          routerConfig: router,
+          theme: AppThemes.light,
+          darkTheme: AppThemes.dark,
+          themeMode: themeState == AppTheme.dark
+              ? ThemeMode.dark
+              : ThemeMode.light,
+          routerConfig: _router,
         );
       },
     );
@@ -245,7 +250,7 @@ class AuthFlow extends StatelessWidget {
           return const HomeScreen();
         }
         if (state is AuthUnauthenticated) {
-          return const LoginScreen(); // TODO change to LoginScreen and clean up
+          return const LoginScreen();
         }
         return const SplashScreen();
       },
@@ -255,12 +260,12 @@ class AuthFlow extends StatelessWidget {
 
 class AppRouterRefresh extends ChangeNotifier {
   AppRouterRefresh(this.authCubit, this.settingsManager) {
-    // listen to auth and Settings Mananger changes
+    // Listen to auth changes
     _authSub = authCubit.stream.listen((_) {
       notifyListeners();
     });
 
-    // listen to settings changes
+    // Listen to settings changes
     settingsManager.addListener(notifyListeners);
   }
 
@@ -276,17 +281,3 @@ class AppRouterRefresh extends ChangeNotifier {
     super.dispose();
   }
 }
-
-// class _AuthChangeNotifier extends ChangeNotifier {
-//   final AuthCubit cubit;
-//   late final StreamSubscription _sub;
-//   _AuthChangeNotifier(this.cubit) {
-//     _sub = cubit.stream.listen((_) => notifyListeners());
-//   }
-
-//   @override
-//   void dispose() {
-//     _sub.cancel();
-//     super.dispose();
-//   }
-// }
