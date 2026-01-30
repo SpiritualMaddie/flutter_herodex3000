@@ -15,47 +15,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsManager>();
-
+    final height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
-        title: Text("SETTINGS", style: TextStyle(letterSpacing: 2)),
+        title: const Text(
+          "SETTINGS",
+          style: TextStyle(letterSpacing: 2, fontSize: 25, color: Colors.cyan),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: .start,
-          children: [
-            _buildSectionHeader("APP ALIGNMENT"),
-            _buildThemeToggle(),
-            SizedBox(height: 14),
-            _buildSectionHeader("DATA PROTOCOLS"), // TODO analytics agreement
-            _buildProtocolTile(
-              Icons.analytics,
-              "Analytics Tracking",
-              "STATUS: ${_authorizedPermission(settings.analyticsEnabled)}",
-              settings.analyticsEnabled,
-              (val) => settings.saveAnalyticsPreferences(value: val),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: height - MediaQuery.of(context).padding.vertical),
+              child: IntrinsicHeight(
+                child: Column(
+                  crossAxisAlignment: .start,
+                  mainAxisAlignment: .start,
+                  children: [
+                    _buildSectionHeader("APP ALIGNMENT"),
+                    _buildThemeToggle(),
+                    _buildSectionHeader("DATA PROTOCOLS"), // TODO analytics agreement
+                    _buildProtocolTile(
+                      Icons.analytics,
+                      "Analytics Tracking",
+                      "STATUS: ${_authorizedPermission(settings.analyticsEnabled)}",
+                      settings.analyticsEnabled,
+                      (val) => settings.saveAnalyticsPreferences(value: val),
+                    ),
+                    _buildProtocolTile(
+                      Icons.analytics,
+                      "Crash Tracking",
+                      "STATUS: ${_authorizedPermission(settings.crashlyticsEnabled)}",
+                      settings.crashlyticsEnabled,
+                      (val) => settings.saveCrashAnalyticsPreferences(value: val),
+                    ),
+                    _buildProtocolTile(
+                      Icons.location_on,
+                      "Location Tracking",
+                      "STATUS: ${_authorizedPermission(settings.locationEnabled)}",
+                      settings.locationEnabled,
+                      (val) => settings.saveLocationAnalyticsPreferences(value: val),
+                    ),
+                    _buildSectionHeader("SYSTEM MANIFEST"),
+                    _buildSystemManifest(),
+                    SizedBox(height: 40),
+                    _buildLogoutButton(context),
+                  ],
+                ),
+              ),
             ),
-            _buildProtocolTile(
-              Icons.analytics,
-              "Crash Tracking",
-              "STATUS: ${_authorizedPermission(settings.crashlyticsEnabled)}",
-              settings.crashlyticsEnabled,
-              (val) => settings.saveCrashAnalyticsPreferences(value: val),
-            ),
-            _buildProtocolTile(
-              Icons.location_on,
-              "Location Tracking",
-              "STATUS: ${_authorizedPermission(settings.locationEnabled)}",
-              settings.locationEnabled,
-              (val) => settings.saveLocationAnalyticsPreferences(value: val),
-            ),
-            _buildSectionHeader("SYSTEM MANIFEST"),
-            _buildSystemManifest(),
-            _buildLogoutButton(context),
-          ],
+          ),
         ),
       ),
     );
@@ -67,7 +80,7 @@ String _authorizedPermission(bool permission) {
 
 Widget _buildSectionHeader(String title) {
   return Padding(
-    padding: const EdgeInsets.only(bottom: 12.0),
+    padding: const EdgeInsets.only(bottom: 12.0, top: 14),
     child: Text(
       title,
       style: TextStyle(
@@ -132,7 +145,7 @@ Widget _buildProtocolTile(
   Function(bool) onChanged,
 ) {
   return Container(
-    margin: EdgeInsets.only(bottom: 12),
+    margin: EdgeInsets.only(bottom: 8),
     padding: EdgeInsets.all(12),
     decoration: BoxDecoration(
       color: Color(0xFF121F2B),
@@ -170,7 +183,7 @@ Widget _buildProtocolTile(
         ),
         Switch(
           value: value,
-          onChanged: onChanged, // TODO change in real time and in shared prefs
+          onChanged: onChanged,
           activeThumbColor: Colors.cyan,
           activeTrackColor: Colors.cyan.withAlpha(20),
         ),
@@ -194,7 +207,7 @@ Widget _buildSystemManifest() {
         _buildManifestRow(
           "VERSION",
           "v3.0.1-STABLE",
-        ), // TODO change version dynamically
+        ), // TODO change version dynamically?
         const Divider(color: Color(0xFF1A2E3D), height: 24),
         _buildManifestRow("CREATOR", "SPIRITUALMADDIE"), // TODO link to github?
         const Divider(color: Color(0xFF1A2E3D), height: 24),
@@ -246,7 +259,7 @@ Widget _buildLogoutButton(BuildContext context) {
       backgroundColor: Colors.redAccent.withAlpha(10),
     ),
     child: const Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: .center,
       children: [
         Icon(Icons.logout, color: Colors.redAccent, size: 20),
         SizedBox(width: 12),
@@ -254,7 +267,7 @@ Widget _buildLogoutButton(BuildContext context) {
           "LOGOUT",
           style: TextStyle(
             color: Colors.redAccent,
-            fontWeight: FontWeight.bold,
+            fontWeight: .bold,
             letterSpacing: 1.5,
           ),
         ),

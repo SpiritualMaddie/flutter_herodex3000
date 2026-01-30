@@ -4,6 +4,8 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_herodex3000/app/theme/app_theme.dart';
+import 'package:flutter_herodex3000/app/theme/cubit/theme_cubit.dart';
 import 'package:flutter_herodex3000/auth/cubit/auth_cubit.dart';
 import 'package:flutter_herodex3000/auth/cubit/auth_state.dart';
 import 'package:flutter_herodex3000/auth/repository/auth_repository.dart';
@@ -41,6 +43,8 @@ Future<void> main() async {
         BlocProvider<AuthCubit>(
           create: (context) => AuthCubit(context.read<AuthRepository>()),
         ),
+
+        BlocProvider(create: (_) => ThemeCubit()),
       ],
       child: HeroDex(),
     ),
@@ -58,7 +62,7 @@ class _HeroDexState extends State<HeroDex> {
   late final AppRouterRefresh _refresh;
   late final AuthCubit _authCubit;
   late final SettingsManager _settingsManager;
-  
+
   @override
   void initState() {
     super.initState();
@@ -171,10 +175,15 @@ class _HeroDexState extends State<HeroDex> {
       },
     );
 
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      title: "HeroDex3000",
-      routerConfig: router,
+    return BlocBuilder<ThemeCubit, AppTheme>(
+      builder: (context, theme) {
+        return MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          title: "HeroDex3000",
+          theme: theme == AppTheme.light ? AppThemes.dark : AppThemes.light,
+          routerConfig: router,
+        );
+      },
     );
   }
 }
