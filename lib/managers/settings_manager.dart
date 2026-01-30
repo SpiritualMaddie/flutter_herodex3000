@@ -10,12 +10,12 @@ class SettingsManager extends ChangeNotifier {
     required bool crashlytics,
     required bool location,
     //bool? iosAtt, // TODO make sure we check for ios first
-  }) async { // TODO make it faster? // Add specific user to these preferences
+  }) async {
     await _prefs.setAnalyticsToApproved(analytics);
     await _prefs.setCrashlyticsToApproved(crashlytics);
     await _prefs.setLocationAnalyticsToApproved(location);
     await _prefs.setOnboardingToCompleted(true);
-    notifyListeners(); // TODO is it not refreshing as it should?
+    notifyListeners();
   }
 
   Future<void> saveAnalyticsPreferences({required bool value}) async {
@@ -33,45 +33,20 @@ class SettingsManager extends ChangeNotifier {
     notifyListeners();
   }
 
+    Future<void> saveCurrentAppTheme({required String value}) async {
+    await _prefs.setAppTheme(value);
+    notifyListeners();
+  }
+
+  //   Future<void> saveSplashShown({required bool value}) async {
+  //   await _prefs.setSplashShown(value);
+  //   notifyListeners();
+  // }
+
   bool get analyticsEnabled => _prefs.analyticsIsApproved;
   bool get crashlyticsEnabled => _prefs.crashlyticsIsApproved;
   bool get locationEnabled => _prefs.locationAnalyticsIsApproved;
   bool get onboardingCompleted => _prefs.onboardingIsCompleted;
+  String get appTheme => _prefs.currentAppTheme;
+  //bool get splashShown => _prefs.splashShown;
 }
-
-//4. Visa valen i Settings-vyn
-// class SettingsScreen extends StatelessWidget {
-//   const SettingsScreen({super.key});
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body: FutureBuilder(
-//         future: Future.wait([
-//           SettingsManager.getStatus(SettingsManager.analyticsKey),
-//           SettingsManager.getStatus(SettingsManager.crashlyticsKey),
-//           SettingsManager.getStatus(SettingsManager.locationKey),
-//         ]),
-//         builder: (context, AsyncSnapshot<List<bool>> snapshot) {
-//           if (!snapshot.hasData) return const CircularProgressIndicator();
-//           return Column(
-//             children: [
-//               _buildSettingInfoTile("Analytics", snapshot.data![0]),
-//               _buildSettingInfoTile("Crashlytics", snapshot.data![1]),
-//               _buildSettingInfoTile("Location (VG)", snapshot.data![2]),
-//             ],
-//           );
-//         },
-//       ),
-//     );
-//   }
-
-//   Widget _buildSettingInfoTile(String label, bool isEnabled) {
-//     return ListTile(
-//       title: Text(label, style: const TextStyle(color: Colors.white)),
-//       trailing: Text(
-//         isEnabled ? "AUTHORIZED" : "DISABLED",
-//         style: TextStyle(color: isEnabled ? Colors.cyan : Colors.redAccent),
-//       ),
-//     );
-//   }
-// }

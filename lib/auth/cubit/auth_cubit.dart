@@ -17,7 +17,9 @@ class AuthCubit extends Cubit<AuthState> {
     _authStateSubscription = _authRepository.authStateChanges.listen(
       (user) {
         try {
-          debugPrint('🔁 AuthCubit.authStateChanges -> uid=${user?.uid} email=${user?.email}');
+          debugPrint(
+            '🔁 AuthCubit.authStateChanges -> uid=${user?.uid} email=${user?.email}',
+          );
           if (user != null) {
             emit(AuthAuthenticated(user));
           } else {
@@ -36,14 +38,17 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> signIn(String email, String password) async {
-    try { // TODO analytics
+    try {
+      // TODO analytics
       await analytics.logLogin(loginMethod: "email");
       await _authRepository.signIn(email: email, password: password);
       // success -> authStateChanges stream will emit authenticated
     } on FirebaseAuthException catch (e) {
-      debugPrint('🔴 AuthCubit.signIn FirebaseAuthException: ${e.code} ${e.message}');
+      debugPrint(
+        '🔴 AuthCubit.signIn FirebaseAuthException: ${e.code} ${e.message}',
+      );
       // rethrow so UI can show user-facing messages, but don't crash here
-      throw e;
+      rethrow;
     } catch (e, st) {
       debugPrint('🔴 AuthCubit.signIn unexpected: $e\n$st');
       throw Exception('Sign in failed: $e');
@@ -58,10 +63,13 @@ class AuthCubit extends Cubit<AuthState> {
       debugPrint('⚠️ AuthCubit.signOut error (repo): $e\n$st');
     }
 
-    // best-effort local cleanup to avoid stale state that blocks re-login
     try {
+      // WORKAROUND: Clearing SharedPreferences to prevent auth state confusion/stale state
+      // on re-login. This is NOT ideal but resolves a suspected race condition.
+      // TODO: Investigate proper fix - likely related to
+      // SharedPreferencesWithCache and Firebase Auth state interaction
       final prefs = await SharedPreferences.getInstance();
-      await prefs.clear(); // TODO fix so preferences doesnt gets wiped every time
+      await prefs.clear();
       debugPrint('✅ AuthCubit: cleared SharedPreferences on signOut');
     } catch (e, st) {
       debugPrint('⚠️ AuthCubit: failed clearing SharedPreferences: $e\n$st');
@@ -82,7 +90,9 @@ class AuthCubit extends Cubit<AuthState> {
       await _authRepository.signUp(email: email, password: password);
       // if additional profile writes happen elsewhere, they must handle their own errors
     } on FirebaseAuthException catch (e) {
-      debugPrint('🔴 AuthCubit.signUp FirebaseAuthException: ${e.code} ${e.message}');
+      debugPrint(
+        '🔴 AuthCubit.signUp FirebaseAuthException: ${e.code} ${e.message}',
+      );
       throw e;
     } catch (e, st) {
       debugPrint('🔴 AuthCubit.signUp unexpected: $e\n$st');
