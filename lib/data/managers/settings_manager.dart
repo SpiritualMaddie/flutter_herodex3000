@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_herodex3000/services/shared_preferences_service.dart';
+import 'package:flutter_herodex3000/data/services/shared_preferences_service.dart';
 
 class SettingsManager extends ChangeNotifier {
   final SharedPreferencesService _prefs;

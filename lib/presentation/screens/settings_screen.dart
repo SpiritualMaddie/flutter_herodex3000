@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_herodex3000/app/theme/cubit/theme_cubit.dart';
-import 'package:flutter_herodex3000/auth/cubit/auth_cubit.dart';
-import 'package:flutter_herodex3000/managers/settings_manager.dart';
+import 'package:flutter_herodex3000/core/theme/cubit/theme_cubit.dart';
+import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_cubit.dart';
+import 'package:flutter_herodex3000/data/managers/settings_manager.dart';
 
 // TODO Some error with ParentDataWidget, some Expanded thats at fault? Could be in main?
 class SettingsScreen extends StatefulWidget {
