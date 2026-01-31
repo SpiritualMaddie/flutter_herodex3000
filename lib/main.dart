@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +23,7 @@ AppTheme _themeFromString(String s) =>
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
 
   final prefsService = SharedPreferencesService();
   await prefsService.init();
