@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_herodex3000/barrel_files/models.dart';
 import 'package:flutter_herodex3000/barrel_files/interfaces.dart';
@@ -22,9 +23,9 @@ class SuperHeroApiRepository implements ISuperHeroApiRepository{
   
   // Function to get hero/villian by name from the API https://superheroapi.com/ that reads from the .env for the API key
   @override
-  Future<List<AgentModel>> getHeroByName(String heroName) async {
+  Future<List<AgentModel>> getAgentByName(String agentName) async {
 
-    final searchUrl = Uri.parse("$baseUrl/search/$heroName");
+    final searchUrl = Uri.parse("$baseUrl/search/$agentName");
     
       try {
         for(int attempt = 0; attempt < 3; attempt++){
@@ -34,10 +35,10 @@ class SuperHeroApiRepository implements ISuperHeroApiRepository{
               .get(searchUrl)
               .timeout(const Duration(seconds: 10));
            if(response.statusCode == 200){
-            return _parseHeroes(response.body);       
+            return _parseAgents(response.body);       
           }
           else{
-            print("❌ Request misslyckades med status: ${response.statusCode}");
+            debugPrint("❌ Request misslyckades med status: ${response.statusCode}");
             // return [];
           } 
           } finally {
@@ -47,20 +48,20 @@ class SuperHeroApiRepository implements ISuperHeroApiRepository{
           if(attempt <2) await Future.delayed(const Duration(seconds: 2));
         }
       } on FormatException catch (e){ // JSON decode or unexpected body
-          print("❌ Fel vid tolkning av JSON: $e");
+          debugPrint("❌ Fel vid tolkning av JSON: $e");
           return [];
       } on SocketException catch (e){ // No internet or DNS issue
-          print("❌ Nätverksfel: $e");
+          debugPrint("❌ Nätverksfel: $e");
           return [];
       } catch (e, stack) {            // Catch everything else
-          print("❌ Oväntat fel: $e");
-          print("Stacktrace: $stack");
+          debugPrint("❌ Oväntat fel: $e");
+          debugPrint("Stacktrace: $stack");
           return [];
       }
     return [];
   }
 
-  Future<List<AgentModel>> _parseHeroes(String responseBody) async {
+  Future<List<AgentModel>> _parseAgents(String responseBody) async {
     final jsonBody = jsonDecode(responseBody);
 
     if (jsonBody == null || jsonBody["response"] != "success") return [];

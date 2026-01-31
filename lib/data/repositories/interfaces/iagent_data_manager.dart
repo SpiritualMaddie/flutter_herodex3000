@@ -2,13 +2,13 @@ import 'package:flutter_herodex3000/barrel_files/models.dart';
 
 abstract class IAgentDataManager {
 
-  Future<void> createHero(AgentModel hero);
-  Future<List<AgentModel>> getAllHeroesLocal();
-  Future<List<AgentModel>> getHeroByNameLocal(String heroName);
-  Future<List<AgentModel>> getHeroByNameApi(String heroName);
-  Future<AgentModel?> getHeroByIdLocal(int id);
-  Future<Map<String, List<AgentModel>>> sortedHeroesVillains();
-  Future<void> deleteHero(int id);
+  Future<void> createAgent(AgentModel agent);
+  Future<List<AgentModel>> getAllAgentsLocal();
+  Future<List<AgentModel>> getAgentByNameLocal(String agentName);
+  Future<List<AgentModel>> getAgentByNameApi(String agentName);
+  Future<AgentModel?> getAgentByIdLocal(String id);
+  Future<Map<String, List<AgentModel>>> sortedAgents();
+  Future<void> deleteAgent(String id);
   //Future<void> updateJsonWithHeroesList();
   //Future<void> loadHeroesFromJsonToHeroesList();
   //Future<AgentModel> updateHero(AgentModel updatedHero);

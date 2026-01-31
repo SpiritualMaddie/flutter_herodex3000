@@ -3,99 +3,95 @@ import 'package:flutter_herodex3000/barrel_files/interfaces.dart';
 import 'package:flutter_herodex3000/barrel_files/factories.dart';
 import 'package:flutter_herodex3000/barrel_files/repositories.dart';
 
-class HeroDataManager implements IAgentDataManager{
+class AgentDataManager implements IAgentDataManager{
   static final clientFactory = HttpClientFactory();
   final SuperHeroApiRepository apiHeroRepo;
-  final List<AgentModel> _heroesList = [];
+  final List<AgentModel> _agentsList = [];
 
   // Private constructor for Singleton
-  HeroDataManager._internal({required this.apiHeroRepo});
+  AgentDataManager._internal({required this.apiHeroRepo});
 
   // Single static instance
-  static HeroDataManager? _instance;
+  static AgentDataManager? _instance;
 
   // Factory only creates once
-  factory HeroDataManager({SuperHeroApiRepository? apiRepo}){
-    _instance ??= HeroDataManager._internal(
+  factory AgentDataManager({SuperHeroApiRepository? apiRepo}){
+    _instance ??= AgentDataManager._internal(
       apiHeroRepo: apiRepo ?? SuperHeroApiRepository(clientFactory: clientFactory),
     );
     return _instance!;
   }
 
   
-  // Function to create new hero/villian with check for if the name already exist and wont create a duplicate
+  // Function to create new agent/villian with check for if the name already exist and wont create a duplicate
   @override
-  Future<AgentModel?> createHero(AgentModel hero) async {
+  Future<AgentModel?> createAgent(AgentModel agent) async {
 
     try {
-      final heroAlreadyExists = _heroesList.any((h) => h.name.toLowerCase() == hero.name.toLowerCase());
+      final agentAlreadyExists = _agentsList.any((a) => a.name.toLowerCase() == agent.name.toLowerCase());
 
-      if(heroAlreadyExists){     
+      if(agentAlreadyExists){     
         return null;
       }
 
-      int newId = _heroesList.isEmpty 
-                  ? 1 
-                  : _heroesList.last.heroId + 1; // Auto-increment ID based on the last hero in the list
-
-      final newHero = AgentModel(
-        heroId: newId,
-        name: hero.name,
-        powerstats: hero.powerstats,
-        biography: hero.biography,
-        appearance: hero.appearance,
-        image: hero.image,
-        work: hero.work,
-        connections: hero.connections,
+      final newAgent = AgentModel(
+        agentId: agent.agentId,
+        name: agent.name,
+        powerstats: agent.powerstats,
+        biography: agent.biography,
+        appearance: agent.appearance,
+        image: agent.image,
+        work: agent.work,
+        connections: agent.connections,
       );
-      _heroesList.add(newHero);
+      _agentsList.add(newAgent);
 
-      return newHero;      
+      return newAgent;      
     } catch (e) {
         throw Exception("❌ Misslyckades att spara hjälte/skurk: $e");
     }
 
   }
   
-  // Function to get all heroes/villians in the local list _heroesList
+  // Function to get all heroes/villians in the local list _agentsList
   @override
-  Future<List<AgentModel>> getAllHeroesLocal() async {
-    return _heroesList;
+  Future<List<AgentModel>> getAllAgentsLocal() async {
+    return _agentsList;
   }
   
-  // Function to get hero/villian by name in the local list _heroesList
+  // Function to get agent/villian by name in the local list _agentsList
   @override
-  Future<List<AgentModel>> getHeroByNameLocal(String heroName) async {
-    final search = heroName.toLowerCase();
-    return _heroesList
-        .where((h) => h.name.toLowerCase().contains(search))
+  Future<List<AgentModel>> getAgentByNameLocal(String agentName) async {
+    final search = agentName.toLowerCase();
+    return _agentsList
+        .where((a) => a.name.toLowerCase().contains(search))
         .toList();
   }
   
-  // Function to get hero/villian by name from the api https://superheroapi.com/
+  // Function to get agent/villian by name from the api https://superheroapi.com/
   @override
-  Future<List<AgentModel>> getHeroByNameApi(String heroName) async {
-    return apiHeroRepo.getHeroByName(heroName);
+  Future<List<AgentModel>> getAgentByNameApi(String agentName) async {
+    return apiHeroRepo.getAgentByName(agentName);
   }
   
-  // Function to delete hero/villian from local list _heroesList
+  // Function to delete agent/villian from local list _agentsList
   @override
-  Future<void> deleteHero(int id) async {
-    _heroesList.removeWhere((h) => h.heroId == id);
+  Future<void> deleteAgent(String id) async {
+    _agentsList.removeWhere((a) => a.agentId == id);
   }
   
   // Function to sort heroes and villians ans return Map with them sorted
   @override
-  Future<Map<String, List<AgentModel>>> sortedHeroesVillains() async {
-    final heroes = _heroesList
+  Future<Map<String, List<AgentModel>>> sortedAgents() async {
+    final heroes = _agentsList
         .where((h) => h.biography.alignment.toLowerCase() == "good")
         .toList();
 
-    final villains = _heroesList
+    final villains = _agentsList
         .where((v) => v.biography.alignment.toLowerCase() == "bad")
         .toList();
 
-    final neutrals = _heroesList
+    final neutrals = _agentsList
         .where((v) => v.biography.alignment.toLowerCase() == "neutral")
         .toList();
     
@@ -106,52 +102,55 @@ class HeroDataManager implements IAgentDataManager{
     };
   }
   
-  // Function to load heroes/villians from the local json file to the _heroesList
-  // @override
-  // Future<int> loadHeroesFromJsonToHeroesList() async {
-  //   try {
-  //     final parsedJsonHeroes = await localFileRepo.readLocalHeroFile();
 
-  //     _heroesList
-  //       ..clear()
-  //       ..addAll(parsedJsonHeroes);
-
-  //     return _heroesList.length;
-  //   } catch (e) {
-  //     throw Exception("❌ Misslyckades att ladda hjältar och skurkar: $e");
-  //   }
-  // }
   
-  // Function to get a hero/villian by Id in the local list _heroesList
+  // Function to get a agent/villian by Id in the local list _agentsList
   @override
-  Future<AgentModel?> getHeroByIdLocal(int id) async {
+  Future<AgentModel?> getAgentByIdLocal(String id) async {
     try {
-      var hero = _heroesList.firstWhere((h) => h.heroId == id);
-      return hero;
+      var agent = _agentsList.firstWhere((a) => a.agentId == id);
+      return agent;
     } catch (_) {
       return null;
     }
   }
   
-  // Function to update the local json file with the local list _heroesList
+    // Function to load heroes/villians from the local json file to the _agentsList
+  // @override
+  // Future<int> loadHeroesFromJsonToHeroesList() async {
+  //   try {
+  //     final parsedJsonHeroes = await localFileRepo.readLocalHeroFile();
+
+  //     _agentsList
+  //       ..clear()
+  //       ..addAll(parsedJsonHeroes);
+
+  //     return _agentsList.length;
+  //   } catch (e) {
+  //     throw Exception("❌ Misslyckades att ladda hjältar och skurkar: $e");
+  //   }
+  // }
+
+  
+  // Function to update the local json file with the local list _agentsList
   // @override
   // Future<void> updateJsonWithHeroesList() async {
   //   try {
-  //     await localFileRepo.updateLocalHeroFile(_heroesList);
+  //     await localFileRepo.updateLocalHeroFile(_agentsList);
   //   } catch (e) {
   //     throw Exception("❌ Misslyckades att spara hjältar och skurkar: $e");
   //   }
   // }
 
 
-  // Update hero prepered function
+  // Update agent prepered function
   // @override
   // Future<AgentModel> updateHero(AgentModel updatedHero) async {
-  //   final index = _heroesList.indexWhere((h) => h.heroId == updatedHero.heroId);
+  //   final index = _agentsList.indexWhere((h) => h.heroId == updatedHero.heroId);
   //   if (index == -1) {
   //     throw Exception("Hero with ID ${updatedHero.heroId} not found");
   //   }
-  //   _heroesList[index] = updatedHero;
+  //   _agentsList[index] = updatedHero;
   //   return updatedHero;
   // }
 

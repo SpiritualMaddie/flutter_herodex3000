@@ -2,7 +2,7 @@ import 'package:flutter_herodex3000/barrel_files/models.dart';
 
 class AgentModel {
 
-  int heroId;  
+  String agentId;  
   String name;
 
   final PowerstatsModel powerstats;
@@ -13,7 +13,7 @@ class AgentModel {
   final ConnectionsModel? connections;
 
   AgentModel({
-      this.heroId = 0,
+      required this.agentId,
       required this.name,
       required this.powerstats,
       required this.biography,
@@ -38,7 +38,7 @@ class AgentModel {
     }
 
     return AgentModel(
-        heroId : int.parse(json["id"]),
+        agentId : json["id"],
         name : json["name"],
         powerstats  : json["powerstats"] != null
                     ? PowerstatsModel.fromJson(json["powerstats"])
@@ -63,7 +63,7 @@ class AgentModel {
     
   // Serialization
   Map<String, dynamic> toJson() => {
-    "id": heroId.toString(),
+    "id": agentId,
     "name": name,
     "powerstats": powerstats.toJson(),
     "biography": biography.toJson(),
