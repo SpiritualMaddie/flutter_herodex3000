@@ -447,33 +447,39 @@ class _RosterScreenState extends State<RosterScreen> {
     final visible = _filteredAgents;
     final summaries = AgentSummaryMapper.toSummaryList(visible);
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: summaries.length,
-      itemBuilder: (context, index) {
-        final summary = summaries[index];
-        return AgentCard(
-          agent: summary,
-          layout: AgentCardLayout.list,
-          onTap: () {
-            //Cache the full model, then navigate
-            AgentCache.put(_allAgents[index]);
-            Navigator.push(
-              context, 
-            MaterialPageRoute(
-              builder: (context) => 
-               AgentDetailsScreen(agent: _allAgents[index], showSaveButton: false,))
-            );
-          },
-          onDismiss: () {
-            final removed = visible[index];
-            _removeAgent(int.parse(removed.agentId));
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("${removed.name} REMOVED FROM ROSTER")),
-            );
-          },
-        );
-      },
+    return RefreshIndicator(
+      color: Colors.cyan,
+      backgroundColor: const Color(0xFF121F2B),
+      onRefresh: _loadAgents,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        itemCount: summaries.length,
+        itemBuilder: (context, index) {
+          final summary = summaries[index];
+          return AgentCard(
+            agent: summary,
+            layout: AgentCardLayout.list,
+            onTap: () {
+              //Cache the full model, then navigate
+              AgentCache.put(_allAgents[index]);
+              Navigator.push(
+                context, 
+              MaterialPageRoute(
+                builder: (context) => 
+                 AgentDetailsScreen(agent: _allAgents[index], showSaveButton: false,))
+              );
+            },
+            onDismiss: () {
+              final removed = visible[index];
+              _removeAgent(int.parse(removed.agentId));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("${removed.name} REMOVED FROM ROSTER")),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
