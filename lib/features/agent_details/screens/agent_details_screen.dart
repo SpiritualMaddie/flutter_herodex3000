@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_herodex3000/data/models/agent_model.dart';
 import 'package:flutter_herodex3000/data/repositories/saved_agents_repository.dart';
 import 'package:go_router/go_router.dart';
-
+// TODO alignment on card right top
 /// Full detail view for an agent.
 /// Receives the complete [AgentModel] so it can display all stats.
 class AgentDetailsScreen extends StatefulWidget {
