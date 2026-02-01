@@ -7,10 +7,11 @@ import 'package:flutter_herodex3000/barrel_files/screens.dart';
 import 'package:flutter_herodex3000/data/managers/agent_cache.dart';
 import 'package:flutter_herodex3000/data/managers/agent_data_manager.dart';
 import 'package:flutter_herodex3000/presentation/helpers/agent_summary_mapper.dart';
-import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter_herodex3000/presentation/view_models/agent_summary.dart';
 import 'package:flutter_herodex3000/presentation/widgets/agent_card.dart';
+
+// TODO cant do another search quick after first search now, worked before
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});

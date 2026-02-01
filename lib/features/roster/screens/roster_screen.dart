@@ -110,24 +110,23 @@ class _RosterScreenState extends State<RosterScreen> {
   }
 
   // Removes an agent from Firestore.
-  Future<void> _removeAgent(int index) async {
-    final removed = _allAgents[index];
+  Future<void> _removeAgent(AgentModel agent) async {
 
     // Remove from UI immediately
     setState(() {
-      _allAgents.removeAt(index);
-      _summaries.removeAt(index);
+      _allAgents.removeWhere((a) => a.agentId == agent.agentId);
+      //_summaries.removeWhere((a) => a.id == agent.agentId);
     });
 
     try {
-      await _savedAgentsRepo.removeAgent(removed.agentId);
+      await _savedAgentsRepo.removeAgent(agent.agentId);
     } catch (e, st) {
       debugPrint('❌ RosterScreen._removeAgent: $e\n$st');
       // If Firestore fails, put it back
       if (!mounted) return;
       setState(() {
-        _allAgents.insert(index, removed);
-        _summaries.insert(index, AgentSummaryMapper.toSummary(removed));
+        _allAgents.add(agent);
+        //_summaries.add(AgentSummaryMapper.toSummary(agent));
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -471,10 +470,9 @@ class _RosterScreenState extends State<RosterScreen> {
               );
             },
             onDismiss: () {
-              final removed = visible[index];
-              _removeAgent(int.parse(removed.agentId));
+              _removeAgent(visible[index]);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("${removed.name} REMOVED FROM ROSTER")),
+                SnackBar(content: Text("${visible[index].name} REMOVED FROM ROSTER")),
               );
             },
           );
