@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_herodex3000/auth/cubit/auth_cubit.dart';
-import 'package:flutter_herodex3000/auth/cubit/auth_state.dart';
-import 'package:flutter_herodex3000/managers/settings_manager.dart';
+import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_cubit.dart';
+import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_state.dart';
+import 'package:flutter_herodex3000/data/managers/settings_manager.dart';
 import 'package:go_router/go_router.dart';
 
 class OnboardingScreen extends StatefulWidget {

@@ -1,28 +1,28 @@
 import 'dart:async';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_herodex3000/app/theme/app_theme.dart';
-import 'package:flutter_herodex3000/app/theme/cubit/theme_cubit.dart';
-import 'package:flutter_herodex3000/auth/cubit/auth_cubit.dart';
-import 'package:flutter_herodex3000/auth/cubit/auth_state.dart';
-import 'package:flutter_herodex3000/auth/repository/auth_repository.dart';
+import 'package:flutter_herodex3000/core/theme/app_theme.dart';
+import 'package:flutter_herodex3000/core/theme/cubit/theme_cubit.dart';
+import 'package:flutter_herodex3000/data/managers/agent_cache.dart';
+import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_cubit.dart';
+import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_state.dart';
+import 'package:flutter_herodex3000/features/authentication/controllers/repository/auth_repository.dart';
 import 'package:flutter_herodex3000/firebase_options.dart';
-import 'package:flutter_herodex3000/managers/settings_manager.dart';
-import 'package:flutter_herodex3000/screens/login_screen.dart';
-import 'package:flutter_herodex3000/screens/onboarding_screen.dart';
-import 'package:flutter_herodex3000/services/shared_preferences_service.dart';
+import 'package:flutter_herodex3000/data/managers/settings_manager.dart';
+import 'package:flutter_herodex3000/data/services/shared_preferences_service.dart';
 import 'package:provider/provider.dart';
-import 'barrel_files/screens.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_herodex3000/barrel_files/screens.dart';
 
 AppTheme _themeFromString(String s) =>
     s.toLowerCase() == 'dark' ? AppTheme.dark : AppTheme.light;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
 
   final prefsService = SharedPreferencesService();
   await prefsService.init();
@@ -130,13 +130,20 @@ class _HeroDexState extends State<HeroDex> {
           ],
         ),
 
-        // details view (can be navigated to from shell routes) // TODO might be removed
+        // details view (can be navigated to from shell routes) // TODO might be removed?
         GoRoute(
           path: "/details/:id",
           name: "details",
           builder: (context, state) {
             final id = state.pathParameters["id"]!;
-            return DetailScreen(id: id);
+            final agent = AgentCache.get(id);
+
+            // If agent not found (shouldnt happen, but handles risk for crash)
+            if(agent == null){
+              return const ErrorScreen(message: "Agent not found");
+            }
+
+            return AgentDetailsScreen(agent: agent);
           },
         ),
       ],
@@ -230,7 +237,7 @@ class RootNavigation extends StatelessWidget {
         },
         destinations: [
           NavigationDestination(icon: Icon(Icons.home), label: "HUB"),
-          NavigationDestination(icon: Icon(Icons.radar), label: "SCAN"),
+          NavigationDestination(icon: Icon(Icons.search), label: "SEARCH"),
           NavigationDestination(icon: Icon(Icons.shield), label: "AGENTS"),
           NavigationDestination(icon: Icon(Icons.settings), label: "SETTINGS"),
         ],

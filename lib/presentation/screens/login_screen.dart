@@ -2,8 +2,8 @@ import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_herodex3000/auth/cubit/auth_cubit.dart';
-import 'package:flutter_herodex3000/auth/cubit/auth_state.dart';
+import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_cubit.dart';
+import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_state.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

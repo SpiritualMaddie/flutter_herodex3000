@@ -3,8 +3,8 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_herodex3000/auth/cubit/auth_state.dart';
-import 'package:flutter_herodex3000/auth/repository/auth_repository.dart';
+import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_state.dart';
+import 'package:flutter_herodex3000/features/authentication/controllers/repository/auth_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthCubit extends Cubit<AuthState> {
