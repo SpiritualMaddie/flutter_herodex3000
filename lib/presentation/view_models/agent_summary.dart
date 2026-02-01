@@ -7,6 +7,7 @@ class AgentSummary {
   final String alignment;
   final int power;
   final int strength;
+  final int intelligence;
 
   const AgentSummary({
     required this.id,
@@ -15,6 +16,7 @@ class AgentSummary {
     required this.alignment,
     required this.power,
     required this.strength,
+    required this.intelligence,
   });
 
 // TODO doesnt work?

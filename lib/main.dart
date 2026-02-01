@@ -131,7 +131,6 @@ class _HeroDexState extends State<HeroDex> {
         ),
 
         // details view (can be navigated to from shell routes) // TODO might be removed?
-        // How do get the agent sent via AgentDetailsScreen? TODO
         GoRoute(
           path: "/details/:id",
           name: "details",
@@ -143,7 +142,7 @@ class _HeroDexState extends State<HeroDex> {
             if(agent == null){
               return const ErrorScreen(message: "Agent not found");
             }
-            
+
             return AgentDetailsScreen(agent: agent);
           },
         ),

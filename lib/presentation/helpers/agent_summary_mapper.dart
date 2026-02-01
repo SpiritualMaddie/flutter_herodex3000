@@ -13,6 +13,7 @@ class AgentSummaryMapper {
       alignment: agent.biography.alignment,
       power: agent.powerstats.power,
       strength: agent.powerstats.strength,
+      intelligence: agent.powerstats.intelligence
     );
   }
 

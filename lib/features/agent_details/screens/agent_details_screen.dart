@@ -3,12 +3,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_herodex3000/data/models/agent_model.dart';
 import 'package:flutter_herodex3000/data/repositories/saved_agents_repository.dart';
+import 'package:go_router/go_router.dart';
 
 /// Full detail view for an agent.
 /// Receives the complete [AgentModel] so it can display all stats.
 class AgentDetailsScreen extends StatefulWidget {
   final AgentModel agent;
-  const AgentDetailsScreen({super.key, required this.agent});
+
+  /// Set to false when navigating from Roster so the save button is hidden.
+  final bool showSaveButton;
+
+  const AgentDetailsScreen({
+    super.key,
+    required this.agent,
+    this.showSaveButton = true,
+  });
 
   @override
   State<AgentDetailsScreen> createState() => _AgentDetailsScreenState();
@@ -26,10 +35,12 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _checkIfSaved();
+    // Only bother checking Firestore if the button is visible
+    if (widget.showSaveButton) {
+      _checkIfSaved();
+    }
   }
 
-  /// Checks Firestore to see if this agent is already in the roster.
   Future<void> _checkIfSaved() async {
     try {
       final saved = await _savedAgentsRepo.isAgentSaved(widget.agent.agentId);
@@ -40,7 +51,6 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     }
   }
 
-  /// Saves the agent to Firestore.
   Future<void> _saveAgent() async {
     if (_isSaving) return;
     setState(() => _isSaving = true);
@@ -87,8 +97,16 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
                   _buildAllStats(),
                   const SizedBox(height: 24),
                   _buildBiography(),
+                  const SizedBox(height: 24),
+                  _buildAppearance(),
+                  const SizedBox(height: 24),
+                  _buildWork(),
+                  const SizedBox(height: 24),
+                  _buildConnections(),
                   const SizedBox(height: 48),
-                  _buildSaveButton(),
+                  // Only show save button if opened from Search
+                  if (widget.showSaveButton) _buildSaveButton(),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
@@ -98,7 +116,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     );
   }
 
-  // --- SLIVER APP BAR with image or placeholder ---
+  // --- SLIVER APP BAR ---
   Widget _buildSliverAppBar() {
     final imageUrl = widget.agent.image?.url;
     final hasImage = imageUrl != null && imageUrl.trim().isNotEmpty;
@@ -107,7 +125,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
       backgroundColor: Colors.transparent,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios, color: Colors.cyan),
-        onPressed: () {if (!mounted) return;}, // Navigator.pop(context), // TODO cant pop
+        onPressed: () => context.pop(),
       ),
       expandedHeight: 300,
       flexibleSpace: FlexibleSpaceBar(
@@ -122,7 +140,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
           child: Center(
             child: hasImage
                 ? Image.network(
-                    imageUrl,
+                    imageUrl!,
                     height: 200,
                     fit: BoxFit.contain,
                     errorBuilder: (_, __, ___) =>
@@ -137,6 +155,8 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
 
   // --- NAME + ALIGNMENT BADGE ---
   Widget _buildHeader() {
+    final bio = widget.agent.biography;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -145,8 +165,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
           children: [
             Text(
               "AGENT CODENAME",
-              style:
-                  TextStyle(color: _accentColor.withAlpha(180), fontSize: 12),
+              style: TextStyle(color: _accentColor.withAlpha(180), fontSize: 12),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -156,7 +175,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
                 border: Border.all(color: _accentColor.withAlpha(80)),
               ),
               child: Text(
-                widget.agent.biography.alignment.toUpperCase(),
+                bio.alignment.toUpperCase(),
                 style: TextStyle(
                   color: _accentColor,
                   fontSize: 10,
@@ -176,11 +195,22 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        // Full name + alter egos under the main name if available
+        if (_hasContent(bio.fullName))
+          Text(
+            bio.fullName!,
+            style: const TextStyle(color: Colors.grey, fontSize: 14),
+          ),
+        if (_hasContent(bio.alterEgos))
+          Text(
+            bio.alterEgos!,
+            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+          ),
       ],
     );
   }
 
-  // --- ALL POWERSTATS ---
+   // --- POWERSTATS ---
   Widget _buildAllStats() {
     final stats = widget.agent.powerstats;
     return Column(
@@ -193,9 +223,8 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
         _buildStatRow("COMBAT", stats.combat),
       ],
     );
-  }
+  } 
 
-  /// Single stat row. [value] is 0–100 from the API.
   Widget _buildStatRow(String label, int value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
@@ -205,10 +234,8 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                label,
-                style: const TextStyle(color: Colors.grey, fontSize: 10),
-              ),
+              Text(label,
+                  style: const TextStyle(color: Colors.grey, fontSize: 10)),
               Text(
                 '${value.clamp(0, 100)}',
                 style: TextStyle(
@@ -234,28 +261,130 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     );
   }
 
-// TODO build the other sections too like connections and work
-
-  // --- BIOGRAPHY SECTION ---
+  // --- BIOGRAPHY ---
   Widget _buildBiography() {
     final bio = widget.agent.biography;
+
+    // Collect only the rows that have content
+    final rows = <Widget>[];
+
+    if (_hasContent(bio.placeOfBirth)) {
+      rows.add(_buildInfoRow("Place of Birth", bio.placeOfBirth));
+    }
+    if (_hasContent(bio.firstAppearance)) {
+      rows.add(_buildInfoRow("First Appearance", bio.firstAppearance));
+    }
+    if (_hasContent(bio.publisher)) {
+      rows.add(_buildInfoRow("Publisher", bio.publisher));
+    }
+    if (bio.aliases != null && bio.aliases!.isNotEmpty) {
+      rows.add(_buildInfoRow("Aliases", bio.aliases!.join(', ')));
+    }
+
+    // If nothing to show, don't render the section at all
+    if (rows.isEmpty) return const SizedBox.shrink();
+
+    return _buildSection("INTEL", rows);
+  }
+
+  // --- APPEARANCE ---
+  Widget _buildAppearance() {
+    final app = widget.agent.appearance;
+    final rows = <Widget>[];
+
+    if (_hasContent(app.gender)) {
+      rows.add(_buildInfoRow("Gender", app.gender));
+    }
+    if (_hasContent(app.race)) {
+      rows.add(_buildInfoRow("Race", app.race));
+    }
+    if (_hasContent(app.eyeColor)) {
+      rows.add(_buildInfoRow("Eye Color", app.eyeColor!));
+    }
+    if (_hasContent(app.hairColor)) {
+      rows.add(_buildInfoRow("Hair Color", app.hairColor!));
+    }
+    // Height and weight are lists like ["6'2"", "188 cm"]
+    if (app.height.isNotEmpty) {
+      final heightStr = app.height
+          .where((v) => v != null && v.toString().trim().isNotEmpty)
+          .join(' / ');
+      if (heightStr.isNotEmpty) {
+        rows.add(_buildInfoRow("Height", heightStr));
+      }
+    }
+    if (app.weight.isNotEmpty) {
+      final weightStr = app.weight
+          .where((v) => v != null && v.toString().trim().isNotEmpty)
+          .join(' / ');
+      if (weightStr.isNotEmpty) {
+        rows.add(_buildInfoRow("Weight", weightStr));
+      }
+    }
+
+    if (rows.isEmpty) return const SizedBox.shrink();
+
+    return _buildSection("APPEARANCE", rows);
+  }
+
+  // --- WORK ---
+  Widget _buildWork() {
+    final work = widget.agent.work;
+    if (work == null) return const SizedBox.shrink();
+
+    final rows = <Widget>[];
+
+    if (_hasContent(work.occupation)) {
+      rows.add(_buildInfoRow("Occupation", work.occupation!));
+    }
+    if (_hasContent(work.base)) {
+      rows.add(_buildInfoRow("Base", work.base!));
+    }
+
+    if (rows.isEmpty) return const SizedBox.shrink();
+
+    return _buildSection("WORK", rows);
+  }
+
+  // --- CONNECTIONS ---
+  Widget _buildConnections() {
+    final conn = widget.agent.connections;
+    if (conn == null) return const SizedBox.shrink();
+
+    final rows = <Widget>[];
+
+    if (_hasContent(conn.groupAffiliation)) {
+      rows.add(_buildInfoRow("Affiliation", conn.groupAffiliation!));
+    }
+    if (_hasContent(conn.relatives)) {
+      rows.add(_buildInfoRow("Relatives", conn.relatives!));
+    }
+
+    if (rows.isEmpty) return const SizedBox.shrink();
+
+    return _buildSection("CONNECTIONS", rows);
+  }
+
+  // --- SHARED BUILDERS ---
+
+  /// Wraps a list of info rows with a colored section header.
+  Widget _buildSection(String title, List<Widget> rows) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "INTEL",
-          style: TextStyle(color: _accentColor, fontSize: 12, letterSpacing: 2),
+          title,
+          style: TextStyle(
+              color: _accentColor, fontSize: 12, letterSpacing: 2),
         ),
         const SizedBox(height: 12),
-        _buildInfoRow("Place of Birth", bio.placeOfBirth),
-        _buildInfoRow("First Appearance", bio.firstAppearance),
-        _buildInfoRow("Publisher", bio.publisher),
+        ...rows,
       ],
     );
   }
 
+  /// A single label/value row. Used by all sections above.
   Widget _buildInfoRow(String label, String value) {
-    if (value.trim().isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -277,6 +406,11 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
         ],
       ),
     );
+  }
+
+  /// Returns true if a string has actual content (not null, not empty/whitespace).
+  bool _hasContent(String? value) {
+    return value != null && value.trim().isNotEmpty;
   }
 
   // --- SAVE BUTTON — changes based on whether already saved ---

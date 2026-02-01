@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_herodex3000/barrel_files/models.dart';
+import 'package:flutter_herodex3000/barrel_files/screens.dart';
 import 'package:flutter_herodex3000/data/managers/agent_cache.dart';
 import 'package:flutter_herodex3000/data/managers/agent_data_manager.dart';
 import 'package:flutter_herodex3000/presentation/helpers/agent_summary_mapper.dart';
@@ -25,7 +26,7 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _isLoading = false;
 
   /// The full models, kept so we can cache them on tap.
-  List<AgentModel> _fullResults = [];
+  List<AgentModel> _fullAgents = [];
 
   /// The lightweight summaries that the cards actually display.
   List<AgentSummary> _summaries = [];
@@ -34,14 +35,14 @@ class _SearchScreenState extends State<SearchScreen> {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     if (query.trim().isEmpty) {
       setState(() {
-        _fullResults = [];
+        _fullAgents = [];
         _summaries = [];
         _isLoading = false;
       });
       return;
     }
     setState(() => _isLoading = true);
-    _debounce = Timer(const Duration(milliseconds: 600), () {
+    _debounce = Timer(const Duration(milliseconds: 900), () {
       _performSearch(query.trim());
     });
   }
@@ -53,7 +54,7 @@ class _SearchScreenState extends State<SearchScreen> {
       if (!mounted) return;
 
       setState(() {
-        _fullResults = agents;
+        _fullAgents = agents;
         _summaries = AgentSummaryMapper.toSummaryList(agents);
         _isLoading = false;
       });
@@ -61,7 +62,7 @@ class _SearchScreenState extends State<SearchScreen> {
       debugPrint('❌ SearchScreen._performSearch: $e\n$st');
       if (!mounted) return;
       setState(() {
-        _fullResults = [];
+        _fullAgents = [];
         _summaries = [];
         _isLoading = false;
       });
@@ -168,9 +169,13 @@ class _SearchScreenState extends State<SearchScreen> {
           agent: summary,
           layout: AgentCardLayout.grid,
           onTap: () {
-            // Put the full model in cache, then navigate by ID
-            AgentCache.put(_fullResults[index]);
-            context.go('/details/${summary.id}');
+             // Cache the full model, then navigate
+            AgentCache.put(_fullAgents[index]);
+            Navigator.push(
+              context, 
+            MaterialPageRoute(
+              builder: (context) => AgentDetailsScreen(agent: _fullAgents[index], showSaveButton: true,)));
+            //context.go('/details/${summary.id}');
           },
         );
       },
