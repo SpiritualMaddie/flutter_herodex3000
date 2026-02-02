@@ -41,7 +41,7 @@ class _RosterScreenState extends State<RosterScreen> {
  String _searchQuery = "";
 
   // ViewModel summaries for the cards. // TODO save the local list in a DataManager and focus on SOC
-  List<AgentSummary> _summaries = [];
+ // List<AgentSummary> _summaries = [];
 
     @override
   void dispose() {
@@ -99,7 +99,7 @@ class _RosterScreenState extends State<RosterScreen> {
 
       setState(() {
         _allAgents = agents;
-        _summaries = AgentSummaryMapper.toSummaryList(agents);
+        //_summaries = AgentSummaryMapper.toSummaryList(agents);
         _isLoading = false;
       });
     } catch (e, st) {

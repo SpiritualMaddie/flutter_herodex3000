@@ -50,6 +50,9 @@ dependencies:
   http: ^1.6.0
   flutter_dotenv: ^6.0.0
 
+  # iOS ATT
+  app_tracking_transparency: ^2.0.6+1
+
 
 dev_dependencies:
   flutter_test:

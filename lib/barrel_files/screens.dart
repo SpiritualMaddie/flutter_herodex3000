@@ -3,7 +3,7 @@ export 'package:flutter_herodex3000/features/roster/screens/roster_screen.dart';
 export 'package:flutter_herodex3000/features/search/screens/search_screen.dart';
 export 'package:flutter_herodex3000/features/home/screens/home_screen.dart';
 export 'package:flutter_herodex3000/presentation/screens/login_screen.dart';
-export 'package:flutter_herodex3000/presentation/screens/onboarding_screen.dart';
+export 'package:flutter_herodex3000/features/onboarding/screens/onboarding_screen.dart';
 export 'package:flutter_herodex3000/presentation/screens/settings_screen.dart';
 export 'package:flutter_herodex3000/presentation/screens/splash_screen.dart';
 export 'package:flutter_herodex3000/presentation/screens/error_screen.dart';
