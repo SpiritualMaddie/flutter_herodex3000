@@ -499,7 +499,7 @@ class _OnboardingPageLayout extends StatelessWidget {
           // Bottom button
           Column(
             children: [
-              isLastPage ? _buildEstablishButton() : _buildNextButton(),
+              isLastPage ? _buildEstablishButton() : _buildNextButton(context),
               const SizedBox(height: 8),
             ],
           ),
@@ -508,13 +508,13 @@ class _OnboardingPageLayout extends StatelessWidget {
     );
   }
 
-  Widget _buildNextButton() {
+  Widget _buildNextButton(BuildContext context) {
     return Align(
       alignment: Alignment.centerRight,
       child: ElevatedButton(
         onPressed: onNext,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.cyan,
+          backgroundColor: Theme.of(context).colorScheme.primary,
           foregroundColor: Colors.black,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
           shape: RoundedRectangleBorder(

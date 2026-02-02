@@ -15,13 +15,14 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsManager>();
 
-    return Scaffold( // TODO change to SectionHeader
-      backgroundColor: const Color(0xFF0A111A),
+    return Scaffold(
+      // TODO change to SectionHeader
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
             // App bar as sliver
-            const SliverAppBar(
+            SliverAppBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
               pinned: false,
@@ -30,7 +31,7 @@ class SettingsScreen extends StatelessWidget {
                 style: TextStyle(
                   letterSpacing: 2,
                   fontSize: 22,
-                  color: Colors.cyan,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ),
@@ -42,15 +43,6 @@ class SettingsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Theme picker section
-                    const SectionHeader(title: "APP ALIGNMENT", subtitle: "Manage app theme",),
-                    ThemePicker(
-                      onThemeSelected: (theme) {
-                        context.read<ThemeCubit>().setTheme(theme);
-                        settings.saveCurrentAppTheme(value: theme.name);
-                      },
-                    ),
-
                     // Data protocols section
                     const SectionHeader(
                       title: "DATA PROTOCOLS",
@@ -59,23 +51,29 @@ class SettingsScreen extends StatelessWidget {
                     _ProtocolTile(
                       icon: Icons.analytics,
                       title: "Analytics Tracking",
-                      subtitle: "STATUS: ${settings.analyticsEnabled ? 'AUTHORIZED' : 'DISABLED'}",
+                      subtitle:
+                          "STATUS: ${settings.analyticsEnabled ? 'AUTHORIZED' : 'DISABLED'}",
                       value: settings.analyticsEnabled,
-                      onChanged: (val) => settings.saveAnalyticsPreferences(value: val),
+                      onChanged: (val) =>
+                          settings.saveAnalyticsPreferences(value: val),
                     ),
                     _ProtocolTile(
                       icon: Icons.bug_report,
                       title: "Crash Tracking",
-                      subtitle: "STATUS: ${settings.crashlyticsEnabled ? 'AUTHORIZED' : 'DISABLED'}",
+                      subtitle:
+                          "STATUS: ${settings.crashlyticsEnabled ? 'AUTHORIZED' : 'DISABLED'}",
                       value: settings.crashlyticsEnabled,
-                      onChanged: (val) => settings.saveCrashAnalyticsPreferences(value: val),
+                      onChanged: (val) =>
+                          settings.saveCrashAnalyticsPreferences(value: val),
                     ),
                     _ProtocolTile(
                       icon: Icons.location_on,
                       title: "Location Tracking",
-                      subtitle: "STATUS: ${settings.locationEnabled ? 'AUTHORIZED' : 'DISABLED'}",
+                      subtitle:
+                          "STATUS: ${settings.locationEnabled ? 'AUTHORIZED' : 'DISABLED'}",
                       value: settings.locationEnabled,
-                      onChanged: (val) => settings.saveLocationAnalyticsPreferences(value: val),
+                      onChanged: (val) =>
+                          settings.saveLocationAnalyticsPreferences(value: val),
                     ),
 
                     // iOS ATT if applicable
@@ -83,7 +81,8 @@ class SettingsScreen extends StatelessWidget {
                       _ProtocolTile(
                         icon: Icons.privacy_tip,
                         title: "App Tracking (iOS)",
-                        subtitle: "STATUS: ${settings.iosAttEnabled ? 'AUTHORIZED' : 'DISABLED'}",
+                        subtitle:
+                            "STATUS: ${settings.iosAttEnabled ? 'AUTHORIZED' : 'DISABLED'}",
                         value: settings.iosAttEnabled,
                         onChanged: (val) {
                           // Can't change ATT programmatically after initial request
@@ -97,17 +96,51 @@ class SettingsScreen extends StatelessWidget {
                     InfoCard(
                       child: Column(
                         children: [
-                          _ManifestRow(label: "APPLICATION", value: "HERODEX 3000"),
-                          const Divider(color: Color(0xFF1A2E3D), height: 24),
-                          _ManifestRow(label: "VERSION", value: "v3.0.1-STABLE"),
-                          const Divider(color: Color(0xFF1A2E3D), height: 24),
-                          _ManifestRow(label: "CREATOR", value: "SPIRITUALMADDIE"),
-                          const Divider(color: Color(0xFF1A2E3D), height: 24),
+                          _ManifestRow(
+                            label: "APPLICATION",
+                            value: "HERODEX 3000",
+                          ),
+                          Divider(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withAlpha(40),
+                            height: 24,
+                          ),
+                          _ManifestRow(
+                            label: "VERSION",
+                            value: "v3.0.1-STABLE",
+                          ),
+                          Divider(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withAlpha(40),
+                            height: 24,
+                          ),
+                          _ManifestRow(
+                            label: "CREATOR",
+                            value: "SPIRITUALMADDIE",
+                          ),
+                          Divider(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withAlpha(40),
+                            height: 24,
+                          ),
                           _ManifestRow(label: "YEAR", value: "2025 / 2026"),
                         ],
                       ),
                     ),
-
+                    // Theme picker section
+                    const SectionHeader(
+                      title: "APP ALIGNMENT",
+                      subtitle: "Manage app theme",
+                    ),
+                    ThemePicker(
+                      onThemeSelected: (theme) {
+                        context.read<ThemeCubit>().setTheme(theme);
+                        settings.saveCurrentAppTheme(value: theme.name);
+                      },
+                    ),
                     const SizedBox(height: 32),
 
                     // Logout button
@@ -129,19 +162,24 @@ class SettingsScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF121F2B),
-        title: const Text(
+        title: Text(
           "App Tracking",
-          style: TextStyle(color: Colors.cyan),
+          style: TextStyle(color: Theme.of(context).colorScheme.primary),
         ),
-        content: const Text(
+        content: Text(
           "To change App Tracking permissions, please go to:\n\n"
           "Settings > Privacy & Security > Tracking > HeroDex 3000",
-          style: TextStyle(color: Colors.white70),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary.withAlpha(20),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("OK", style: TextStyle(color: Colors.cyan)),
+            child: Text(
+              "OK",
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            ),
           ),
         ],
       ),
@@ -176,10 +214,10 @@ class _ProtocolTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF0A111A),
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: Colors.cyan),
+            child: Icon(icon, color: Theme.of(context).colorScheme.primary),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -188,14 +226,17 @@ class _ProtocolTile extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
                   subtitle,
-                  style: const TextStyle(color: Colors.grey, fontSize: 10),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 10,
+                  ),
                 ),
               ],
             ),
@@ -203,9 +244,13 @@ class _ProtocolTile extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: Colors.cyan,
-            activeTrackColor: Colors.cyan.withAlpha(60),
-            inactiveTrackColor: const Color(0xFF1A2E3D),
+            activeThumbColor: Theme.of(context).colorScheme.primary,
+            activeTrackColor: Theme.of(
+              context,
+            ).colorScheme.primary.withAlpha(60),
+            inactiveTrackColor: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest,
           ),
         ],
       ),
@@ -230,15 +275,15 @@ class _ManifestRow extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.grey[500],
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             fontSize: 10,
             fontWeight: FontWeight.bold,
           ),
         ),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 11,
             fontFamily: 'monospace',
           ),
@@ -260,19 +305,26 @@ class _LogoutButton extends StatelessWidget {
       },
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(double.infinity, 56),
-        side: const BorderSide(color: Colors.redAccent, width: 1),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.secondary,
+          width: 1,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: Colors.redAccent.withAlpha(10),
+        backgroundColor: Theme.of(context).colorScheme.secondary.withAlpha(10),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Icon(Icons.logout, color: Colors.redAccent, size: 20),
+        children: [
+          Icon(
+            Icons.logout,
+            color: Theme.of(context).colorScheme.primary,
+            size: 20,
+          ),
           SizedBox(width: 12),
           Text(
             "LOGOUT",
             style: TextStyle(
-              color: Colors.redAccent,
+              color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.5,
             ),

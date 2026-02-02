@@ -27,6 +27,9 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   final SavedAgentsRepository _savedAgentsRepo = SavedAgentsRepository();
   bool _isSaved = false;
   bool _isSaving = false;
+  String goodAlignment = "hero"; // TODO
+  String badAlignment = "villian";
+  String neutralAlignment = "neutral";
 
   bool get _isHero =>
       widget.agent.biography.alignment.trim().toLowerCase() == 'good';

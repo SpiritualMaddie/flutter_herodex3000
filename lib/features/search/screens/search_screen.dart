@@ -43,7 +43,7 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
     setState(() => _isLoading = true);
-    _debounce = Timer(const Duration(milliseconds: 900), () {
+    _debounce = Timer(const Duration(milliseconds: 1200), () {
       _performSearch(query.trim());
     });
   }
@@ -87,11 +87,11 @@ class _SearchScreenState extends State<SearchScreen> {
           controller: _searchController,
           onChanged: _onSearchChanged,
           style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: "SEARCH FOR FELLOW AGENTS...",
-            hintStyle: TextStyle(color: Colors.cyan, fontSize: 12),
+            hintStyle: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 12),
             border: InputBorder.none,
-            prefixIcon: Icon(Icons.search, color: Colors.cyan),
+            prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
           ),
         ),
       ),
@@ -109,11 +109,11 @@ class _SearchScreenState extends State<SearchScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.radar, size: 150, color: Colors.cyan.withAlpha(20)),
+          Icon(Icons.radar, size: 150, color: Theme.of(context).colorScheme.primary.withAlpha(20)),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             "AWAITING INPUT",
-            style: TextStyle(color: Colors.cyan, letterSpacing: 2, fontSize: 17),
+            style: TextStyle(color: Theme.of(context).colorScheme.primary, letterSpacing: 2, fontSize: 17),
           ),
           const Text(
             "READY TO SEARCH",

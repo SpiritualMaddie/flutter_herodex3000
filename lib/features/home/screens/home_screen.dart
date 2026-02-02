@@ -53,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A111A),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(top: 56, bottom: 24, left: 16, right: 16),
         child: Column(
@@ -155,7 +155,7 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF121F2B),
+        color: Theme.of(context).colorScheme.primary.withAlpha(20),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: accentColor.withAlpha(24)),
       ),
@@ -179,11 +179,11 @@ class _StatCard extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 10,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 11,
                     letterSpacing: 1.2,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: .bold,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -224,9 +224,9 @@ class _FightingPowerCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF121F2B),
+        color: Theme.of(context).colorScheme.primary.withAlpha(20),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.cyan.withAlpha(24)),
+        border: Border.all(color: Theme.of(context).colorScheme.primary.withAlpha(20)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,10 +235,10 @@ class _FightingPowerCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 "FIGHTING POWER",
                 style: TextStyle(
-                  color: Colors.grey,
+                  color: Theme.of(context).colorScheme.primary,
                   fontSize: 10,
                   letterSpacing: 1.2,
                   fontWeight: FontWeight.bold,
@@ -247,13 +247,13 @@ class _FightingPowerCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.cyan.withAlpha(20),
+                  color: Theme.of(context).colorScheme.primary.withAlpha(20),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text(
+                child: Text(
                   "COMBINED",
                   style: TextStyle(
-                    color: Colors.cyan,
+                    color: Theme.of(context).colorScheme.primary,
                     fontSize: 9,
                     letterSpacing: 1,
                     fontWeight: FontWeight.bold,
@@ -267,8 +267,8 @@ class _FightingPowerCard extends StatelessWidget {
           // Big total
           Text(
             isLoading ? "—" : (totalStrength + totalPower).toString(),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 36,
               fontWeight: FontWeight.w900,
             ),
@@ -282,8 +282,8 @@ class _FightingPowerCard extends StatelessWidget {
                 flex: isLoading ? 1 : (totalStrength + 1),
                 child: Container(
                   height: 6,
-                  decoration: const BoxDecoration(
-                    color: Colors.cyan,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(3),
                       bottomLeft: Radius.circular(3),
@@ -296,7 +296,7 @@ class _FightingPowerCard extends StatelessWidget {
                 child: Container(
                   height: 6,
                   decoration: BoxDecoration(
-                    color: Colors.cyan.withAlpha(120),
+                    color: Theme.of(context).colorScheme.primary.withAlpha(120),
                     borderRadius: const BorderRadius.only(
                       topRight: Radius.circular(3),
                       bottomRight: Radius.circular(3),
@@ -312,8 +312,8 @@ class _FightingPowerCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _SubStat("STRENGTH", totalStrength, Colors.cyan, isLoading),
-              _SubStat("POWER", totalPower, Colors.cyan.withAlpha(180), isLoading),
+              _SubStat("STRENGTH", totalStrength, Theme.of(context).colorScheme.primary, isLoading),
+              _SubStat("POWER", totalPower, Theme.of(context).colorScheme.primary.withAlpha(180), isLoading),
             ],
           ),
         ],
@@ -343,14 +343,15 @@ class _SubStat extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 10)),
+        Text(label, style: TextStyle(
+          color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 10, letterSpacing: 0.9, fontWeight: .bold)),
         const SizedBox(width: 8),
         Text(
           isLoading ? "—" : value.toString(),
           style: TextStyle(
             color: color,
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
+            fontSize: 12,
+            fontWeight: .bold,
           ),
         ),
       ],

@@ -26,9 +26,9 @@ class InfoCard extends StatelessWidget {
       margin: margin,
       padding: padding,
       decoration: BoxDecoration(
-        color: const Color(0xFF121F2B),
+        color: Theme.of(context).colorScheme.primary.withAlpha(20),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF1A2E3D)),
+        border: Border.all(color: Theme.of(context).colorScheme.primary.withAlpha(20)),
       ),
       child: child ??
           Column(
@@ -38,13 +38,13 @@ class InfoCard extends StatelessWidget {
                 Row(
                   children: [
                     if (icon != null) ...[
-                      Icon(icon, color: Colors.cyan, size: 16),
+                      Icon(icon, color: Theme.of(context).colorScheme.primary, size: 16),
                       const SizedBox(width: 8),
                     ],
                     Text(
                       title!,
-                      style: const TextStyle(
-                        color: Colors.cyan,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.8,
@@ -56,8 +56,8 @@ class InfoCard extends StatelessWidget {
               if (body != null)
                 Text(
                   body!,
-                  style: const TextStyle(
-                    color: Colors.grey,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 13,
                     height: 1.6,
                   ),

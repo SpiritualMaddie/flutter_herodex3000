@@ -28,9 +28,9 @@ class SectionHeader extends StatelessWidget { // TODO colors by theme
           Text(
             title,
             style: TextStyle(
-              color: Colors.cyan,
+              color: Theme.of(context).colorScheme.primary,
               fontSize: titleFontSize,
-              fontWeight: FontWeight.bold,
+              fontWeight: .bold,
               letterSpacing: 1.5,
             ),
           ),
@@ -39,7 +39,7 @@ class SectionHeader extends StatelessWidget { // TODO colors by theme
             Text(
               subtitle!,
               style: TextStyle(
-                color: Colors.grey[500],
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: subtitleFontSize,
                 letterSpacing: 0.5,
               ),

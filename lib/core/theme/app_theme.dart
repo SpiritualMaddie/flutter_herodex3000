@@ -3,6 +3,16 @@ import 'package:flutter/material.dart';
 /// Defines the three alignment-based themes for HeroDex 3000.
 /// Each has a distinct color scheme to match hero/villain/neutral aesthetics.
 class AppThemes {
+
+  // ========================================================================
+  // TEXT THEME
+  // ========================================================================
+    static const TextTheme _textTheme = TextTheme(
+    headlineMedium: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.5),
+    bodyLarge: TextStyle(fontSize: 16, letterSpacing: 0.5),
+    labelLarge: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
+  );
+
   // ========================================================================
   // HERO THEME (Cyan/Blue)
   // ========================================================================
@@ -17,6 +27,8 @@ class AppThemes {
       secondary: const Color.fromARGB(255, 0, 151, 167),
       surface: const Color.fromARGB(255, 10, 17, 26),
       surfaceContainerHighest: const Color.fromARGB(255, 18, 31, 43),
+      onSurfaceVariant: const Color.fromARGB(255, 253, 253, 253),
+      onSurface: const Color.fromARGB(255, 255, 255, 255),
     ),
     scaffoldBackgroundColor: const Color.fromARGB(255, 10, 17, 26),
     cardColor: const Color.fromARGB(255, 18, 31, 43),

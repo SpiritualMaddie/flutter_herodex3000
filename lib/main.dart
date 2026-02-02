@@ -112,14 +112,14 @@ class _HeroDexState extends State<HeroDex> {
               builder: (context, state) => const HomeScreen(),
             ),
             GoRoute(
-              path: "/search",
-              name: "Search",
-              builder: (context, state) => const SearchScreen(),
-            ),
-            GoRoute(
               path: "/roster",
               name: "Roster",
               builder: (context, state) => const RosterScreen(),
+            ),
+            GoRoute(
+              path: "/search",
+              name: "Search",
+              builder: (context, state) => const SearchScreen(),
             ),
             GoRoute(
               path: "/settings",
@@ -190,8 +190,6 @@ class _HeroDexState extends State<HeroDex> {
           theme: ThemeCubit.getThemeData(
             currentTheme, // maps enum to ThemeData
           ), 
-          darkTheme: null, // Not needed — theme is already dark or light
-          themeMode: ThemeMode.light, // Let the theme handle its own brightness
           routerConfig: _router,
         );
       },
@@ -217,6 +215,7 @@ class RootNavigation extends StatelessWidget {
     return Scaffold(
       body: child,
       bottomNavigationBar: NavigationBar(
+        backgroundColor: Theme.of(context).colorScheme.surface,
         selectedIndex: currentIndex,
         onDestinationSelected: (index) {
           switch (index) {
@@ -224,10 +223,10 @@ class RootNavigation extends StatelessWidget {
               context.go("/home");
               break;
             case 1:
-              context.go("/search");
+              context.go("/roster");
               break;
             case 2:
-              context.go("/roster");
+              context.go("/search");
               break;
             case 3:
               context.go("/settings");
@@ -236,8 +235,8 @@ class RootNavigation extends StatelessWidget {
         },
         destinations: [
           NavigationDestination(icon: Icon(Icons.home), label: "HUB"),
+          NavigationDestination(icon: Icon(Icons.shield), label: "ROSTER"),
           NavigationDestination(icon: Icon(Icons.search), label: "SEARCH"),
-          NavigationDestination(icon: Icon(Icons.shield), label: "AGENTS"),
           NavigationDestination(icon: Icon(Icons.settings), label: "SETTINGS"),
         ],
       ),
