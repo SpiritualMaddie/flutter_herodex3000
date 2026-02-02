@@ -49,5 +49,7 @@
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+		<key>NSUserTrackingUsageDescription</key>
+		<string>We use tracking to help improve HeroDex 3000 and provide you with relevant information about the war against the invasion.</string>
 	</dict>
 </plist>
