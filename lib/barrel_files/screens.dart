@@ -1,7 +1,9 @@
-export 'package:flutter_herodex3000/screens/detail_screen.dart';
-export 'package:flutter_herodex3000/screens/roster_screen.dart';
-export 'package:flutter_herodex3000/screens/home_screen.dart';
-export 'package:flutter_herodex3000/screens/login_screen2.dart';
-export 'package:flutter_herodex3000/screens/search_screen.dart';
-export 'package:flutter_herodex3000/screens/settings_screen.dart';
-export 'package:flutter_herodex3000/screens/splash_screen.dart';
+export 'package:flutter_herodex3000/features/agent_details/screens/agent_details_screen.dart';
+export 'package:flutter_herodex3000/features/roster/screens/roster_screen.dart';
+export 'package:flutter_herodex3000/features/search/screens/search_screen.dart';
+export 'package:flutter_herodex3000/features/home/screens/home_screen.dart';
+export 'package:flutter_herodex3000/presentation/screens/login_screen.dart';
+export 'package:flutter_herodex3000/features/onboarding/screens/onboarding_screen.dart';
+export 'package:flutter_herodex3000/presentation/screens/settings_screen.dart';
+export 'package:flutter_herodex3000/presentation/screens/splash_screen.dart';
+export 'package:flutter_herodex3000/presentation/screens/error_screen.dart';

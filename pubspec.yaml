@@ -47,6 +47,11 @@ dependencies:
   shimmer: ^3.0.0
   shared_preferences: ^2.5.4
   provider: ^6.1.5+1
+  http: ^1.6.0
+  flutter_dotenv: ^6.0.0
+
+  # iOS ATT
+  app_tracking_transparency: ^2.0.6+1
 
 
 dev_dependencies:
@@ -149,6 +154,7 @@ flutter:
   assets:
     - assets/splash_screen/splash_screen.png
     - assets/icons/app_icon.png
+    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
