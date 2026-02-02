@@ -9,11 +9,14 @@ class SettingsManager extends ChangeNotifier {
     required bool analytics,
     required bool crashlytics,
     required bool location,
-    bool? iosAtt, // TODO does it work?
+    required String appThemeChosen,
+    bool iosAtt = false, // TODO does it work? set conditions
   }) async {
     await _prefs.setAnalyticsToApproved(analytics);
     await _prefs.setCrashlyticsToApproved(crashlytics);
     await _prefs.setLocationAnalyticsToApproved(location);
+    await _prefs.setAppTheme(appThemeChosen);
+    await _prefs.setIosAttToApproved(iosAtt);
     await _prefs.setOnboardingToCompleted(true);
     notifyListeners();
   }
@@ -47,6 +50,7 @@ class SettingsManager extends ChangeNotifier {
   bool get crashlyticsEnabled => _prefs.crashlyticsIsApproved;
   bool get locationEnabled => _prefs.locationAnalyticsIsApproved;
   bool get onboardingCompleted => _prefs.onboardingIsCompleted;
+  bool get iosAttEnabled => _prefs.iosAttIsApproved;
   String get appTheme => _prefs.currentAppTheme;
   //bool get splashShown => _prefs.splashShown;
 }

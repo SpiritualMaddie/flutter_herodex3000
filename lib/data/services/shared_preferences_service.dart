@@ -66,7 +66,7 @@ class SharedPreferencesService {
   Future<void> setAppTheme(String value) =>
       _prefs.setString("app_theme", value);
 
-  String get currentAppTheme => _prefs.getString("app_theme") ?? "dark";
+  String get currentAppTheme => _prefs.getString("app_theme") ?? "heroDark";
 
   // --- SET & GET - Splash Screen ---
   // Future<void> setSplashShown(bool value) =>

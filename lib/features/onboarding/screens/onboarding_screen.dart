@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_herodex3000/core/theme/cubit/theme_cubit.dart';
 import 'package:flutter_herodex3000/data/managers/settings_manager.dart';
 import 'package:flutter_herodex3000/presentation/widgets/section_header.dart';
-import 'package:flutter_herodex3000/presentation/widgets/theme_toggle_buttons.dart';
+import 'package:flutter_herodex3000/presentation/widgets/theme_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/foundation.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
@@ -24,34 +25,36 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   bool _crashlyticsEnabled = true;
   bool _locationEnabled = false;
   bool _attEnabled = false;
+  String _themePicked = "heroDark";
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
 
     // Check ATT status on iOS only
-    if(defaultTargetPlatform == TargetPlatform.iOS){
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _checkATTStatus());
     }
   }
 
   // Check existing ATT status whithout prompting
-  Future<void> _checkATTStatus() async{
+  Future<void> _checkATTStatus() async {
     final status = await AppTrackingTransparency.trackingAuthorizationStatus;
-    if(!mounted) return;
+    if (!mounted) return;
     setState(() {
       _attEnabled = status == TrackingStatus.authorized;
-    },);
+    });
   }
 
   /// Request ATT permission (shows Apple's system dialog if not determined)
   Future<void> _requestATT() async {
-    final currentStatus = await AppTrackingTransparency.trackingAuthorizationStatus;
-    
+    final currentStatus =
+        await AppTrackingTransparency.trackingAuthorizationStatus;
+
     if (currentStatus == TrackingStatus.notDetermined) {
-      
       // Request Apple's system dialog
-      final newStatus = await AppTrackingTransparency.requestTrackingAuthorization();
+      final newStatus =
+          await AppTrackingTransparency.requestTrackingAuthorization();
       if (!mounted) return;
       setState(() {
         _attEnabled = newStatus == TrackingStatus.authorized;
@@ -97,7 +100,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Progress bar lives outside the PageView so it stays fixed at top
+            // Progress bar stays fixed at top
             Padding(
               padding: const EdgeInsets.only(
                 left: 24,
@@ -110,7 +113,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 totalPages: _totalPages,
               ),
             ),
-            // Pages scroll under it
+            // Pages scroll under it, wrapped in Expanded + LayoutBuilder
             Expanded(
               child: PageView(
                 controller: _pageController,
@@ -119,9 +122,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   setState(() => _currentPage = index);
                 },
                 children: [
-                  _buildStoryPage(),
-                  _buildHowToUsePage(),
-                  _buildPermissionsPage(),
+                  _buildScrollablePage(_buildStoryPage()),
+                  _buildScrollablePage(_buildHowToUsePage()),
+                  _buildScrollablePage(_buildPermissionsPage()),
                 ],
               ),
             ),
@@ -159,20 +162,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           _HowToRow(
             icon: Icons.home,
             text:
-                "The HUB is the status overview of your roster and the invation so far",
+                "The HUB is the status overview of your roster and the invasion so far",
           ),
           _HowToRow(
             icon: Icons.search,
             text:
-                "Search to discover new agent allies & build your roster of heroes and villains",
+                "SEARCH to discover new agent allies & build your roster of heroes and villains",
           ),
           _HowToRow(
             icon: Icons.shield,
-            text: "View and operate your roster of agents",
+            text: "View and operate your ROSTER of agents",
           ),
           _HowToRow(
             icon: Icons.settings,
-            text: "Settings for customizing your experience",
+            text: "SETTINGS for customizing your experience",
           ),
           // _HowToRow(icon: Icons.people, text: "Track heroes and villains"),
           // _HowToRow(icon: Icons.bolt, text: "Manage operations in real time"),
@@ -183,8 +186,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   // --- PAGE 3: Permissions ---
   Widget _buildPermissionsPage() {
+    final settings = context.watch<SettingsManager>();
     return _OnboardingPageLayout(
-      title: "ESTABLISH\nPROTOCOLS",
+      title: "ESTABLISH PROTOCOLS",
       body:
           "Configure your data protocols to begin operations. "
           "You can change these at any time in Settings.",
@@ -214,8 +218,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           // ATT - iOS only
           if (defaultTargetPlatform == TargetPlatform.iOS) _buildATTTile(),
-          SectionHeader(title: "WHATS YOUR ALIGNMENT?", subtitle: "(choose app theme)",),
-          ThemeToggleButtons(),
+          SectionHeader(
+            title: "WHATS YOUR ALIGNMENT?",
+            subtitle: "(choose app theme)",
+            titleFontSize: 16,
+            subtitleFontSize: 12,
+          ),
+          ThemePicker(onThemeSelected: (theme) {
+                        context.read<ThemeCubit>().setTheme(theme);
+                        settings.saveCurrentAppTheme(value: theme.name);
+                      },),
         ],
       ),
     );
@@ -275,6 +287,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+
   Widget _buildPermissionTile(
     String title,
     String desc,
@@ -332,10 +345,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       crashlytics: _crashlyticsEnabled,
       location: _locationEnabled,
       iosAtt: _attEnabled,
+      appThemeChosen: _themePicked
     );
 
     if (!mounted) return;
     context.go("/home");
+  }
+
+  /// Wraps page content in SingleChildScrollView with height constraints
+  Widget _buildScrollablePage(Widget child) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: child,
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -409,60 +437,72 @@ class _OnboardingPageLayout extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: .spaceBetween,
         children: [
-          // Back button row — invisible placeholder on first page to keep layout stable
-          SizedBox(
-            height: 40,
-            child: onBack != null
-                ? Align(
-                    alignment: Alignment.topLeft,
-                    child: IconButton(
-                      onPressed: onBack,
-                      icon: const Icon(
-                        Icons.arrow_back_ios,
-                        color: Colors.white,
-                      ),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  )
-                : const SizedBox.shrink(),
-          ),
-          const SizedBox(height: 8),
-
-          // Title
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.cyan,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1,
-              height: 1.2,
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Body — either plain text or a custom widget
-          if (body != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Text(
-                body!,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 15,
-                  height: 1.6,
-                ),
+          Column(
+            children: [
+              // Top content
+              // Back button row — invisible placeholder on first page to keep layout stable
+              SizedBox(
+                height: 40,
+                child: onBack != null
+                    ? Align(
+                        alignment: Alignment.topLeft,
+                        child: IconButton(
+                          onPressed: onBack,
+                          icon: const Icon(
+                            Icons.arrow_back_ios,
+                            color: Colors.white,
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
               ),
-            ),
-          if (bodyWidget != null) bodyWidget!,
+              const SizedBox(height: 8),
+              // Title
+              Column(
+                crossAxisAlignment: .start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.cyan,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
 
-          const Spacer(),
+              // Body — either plain text or a custom widget
+              if (body != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Text(
+                    body!,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 15,
+                      height: 1.6,
+                    ),
+                  ),
+                ),
+              if (bodyWidget != null) bodyWidget!,
+            ],
+          ),
 
           // Bottom button
-          isLastPage ? _buildEstablishButton() : _buildNextButton(),
-          const SizedBox(height: 8),
+          Column(
+            children: [
+              isLastPage ? _buildEstablishButton() : _buildNextButton(),
+              const SizedBox(height: 8),
+            ],
+          ),
         ],
       ),
     );

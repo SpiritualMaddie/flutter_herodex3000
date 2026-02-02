@@ -17,8 +17,8 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_herodex3000/barrel_files/screens.dart';
 
-AppTheme _themeFromString(String s) =>
-    s.toLowerCase() == 'dark' ? AppTheme.dark : AppTheme.light;
+// AppTheme _themeFromString(String s) =>
+//     s.toLowerCase() == 'dark' ? AppTheme.dark : AppTheme.light;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,8 +49,7 @@ Future<void> main() async {
 
         BlocProvider<ThemeCubit>(
           create: (context) {
-            final settings = context.read<SettingsManager>();
-            return ThemeCubit(initial: _themeFromString(settings.appTheme));
+            return ThemeCubit();
           },
         ),
       ],
@@ -75,7 +74,7 @@ class _HeroDexState extends State<HeroDex> {
     _router = _createRouter();
   }
 
-  GoRouter _createRouter(){
+  GoRouter _createRouter() {
     final authCubit = context.read<AuthCubit>();
     final settingsManager = context.read<SettingsManager>();
     final refresh = AppRouterRefresh(authCubit, settingsManager);
@@ -139,7 +138,7 @@ class _HeroDexState extends State<HeroDex> {
             final agent = AgentCache.get(id);
 
             // If agent not found (shouldnt happen, but handles risk for crash)
-            if(agent == null){
+            if (agent == null) {
               return const ErrorScreen(message: "Agent not found");
             }
 
@@ -161,7 +160,8 @@ class _HeroDexState extends State<HeroDex> {
             return "/onboarding";
           }
           // if authenticated, and completed onboarding, go to home
-          if (onboardingCompleted && (goingToLogin || atSplash || goingToOnboarding)) {
+          if (onboardingCompleted &&
+              (goingToLogin || atSplash || goingToOnboarding)) {
             return "/home";
           }
           return null;
@@ -182,17 +182,16 @@ class _HeroDexState extends State<HeroDex> {
 
   @override
   Widget build(BuildContext context) {
-
     return BlocBuilder<ThemeCubit, AppTheme>(
-      builder: (context, themeState) {
+      builder: (context, currentTheme) {
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,
           title: "HeroDex3000",
-          theme: AppThemes.light,
-          darkTheme: AppThemes.dark,
-          themeMode: themeState == AppTheme.dark
-              ? ThemeMode.dark
-              : ThemeMode.light,
+          theme: ThemeCubit.getThemeData(
+            currentTheme, // maps enum to ThemeData
+          ), 
+          darkTheme: null, // Not needed — theme is already dark or light
+          themeMode: ThemeMode.light, // Let the theme handle its own brightness
           routerConfig: _router,
         );
       },
