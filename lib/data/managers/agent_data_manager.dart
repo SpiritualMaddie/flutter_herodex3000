@@ -114,44 +114,4 @@ class AgentDataManager implements IAgentDataManager{
       return null;
     }
   }
-  
-    // Function to load heroes/villians from the local json file to the _agentsList
-  // @override
-  // Future<int> loadHeroesFromJsonToHeroesList() async {
-  //   try {
-  //     final parsedJsonHeroes = await localFileRepo.readLocalHeroFile();
-
-  //     _agentsList
-  //       ..clear()
-  //       ..addAll(parsedJsonHeroes);
-
-  //     return _agentsList.length;
-  //   } catch (e) {
-  //     throw Exception("❌ Misslyckades att ladda hjältar och skurkar: $e");
-  //   }
-  // }
-
-  
-  // Function to update the local json file with the local list _agentsList
-  // @override
-  // Future<void> updateJsonWithHeroesList() async {
-  //   try {
-  //     await localFileRepo.updateLocalHeroFile(_agentsList);
-  //   } catch (e) {
-  //     throw Exception("❌ Misslyckades att spara hjältar och skurkar: $e");
-  //   }
-  // }
-
-
-  // Update agent prepered function
-  // @override
-  // Future<AgentModel> updateHero(AgentModel updatedHero) async {
-  //   final index = _agentsList.indexWhere((h) => h.heroId == updatedHero.heroId);
-  //   if (index == -1) {
-  //     throw Exception("Hero with ID ${updatedHero.heroId} not found");
-  //   }
-  //   _agentsList[index] = updatedHero;
-  //   return updatedHero;
-  // }
-
 }
