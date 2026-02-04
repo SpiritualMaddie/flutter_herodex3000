@@ -14,7 +14,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     
-    Timer(const Duration(seconds: 10), () {
+    Timer(const Duration(seconds: 20), () {
       if (mounted) {
         //context.go("/login");
       }
@@ -38,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen> {
             children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(55, 10, 55, 10),
-                  child: const LinearProgressIndicator(color: Colors.cyan,),
+                  child: LinearProgressIndicator(color: Theme.of(context).colorScheme.primary,),
                 ),
                 Text("Loading..."),
                 SizedBox(height: 50,)

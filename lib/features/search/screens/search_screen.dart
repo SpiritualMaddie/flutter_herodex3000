@@ -43,7 +43,7 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
     setState(() => _isLoading = true);
-    _debounce = Timer(const Duration(milliseconds: 900), () {
+    _debounce = Timer(const Duration(milliseconds: 1200), () {
       _performSearch(query.trim());
     });
   }
@@ -80,18 +80,18 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A111A),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: TextField(
           controller: _searchController,
           onChanged: _onSearchChanged,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+          decoration: InputDecoration(
             hintText: "SEARCH FOR FELLOW AGENTS...",
-            hintStyle: TextStyle(color: Colors.cyan, fontSize: 12),
+            hintStyle: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 12),
             border: InputBorder.none,
-            prefixIcon: Icon(Icons.search, color: Colors.cyan),
+            prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
           ),
         ),
       ),
@@ -109,16 +109,16 @@ class _SearchScreenState extends State<SearchScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.radar, size: 150, color: Colors.cyan.withAlpha(20)),
+          Icon(Icons.radar, size: 150, color: Theme.of(context).colorScheme.primary.withAlpha(20)),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             "AWAITING INPUT",
-            style: TextStyle(color: Colors.cyan, letterSpacing: 2, fontSize: 17),
+            style: TextStyle(color: Theme.of(context).colorScheme.primary, letterSpacing: 2, fontSize: 17),
           ),
-          const Text(
+          Text(
             "READY TO SEARCH",
             style: TextStyle(
-              color: Colors.grey,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               letterSpacing: 1,
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -141,8 +141,8 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
       itemCount: 6,
       itemBuilder: (context, index) => Shimmer.fromColors(
-        baseColor: const Color(0xFF121F2B),
-        highlightColor: const Color(0xFF1A2E3D),
+        baseColor: Theme.of(context).colorScheme.primary.withAlpha(20),
+        highlightColor: Theme.of(context).colorScheme.primary.withAlpha(60),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.black,

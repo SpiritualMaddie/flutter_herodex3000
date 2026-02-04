@@ -17,8 +17,8 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_herodex3000/barrel_files/screens.dart';
 
-AppTheme _themeFromString(String s) =>
-    s.toLowerCase() == 'dark' ? AppTheme.dark : AppTheme.light;
+// AppTheme _themeFromString(String s) =>
+//     s.toLowerCase() == 'dark' ? AppTheme.dark : AppTheme.light;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,8 +49,7 @@ Future<void> main() async {
 
         BlocProvider<ThemeCubit>(
           create: (context) {
-            final settings = context.read<SettingsManager>();
-            return ThemeCubit(initial: _themeFromString(settings.appTheme));
+            return ThemeCubit();
           },
         ),
       ],
@@ -75,7 +74,7 @@ class _HeroDexState extends State<HeroDex> {
     _router = _createRouter();
   }
 
-  GoRouter _createRouter(){
+  GoRouter _createRouter() {
     final authCubit = context.read<AuthCubit>();
     final settingsManager = context.read<SettingsManager>();
     final refresh = AppRouterRefresh(authCubit, settingsManager);
@@ -113,14 +112,14 @@ class _HeroDexState extends State<HeroDex> {
               builder: (context, state) => const HomeScreen(),
             ),
             GoRoute(
-              path: "/search",
-              name: "Search",
-              builder: (context, state) => const SearchScreen(),
-            ),
-            GoRoute(
               path: "/roster",
               name: "Roster",
               builder: (context, state) => const RosterScreen(),
+            ),
+            GoRoute(
+              path: "/search",
+              name: "Search",
+              builder: (context, state) => const SearchScreen(),
             ),
             GoRoute(
               path: "/settings",
@@ -139,7 +138,7 @@ class _HeroDexState extends State<HeroDex> {
             final agent = AgentCache.get(id);
 
             // If agent not found (shouldnt happen, but handles risk for crash)
-            if(agent == null){
+            if (agent == null) {
               return const ErrorScreen(message: "Agent not found");
             }
 
@@ -161,7 +160,8 @@ class _HeroDexState extends State<HeroDex> {
             return "/onboarding";
           }
           // if authenticated, and completed onboarding, go to home
-          if (onboardingCompleted && (goingToLogin || atSplash || goingToOnboarding)) {
+          if (onboardingCompleted &&
+              (goingToLogin || atSplash || goingToOnboarding)) {
             return "/home";
           }
           return null;
@@ -182,17 +182,14 @@ class _HeroDexState extends State<HeroDex> {
 
   @override
   Widget build(BuildContext context) {
-
     return BlocBuilder<ThemeCubit, AppTheme>(
-      builder: (context, themeState) {
+      builder: (context, currentTheme) {
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,
           title: "HeroDex3000",
-          theme: AppThemes.light,
-          darkTheme: AppThemes.dark,
-          themeMode: themeState == AppTheme.dark
-              ? ThemeMode.dark
-              : ThemeMode.light,
+          theme: ThemeCubit.getThemeData(
+            currentTheme, // maps enum to ThemeData
+          ), 
           routerConfig: _router,
         );
       },
@@ -211,13 +208,14 @@ class RootNavigation extends StatelessWidget {
     int currentIndex = 0;
 
     if (location.startsWith("/home")) currentIndex = 0;
-    if (location.startsWith("/search")) currentIndex = 1;
-    if (location.startsWith("/roster")) currentIndex = 2;
+    if (location.startsWith("/roster")) currentIndex = 1;
+    if (location.startsWith("/search")) currentIndex = 2;
     if (location.startsWith("/settings")) currentIndex = 3;
 
     return Scaffold(
       body: child,
       bottomNavigationBar: NavigationBar(
+        backgroundColor: Theme.of(context).colorScheme.surface,
         selectedIndex: currentIndex,
         onDestinationSelected: (index) {
           switch (index) {
@@ -225,10 +223,10 @@ class RootNavigation extends StatelessWidget {
               context.go("/home");
               break;
             case 1:
-              context.go("/search");
+              context.go("/roster");
               break;
             case 2:
-              context.go("/roster");
+              context.go("/search");
               break;
             case 3:
               context.go("/settings");
@@ -237,8 +235,8 @@ class RootNavigation extends StatelessWidget {
         },
         destinations: [
           NavigationDestination(icon: Icon(Icons.home), label: "HUB"),
+          NavigationDestination(icon: Icon(Icons.shield), label: "ROSTER"),
           NavigationDestination(icon: Icon(Icons.search), label: "SEARCH"),
-          NavigationDestination(icon: Icon(Icons.shield), label: "AGENTS"),
           NavigationDestination(icon: Icon(Icons.settings), label: "SETTINGS"),
         ],
       ),
