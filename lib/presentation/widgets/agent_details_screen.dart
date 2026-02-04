@@ -1,9 +1,11 @@
 // features/agent_details/screens/agent_details_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_herodex3000/data/managers/agent_data_manager.dart';
 import 'package:flutter_herodex3000/data/models/agent_model.dart';
-import 'package:flutter_herodex3000/data/repositories/saved_agents_repository.dart';
+import 'package:flutter_herodex3000/data/repositories/firestore_repository.dart';
 import 'package:go_router/go_router.dart';
+
 // TODO alignment on card right top
 /// Full detail view for an agent.
 /// Receives the complete [AgentModel] so it can display all stats.
@@ -24,10 +26,10 @@ class AgentDetailsScreen extends StatefulWidget {
 }
 
 class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
-  final SavedAgentsRepository _savedAgentsRepo = SavedAgentsRepository();
+  final AgentDataManager _agentDataRepo = AgentDataManager();
   bool _isSaved = false;
   bool _isSaving = false;
-  String goodAlignment = "hero"; // TODO
+  String goodAlignment = "hero";
   String badAlignment = "villian";
   String neutralAlignment = "neutral";
 
@@ -45,8 +47,11 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   }
 
   Future<void> _checkIfSaved() async {
+    // TODO via agent_data_manager
     try {
-      final saved = await _savedAgentsRepo.isAgentSaved(widget.agent.agentId);
+      final saved = await _agentDataRepo.isAgentInFirestore(
+        widget.agent.agentId,
+      );
       if (!mounted) return;
       setState(() => _isSaved = saved);
     } catch (e, st) {
@@ -59,7 +64,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     setState(() => _isSaving = true);
 
     try {
-      await _savedAgentsRepo.saveAgent(widget.agent);
+      await _agentDataRepo.saveAgentToFirestore(widget.agent);
       if (!mounted) return;
       setState(() {
         _isSaved = true;
@@ -67,7 +72,19 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("${widget.agent.name} SAVED TO ROSTER", style: TextStyle(color: Colors.black, fontWeight: .bold),), backgroundColor: Colors.green,),
+          SnackBar(
+            content: Center(
+              child: Text(
+                "${widget.agent.name} saved to roster ✅",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: .bold,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ),
+            backgroundColor: Colors.green.withAlpha(90),
+          ),
         );
       }
     } catch (e, st) {
@@ -76,7 +93,15 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
       setState(() => _isSaving = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to save. Try again.")),
+          const SnackBar(
+            content: Center(
+              child: Text(
+                "❌ Failed to save. Try again.",
+                style: TextStyle(fontWeight: .bold, letterSpacing: 1.5),
+              ),
+            ),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -127,7 +152,10 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     return SliverAppBar(
       backgroundColor: Colors.transparent,
       leading: IconButton(
-        icon: Icon(Icons.arrow_back_ios, color: Theme.of(context).colorScheme.primary),
+        icon: Icon(
+          Icons.arrow_back_ios,
+          color: Theme.of(context).colorScheme.primary,
+        ),
         onPressed: () => context.pop(),
       ),
       expandedHeight: 300,
@@ -168,7 +196,12 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
           children: [
             Text(
               "AGENT CODENAME",
-              style: TextStyle(color: _accentColor.withAlpha(180), fontSize: 12, fontWeight: .bold, letterSpacing: 1),
+              style: TextStyle(
+                color: _accentColor.withAlpha(180),
+                fontSize: 12,
+                fontWeight: .bold,
+                letterSpacing: 1,
+              ),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -178,10 +211,13 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
                 border: Border.all(color: _accentColor.withAlpha(80)),
               ),
               child: Text(
-                bio.alignment == "good" ? "HERO"
-                  : bio.alignment == "bad" ? "VILLAIN"
-                  : bio.alignment == "neutral" ? "NEUTRAL"
-                  : "UNKNOWN",
+                bio.alignment == "good"
+                    ? "HERO"
+                    : bio.alignment == "bad"
+                    ? "VILLAIN"
+                    : bio.alignment == "neutral"
+                    ? "NEUTRAL"
+                    : "UNKNOWN",
                 style: TextStyle(
                   color: _accentColor,
                   fontSize: 10,
@@ -205,18 +241,25 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
         if (_hasContent(bio.fullName))
           Text(
             bio.fullName!,
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14, fontWeight: .bold),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 14,
+              fontWeight: .bold,
+            ),
           ),
         if (_hasContent(bio.alterEgos))
           Text(
             bio.alterEgos!,
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 12),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 12,
+            ),
           ),
       ],
     );
   }
 
-   // --- POWERSTATS ---
+  // --- POWERSTATS ---
   Widget _buildAllStats() {
     final stats = widget.agent.powerstats;
     return Column(
@@ -229,7 +272,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
         _buildStatRow("COMBAT", stats.combat),
       ],
     );
-  } 
+  }
 
   Widget _buildStatRow(String label, int value) {
     return Padding(
@@ -240,8 +283,15 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(label,
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 10, letterSpacing: 1, fontWeight: .bold)),
+              Text(
+                label,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 10,
+                  letterSpacing: 1,
+                  fontWeight: .bold,
+                ),
+              ),
               Text(
                 '${value.clamp(0, 100)}',
                 style: TextStyle(
@@ -257,7 +307,9 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: value.clamp(0, 100) / 100.0,
-              backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(50),
+              backgroundColor: Theme.of(
+                context,
+              ).colorScheme.primary.withAlpha(50),
               color: _accentColor,
               minHeight: 8,
             ),
@@ -381,7 +433,11 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
         Text(
           title,
           style: TextStyle(
-              color: _accentColor, fontSize: 12, letterSpacing: 2, fontWeight: .bold),
+            color: _accentColor,
+            fontSize: 12,
+            letterSpacing: 2,
+            fontWeight: .bold,
+          ),
         ),
         const SizedBox(height: 12),
         ...rows,
@@ -400,13 +456,20 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
             width: 140,
             child: Text(
               label.toUpperCase(),
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 10,),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontSize: 10,
+              ),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13, fontWeight: .bold),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 13,
+                fontWeight: .bold,
+              ),
             ),
           ),
         ],
@@ -426,15 +489,18 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
         onPressed: null, // Disabled
         style: ElevatedButton.styleFrom(
           backgroundColor: Theme.of(context).colorScheme.primary,
-          disabledBackgroundColor: Theme.of(context).colorScheme.primary.withAlpha(50),
+          disabledBackgroundColor: Theme.of(
+            context,
+          ).colorScheme.primary.withAlpha(50),
           minimumSize: const Size(double.infinity, 56),
         ),
         child: Text(
           "ALREADY IN ROSTER ✓",
           style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface.withAlpha(90), 
+            color: Theme.of(context).colorScheme.onSurface.withAlpha(90),
             fontWeight: FontWeight.bold,
-            letterSpacing: 1.5),
+            letterSpacing: 1.5,
+          ),
         ),
       );
     }
@@ -457,9 +523,11 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
           : Text(
               "SAVE TO ROSTER",
               style: TextStyle(
-                color: _accentColor == Theme.of(context).colorScheme.primary ? Colors.black : Colors.white,
+                color: _accentColor == Theme.of(context).colorScheme.primary
+                    ? Colors.black
+                    : Colors.white,
                 fontWeight: FontWeight.bold,
-                letterSpacing: 1
+                letterSpacing: 1,
               ),
             ),
     );
