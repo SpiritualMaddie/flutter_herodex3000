@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter_herodex3000/data/repositories/saved_agents_repository.dart';
+import 'package:flutter_herodex3000/data/managers/agent_data_manager.dart';
+import 'package:flutter_herodex3000/data/repositories/firestore_repository.dart';
 import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dart';
 import 'package:flutter_herodex3000/presentation/widgets/section_header.dart';
 import 'package:flutter_herodex3000/presentation/widgets/info_card.dart';
@@ -13,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final SavedAgentsRepository _repo = SavedAgentsRepository();
+  final AgentDataManager _agentdatarepo = AgentDataManager();
 
   bool _isLoading = true;
   int _heroCount = 0;
@@ -29,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadStats() async {
     try {
-      final agents = await _repo.getAllSavedAgents();
+      final agents = await _agentdatarepo.getAllAgentsFromFirestore();
       if (!mounted) return;
 
       setState(() {
@@ -371,7 +372,7 @@ class _SubStat extends StatelessWidget {
 // }
 
 // class _HomeScreenState extends State<HomeScreen> {
-//   final SavedAgentsRepository _repo = SavedAgentsRepository();
+//   final AgentDataManager _agentdatarepo = AgentDataManager();
 
 //   bool _isLoading = true;
 //   int _heroCount = 0;
@@ -388,7 +389,7 @@ class _SubStat extends StatelessWidget {
 //   /// Single fetch, all stats derived from it.
 //   Future<void> _loadStats() async {
 //     try {
-//       final agents = await _repo.getAllSavedAgents();
+//       final agents = await _agentdatarepo.getAllSavedAgents();
 //       if (!mounted) return;
 
 //       setState(() {
@@ -834,19 +835,19 @@ class _SubStat extends StatelessWidget {
 // }
 
 // Future<int> _numerOfHeroesInRoster() async {
-//   final SavedAgentsRepository savedAgentsRepo = SavedAgentsRepository();
+//   final AgentDataManager savedAgentsRepo = AgentDataManager();
 //   List<AgentModel> allAgents = await savedAgentsRepo.getAllSavedAgents();
 //   return allAgents.where((h) => h.biography.alignment == "good").length;
 // }
 
 // Future<int> _numerOfVillainsInRoster() async {
-//   final SavedAgentsRepository savedAgentsRepo = SavedAgentsRepository();
+//   final AgentDataManager savedAgentsRepo = AgentDataManager();
 //   List<AgentModel> allAgents = await savedAgentsRepo.getAllSavedAgents();
 //   return allAgents.where((h) => h.biography.alignment == "bad").length;
 // }
 
 // // Future<int> _amountOfPowerInRoster() async {
-// //   final SavedAgentsRepository savedAgentsRepo = SavedAgentsRepository();
+// //   final AgentDataManager savedAgentsRepo = AgentDataManager();
 // //   List<AgentModel> allAgents = await savedAgentsRepo.getAllSavedAgents();
 // //   allAgents.
 // // }
