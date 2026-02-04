@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_herodex3000/core/theme/cubit/theme_cubit.dart';
 import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_cubit.dart';
 import 'package:flutter_herodex3000/data/managers/settings_manager.dart';
+import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dart';
 import 'package:flutter_herodex3000/presentation/widgets/section_header.dart';
 import 'package:flutter_herodex3000/presentation/widgets/info_card.dart';
 import 'package:flutter_herodex3000/presentation/widgets/theme_picker.dart';
@@ -15,10 +16,10 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsManager>();
 
-    return Scaffold(
+    return ResponsiveScaffold(
       // TODO change to SectionHeader
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
+      child: SafeArea(
         child: CustomScrollView(
           slivers: [
             // App bar as sliver

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_cubit.dart';
 import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_state.dart';
+import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -63,9 +64,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
-    return Scaffold(
+
+    return ResponsiveScaffold(
       backgroundColor: const Color(0xFF0A111A),
-      body: SafeArea(
+      child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32.0),
           child: SingleChildScrollView(

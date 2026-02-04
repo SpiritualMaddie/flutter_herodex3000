@@ -7,6 +7,7 @@ import 'package:flutter_herodex3000/barrel_files/screens.dart';
 import 'package:flutter_herodex3000/data/managers/agent_cache.dart';
 import 'package:flutter_herodex3000/data/managers/agent_data_manager.dart';
 import 'package:flutter_herodex3000/presentation/helpers/agent_summary_mapper.dart';
+import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter_herodex3000/presentation/view_models/agent_summary.dart';
 import 'package:flutter_herodex3000/presentation/widgets/agent_card.dart';
@@ -79,7 +80,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ResponsiveScaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -95,7 +96,7 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ),
       ),
-      body: _isLoading
+      child: _isLoading
           ? _buildLoadingState()
           : _summaries.isEmpty
               ? _buildInitialState()

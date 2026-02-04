@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_herodex3000/core/theme/app_theme.dart';
 import 'package:flutter_herodex3000/core/theme/cubit/theme_cubit.dart';
+import 'package:flutter_herodex3000/core/utils/responsive.dart';
 import 'package:flutter_herodex3000/data/managers/agent_cache.dart';
 import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_cubit.dart';
 import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_state.dart';
@@ -16,6 +17,7 @@ import 'package:flutter_herodex3000/data/services/shared_preferences_service.dar
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_herodex3000/barrel_files/screens.dart';
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 
 // AppTheme _themeFromString(String s) =>
 //     s.toLowerCase() == 'dark' ? AppTheme.dark : AppTheme.light;
@@ -29,8 +31,22 @@ Future<void> main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Enable debug mode for analytics
-  await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
+  // Enable debug mode for analytics only on supported platforms.
+  try {
+    final bool analyticsSupported = kIsWeb ||
+        defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS;
+    if (analyticsSupported) {
+      await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
+    } else {
+      // Windows (and other unsupported platforms) skip analytics calls to avoid channel errors.
+      debugPrint('FirebaseAnalytics: skipping setAnalyticsCollectionEnabled on unsupported platform: $defaultTargetPlatform');
+    }
+  } catch (e, st) {
+    // Safe fallback: log and continue — do not let platform-channel errors crash the app
+    debugPrint('FirebaseAnalytics: error enabling analytics: $e\n$st');
+  }
   runApp(
     MultiProvider(
       providers: [
@@ -188,7 +204,7 @@ class _HeroDexState extends State<HeroDex> {
           debugShowCheckedModeBanner: false,
           title: "HeroDex3000",
           theme: ThemeCubit.getThemeData(
-            currentTheme, // maps enum to ThemeData
+            currentTheme, // maps enum to ThemeData TODO default theme
           ), 
           routerConfig: _router,
         );
@@ -212,6 +228,74 @@ class RootNavigation extends StatelessWidget {
     if (location.startsWith("/search")) currentIndex = 2;
     if (location.startsWith("/settings")) currentIndex = 3;
 
+    final useRailOnLeft = context.isDesktop;
+
+    if(useRailOnLeft){
+      return Scaffold(
+        body: Row(
+          children: [
+            NavigationRail(
+              selectedIndex: currentIndex,
+              onDestinationSelected: (index) {
+                switch (index) {
+                  case 0:
+                    context.go("/home");
+                    break;
+                  case 1:
+                    context.go("/roster");
+                    break;
+                  case 2:
+                    context.go("/search");
+                    break;
+                  case 3:
+                    context.go("/settings");
+                    break;
+                }
+              },
+              labelType: NavigationRailLabelType.all,
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              leading: Padding(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  height: 48,
+                  child: Image.asset(
+                    "assets/icons/app_icon.png",
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+              destinations: const [
+                NavigationRailDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home),
+                  label: Text('HUB'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.shield_outlined),
+                  selectedIcon: Icon(Icons.shield),
+                  label: Text('ROSTER'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.search_outlined),
+                  selectedIcon: Icon(Icons.search),
+                  label: Text('SEARCH'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.settings_outlined),
+                  selectedIcon: Icon(Icons.settings),
+                  label: Text('SETTINGS'),
+                ),
+              ],
+            ),
+            const VerticalDivider(width: 4),
+            // main content expands to take remaining space
+            Expanded(child: child),
+          ],
+        ),
+      );
+
+    }else{
+      // Mobile / narrow tablet: bottom navigation bar
     return Scaffold(
       body: child,
       bottomNavigationBar: NavigationBar(
@@ -241,6 +325,7 @@ class RootNavigation extends StatelessWidget {
         ],
       ),
     );
+    }
   }
 }
 

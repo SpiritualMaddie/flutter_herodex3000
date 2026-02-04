@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_herodex3000/data/repositories/saved_agents_repository.dart';
+import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dart';
 import 'package:flutter_herodex3000/presentation/widgets/section_header.dart';
 import 'package:flutter_herodex3000/presentation/widgets/info_card.dart';
 
@@ -52,9 +53,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ResponsiveScaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SingleChildScrollView(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.only(top: 56, bottom: 24, left: 16, right: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
