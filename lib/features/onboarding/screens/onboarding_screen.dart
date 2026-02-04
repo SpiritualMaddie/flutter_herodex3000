@@ -22,8 +22,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   static const int _totalPages = 3;
 
   // Permission states
-  bool _analyticsEnabled = true;
-  bool _crashlyticsEnabled = true;
+  bool _analyticsEnabled = false;
+  bool _crashlyticsEnabled = false;
   bool _locationEnabled = false;
   bool _attEnabled = false;
   String _themePicked = "heroDark";

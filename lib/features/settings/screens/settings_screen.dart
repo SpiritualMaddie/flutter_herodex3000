@@ -27,14 +27,13 @@ class SettingsScreen extends StatelessWidget {
               backgroundColor: Colors.transparent,
               elevation: 0,
               pinned: false,
-              title: Text(
-                "SETTINGS",
-                style: TextStyle(
-                  letterSpacing: 2,
-                  fontSize: 22,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
+              title: // Title
+            const SectionHeader(
+              icon: Icons.settings,
+              title: "SETTINGS",
+              titleFontSize: 22,
+              padding: EdgeInsets.only(bottom: 20),
+            ),
             ),
 
             // All content in one sliver list

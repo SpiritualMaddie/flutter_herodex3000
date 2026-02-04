@@ -3,6 +3,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_herodex3000/data/services/firebase_service.dart';
 import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_state.dart';
 import 'package:flutter_herodex3000/features/authentication/controllers/repository/auth_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,7 +14,7 @@ class AuthCubit extends Cubit<AuthState> {
   FirebaseAnalytics analytics = FirebaseAnalytics.instance;
 
   AuthCubit(this._authRepository) : super(AuthInitial()) {
-    // listen to firebase auth changes safely
+    // Listen to firebase auth changes safely
     _authStateSubscription = _authRepository.authStateChanges.listen(
       (user) {
         try {
@@ -21,17 +22,22 @@ class AuthCubit extends Cubit<AuthState> {
             '🔁 AuthCubit.authStateChanges -> uid=${user?.uid} email=${user?.email}',
           );
           if (user != null) {
+            // Set user ID in Crashlytics for better error tracking
+            FirebaseService.setUserId(user.uid);
             emit(AuthAuthenticated(user));
           } else {
+            FirebaseService.setUserId(null);
             emit(AuthUnauthenticated());
           }
         } catch (e, st) {
           debugPrint('⚠️ AuthCubit handler error: $e\n$st');
+          FirebaseService.recordError(e, st, reason: 'authStateChanges handler');
           emit(AuthUnauthenticated());
         }
       },
       onError: (err, st) {
         debugPrint('⚠️ AuthCubit authStateChanges stream error: $err\n$st');
+        FirebaseService.recordError(err, st, reason: 'authStateChanges stream');
         emit(AuthUnauthenticated());
       },
     );
@@ -39,18 +45,21 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> signIn(String email, String password) async {
     try {
-      // TODO analytics
-      await analytics.logLogin(loginMethod: "email");
       await _authRepository.signIn(email: email, password: password);
-      // success -> authStateChanges stream will emit authenticated
+      // Log successful login to Analytics
+      await FirebaseService.logLogin("email");
+      // Success -> authStateChanges stream will emit authenticated
     } on FirebaseAuthException catch (e) {
       debugPrint(
         '🔴 AuthCubit.signIn FirebaseAuthException: ${e.code} ${e.message}',
       );
-      // rethrow so UI can show user-facing messages, but don't crash here
+      // Log auth failures to Crashlytics (non-fatal)
+      await FirebaseService.recordError(e, StackTrace.current, reason: 'signIn failed');
+      // Rethrow so UI can show user-facing messages, but don't crash here
       rethrow;
     } catch (e, st) {
       debugPrint('🔴 AuthCubit.signIn unexpected: $e\n$st');
+      await FirebaseService.recordError(e, st, reason: 'signIn unexpected error');
       throw Exception('Sign in failed: $e');
     }
   }
@@ -59,8 +68,9 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       await _authRepository.signOut();
     } catch (e, st) {
-      // log but don't let signOut failure crash the app
+      // Log but don't let signOut failure crash the app
       debugPrint('⚠️ AuthCubit.signOut error (repo): $e\n$st');
+      await FirebaseService.recordError(e, st, reason: 'signOut failed');
     }
 
     try {
@@ -73,6 +83,7 @@ class AuthCubit extends Cubit<AuthState> {
       debugPrint('✅ AuthCubit: cleared SharedPreferences on signOut');
     } catch (e, st) {
       debugPrint('⚠️ AuthCubit: failed clearing SharedPreferences: $e\n$st');
+      await FirebaseService.recordError(e, st, reason: 'SharedPreferences clear failed');
     }
 
     // Ensure UI sees unauthenticated state
@@ -88,14 +99,17 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> signUp(String email, String password) async {
     try {
       await _authRepository.signUp(email: email, password: password);
-      // if additional profile writes happen elsewhere, they must handle their own errors
+      // Log successful signup to Analytics
+      await FirebaseService.logSignUp("email");
     } on FirebaseAuthException catch (e) {
       debugPrint(
         '🔴 AuthCubit.signUp FirebaseAuthException: ${e.code} ${e.message}',
       );
-      throw e;
+      await FirebaseService.recordError(e, StackTrace.current, reason: 'signUp failed');
+      rethrow;
     } catch (e, st) {
       debugPrint('🔴 AuthCubit.signUp unexpected: $e\n$st');
+      await FirebaseService.recordError(e, st, reason: 'signUp unexpected error');
       throw Exception('Sign up failed: $e');
     }
   }

@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_herodex3000/data/managers/agent_data_manager.dart';
 import 'package:flutter_herodex3000/data/repositories/firestore_repository.dart';
+import 'package:flutter_herodex3000/data/services/firebase_service.dart';
 import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dart';
 import 'package:flutter_herodex3000/presentation/widgets/section_header.dart';
 import 'package:flutter_herodex3000/presentation/widgets/info_card.dart';
@@ -54,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    //FirebaseService.logEvent("home_screen");
     return ResponsiveScaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       child: SingleChildScrollView(
@@ -62,7 +64,8 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Title
-            const SectionHeader( // TODO maybe icon?
+            const SectionHeader(
+              icon: Icons.home,
               title: "HUB",
               titleFontSize: 22,
               padding: EdgeInsets.only(bottom: 20),

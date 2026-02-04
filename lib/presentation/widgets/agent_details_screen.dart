@@ -75,7 +75,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
           SnackBar(
             content: Center(
               child: Text(
-                "${widget.agent.name} SAVED TO ROSTER ✅",
+                "${widget.agent.name} saved to roster ✅",
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: .bold,
@@ -83,7 +83,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
                 ),
               ),
             ),
-            backgroundColor: Colors.green.withAlpha(80),
+            backgroundColor: Colors.green.withAlpha(90),
           ),
         );
       }

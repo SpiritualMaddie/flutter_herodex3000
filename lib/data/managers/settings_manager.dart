@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_herodex3000/data/services/firebase_service.dart';
 import 'package:flutter_herodex3000/data/services/shared_preferences_service.dart';
 
 class SettingsManager extends ChangeNotifier {
@@ -18,16 +19,23 @@ class SettingsManager extends ChangeNotifier {
     await _prefs.setAppTheme(appThemeChosen);
     await _prefs.setIosAttToApproved(iosAtt);
     await _prefs.setOnboardingToCompleted(true);
+
+    // Update Firebase services with new permissions
+    await FirebaseService.setAnalyticsEnabled(analytics);
+    await FirebaseService.setCrashlyticsEnabled(crashlytics);
+
     notifyListeners();
   }
 
   Future<void> saveAnalyticsPreferences({required bool value}) async {
     await _prefs.setAnalyticsToApproved(value);
+    await FirebaseService.setAnalyticsEnabled(value);
     notifyListeners();
   }
 
   Future<void> saveCrashAnalyticsPreferences({required bool value}) async {
     await _prefs.setCrashlyticsToApproved(value);
+    await FirebaseService.setCrashlyticsEnabled(value);
     notifyListeners();
   }
 

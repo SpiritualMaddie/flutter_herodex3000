@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_herodex3000/core/navigation/routing/app_router.dart';
 import 'package:flutter_herodex3000/core/providers/app_providers.dart';
 import 'package:flutter_herodex3000/core/theme/cubit/theme_cubit.dart';
+import 'package:flutter_herodex3000/data/services/firebase_service.dart';
 import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_cubit.dart';
 import 'package:flutter_herodex3000/firebase_options.dart';
 import 'package:flutter_herodex3000/data/managers/settings_manager.dart';
@@ -26,9 +27,7 @@ Future<void> main() async {
   await prefsService.init();
 
   // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Enable debug mode for analytics only on supported platforms.
   try {
@@ -50,12 +49,15 @@ Future<void> main() async {
     debugPrint('FirebaseAnalytics: error enabling analytics: $e\n$st');
   }
 
+  // Initialize Firebase Analytics & Crashlytics with user permissions
+  await FirebaseService.initialize(
+    analyticsEnabled: prefsService.analyticsIsApproved,
+    crashlyticsEnabled: prefsService.crashlyticsIsApproved,
+  );
+
   // Run app with all providers
   runApp(
-    createAppProviders(
-      prefsService: prefsService, 
-      child: const HeroDex(),
-      ),
+    createAppProviders(prefsService: prefsService, child: const HeroDex()),
   );
 }
 
@@ -86,13 +88,10 @@ class _HeroDexState extends State<HeroDex> {
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,
           title: "HeroDex3000",
-          theme: ThemeCubit.getThemeData(
-            currentTheme,
-          ),
+          theme: ThemeCubit.getThemeData(currentTheme),
           routerConfig: _router,
         );
       },
     );
   }
 }
-

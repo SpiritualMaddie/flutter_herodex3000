@@ -1,15 +1,12 @@
-// features/search/screens/search_screen.dart
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_herodex3000/barrel_files/models.dart';
-import 'package:flutter_herodex3000/barrel_files/screens.dart';
-import 'package:flutter_herodex3000/data/managers/agent_cache.dart';
 import 'package:flutter_herodex3000/data/managers/agent_data_manager.dart';
 import 'package:flutter_herodex3000/presentation/helpers/agent_summary_mapper.dart';
 import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dart';
+import 'package:flutter_herodex3000/presentation/widgets/screen_header.dart';
+import 'package:flutter_herodex3000/presentation/widgets/agent_details_screen.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:flutter_herodex3000/presentation/view_models/agent_summary.dart';
 import 'package:flutter_herodex3000/presentation/widgets/agent_card.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -25,23 +22,33 @@ class _SearchScreenState extends State<SearchScreen> {
   Timer? _debounce;
   bool _isLoading = false;
 
-  /// List of full models
+  // List of full models
   List<AgentModel> _fullAgents = [];
 
-  /// View Model summery of Agent Model that cards display.
-  List<AgentSummary> _summaries = [];
+  // Current search query (for UI state)
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() => _searchQuery = _searchController.text.trim());
+    });
+  }
 
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
+    
     if (query.trim().isEmpty) {
       setState(() {
         _fullAgents = [];
-        _summaries = [];
         _isLoading = false;
       });
       return;
     }
+    
     setState(() => _isLoading = true);
+    
     _debounce = Timer(const Duration(milliseconds: 1200), () {
       _performSearch(query.trim());
     });
@@ -55,7 +62,6 @@ class _SearchScreenState extends State<SearchScreen> {
 
       setState(() {
         _fullAgents = agents;
-        _summaries = AgentSummaryMapper.toSummaryList(agents);
         _isLoading = false;
       });
     } catch (e, st) {
@@ -63,7 +69,6 @@ class _SearchScreenState extends State<SearchScreen> {
       if (!mounted) return;
       setState(() {
         _fullAgents = [];
-        _summaries = [];
         _isLoading = false;
       });
     }
@@ -80,39 +85,50 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return ResponsiveScaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: TextField(
-          controller: _searchController,
-          onChanged: _onSearchChanged,
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-          decoration: InputDecoration(
-            hintText: "SEARCH FOR FELLOW AGENTS...",
-            hintStyle: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 12),
-            border: InputBorder.none,
-            prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
+      child: Column(
+        children: [
+          // --- HEADER ---
+          ScreenHeader(
+            title: "AGENT SEARCH",
+            titleIcon: Icons.radar,
+            searchController: _searchController,
+            searchHint: "Search for agents...",
+            currentQuery: _searchQuery,
+            onSearchChanged: _onSearchChanged,
           ),
-        ),
+
+          // --- CONTENT AREA ---
+          Expanded(
+            child: _isLoading
+                ? _buildLoadingState()
+                : _fullAgents.isEmpty
+                    ? _buildInitialState()
+                    : _buildResultsState(),
+          ),
+        ],
       ),
-      child: _isLoading
-          ? _buildLoadingState()
-          : _summaries.isEmpty
-              ? _buildInitialState()
-              : _buildResultsState(),
     );
   }
 
-  // VIEW 1: INITIAL STATE
+  // VIEW 1: INITIAL STATE (before any search)
   Widget _buildInitialState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.radar, size: 150, color: Theme.of(context).colorScheme.primary.withAlpha(20)),
+          Icon(
+            Icons.radar,
+            size: 150,
+            color: Theme.of(context).colorScheme.primary.withAlpha(20),
+          ),
           const SizedBox(height: 16),
           Text(
             "AWAITING INPUT",
-            style: TextStyle(color: Theme.of(context).colorScheme.primary, letterSpacing: 2, fontSize: 17),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              letterSpacing: 2,
+              fontSize: 17,
+            ),
           ),
           Text(
             "READY TO SEARCH",
@@ -128,7 +144,7 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  // VIEW 2: LOADING STATE (SHIMMER)
+  // VIEW 2: LOADING STATE (shimmer effect)
   Widget _buildLoadingState() {
     return GridView.builder(
       padding: const EdgeInsets.all(16),
@@ -152,8 +168,8 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  // VIEW 3: RESULTS STATE — uses shared AgentCard
-   Widget _buildResultsState() {
+  // VIEW 3: RESULTS STATE — grid of agent cards
+  Widget _buildResultsState() {
     return GridView.builder(
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -169,13 +185,15 @@ class _SearchScreenState extends State<SearchScreen> {
           agent: summary,
           layout: AgentCardLayout.grid,
           onTap: () {
-             // Cache the full model, then navigate
-            //AgentCache.put(_fullAgents[index]);
             Navigator.push(
-              context, 
-            MaterialPageRoute(
-              builder: (context) => AgentDetailsScreen(agent: _fullAgents[index], showSaveButton: true,)));
-            //context.go('/details/${summary.id}');
+              context,
+              MaterialPageRoute(
+                builder: (context) => AgentDetailsScreen(
+                  agent: _fullAgents[index],
+                  showSaveButton: true,
+                ),
+              ),
+            );
           },
         );
       },
