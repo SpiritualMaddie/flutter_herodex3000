@@ -425,13 +425,16 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
       return ElevatedButton(
         onPressed: null, // Disabled
         style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).colorScheme.onSurface,
-          disabledBackgroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          disabledBackgroundColor: Theme.of(context).colorScheme.primary.withAlpha(50),
           minimumSize: const Size(double.infinity, 56),
         ),
         child: Text(
           "ALREADY IN ROSTER ✓",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withAlpha(90), 
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.5),
         ),
       );
     }
@@ -456,106 +459,9 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
               style: TextStyle(
                 color: _accentColor == Theme.of(context).colorScheme.primary ? Colors.black : Colors.white,
                 fontWeight: FontWeight.bold,
+                letterSpacing: 1
               ),
             ),
     );
   }
 }
-
-// import 'package:flutter/material.dart';
-// import 'package:flutter_herodex3000/barrel_files/models.dart';
-
-// // Detalj-vy (Agent Intelligence Report)
-// // TODO villians need red stats
-// // TODO all details
-// class AgentDetailsScreen extends StatelessWidget {
-//   final AgentModel agent;
-//   const AgentDetailsScreen({super.key, required this.agent});
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: const Color(0xFF0A111A),
-//       body: CustomScrollView(
-//         slivers: [
-//           SliverAppBar(
-//             backgroundColor: Colors.transparent,
-//             leading: IconButton(
-//               icon: const Icon(Icons.arrow_back_ios, color: Colors.cyan),
-//               onPressed: () => Navigator.pop(context),
-//             ),
-//             expandedHeight: 300,
-//             flexibleSpace: FlexibleSpaceBar(
-//               background: Container(
-//                 decoration: BoxDecoration(
-//                   gradient: LinearGradient(
-//                     begin: Alignment.topCenter,
-//                     end: Alignment.bottomCenter,
-//                     colors: [Colors.cyan.withAlpha(30), Colors.transparent],
-//                   ),
-//                 ),
-//                 child: const Icon(Icons.shield, size: 120, color: Colors.cyan),
-//               ),
-//             ),
-//           ),
-//           SliverToBoxAdapter(
-//             child: Padding(
-//               padding: const EdgeInsets.all(24.0),
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Text(
-//                     "AGENT CODENAME",
-//                     style: TextStyle(color: Colors.cyan[200], fontSize: 12),
-//                   ),
-//                   Text(
-//                     agent.name, // TODO name from id
-//                     style: const TextStyle(
-//                       color: Colors.white,
-//                       fontSize: 32,
-//                       fontWeight: FontWeight.bold,
-//                     ),
-//                   ),
-//                   const SizedBox(height: 24),
-//                   _buildStatRow("STRENGTH", 0.85),
-//                   _buildStatRow("INTELLIGENCE", 0.92),
-//                   _buildStatRow("SPEED", 0.65),
-//                   const SizedBox(height: 48),
-//                   ElevatedButton(
-//                     onPressed: () {},
-//                     style: ElevatedButton.styleFrom(
-//                       backgroundColor: Colors.cyan,
-//                       minimumSize: const Size(double.infinity, 56),
-//                     ),
-//                     child: const Text(
-//                       "SAVE TO ROSTER",
-//                       style: TextStyle(color: Colors.black),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
-//     Widget _buildStatRow(String label, double value) {
-//     return Padding(
-//       padding: const EdgeInsets.only(bottom: 16.0),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           Text(label, style: const TextStyle(color: Colors.grey, fontSize: 10)),
-//           const SizedBox(height: 8),
-//           LinearProgressIndicator(
-//             value: value,
-//             backgroundColor: const Color(0xFF1A2E3D),
-//             color: Colors.cyan,
-//             minHeight: 8,
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }

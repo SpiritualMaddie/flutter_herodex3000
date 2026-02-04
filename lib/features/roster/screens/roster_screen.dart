@@ -32,18 +32,22 @@ class _RosterScreenState extends State<RosterScreen> {
   List<AgentModel> _allAgents = [];
 
   // Which alignment checkboxes are active. Start with all selected.
-   Set<AgentAlignment> _selectedAlignments = {AgentAlignment.good, AgentAlignment.bad, AgentAlignment.neutral};
+  Set<AgentAlignment> _selectedAlignments = {
+    AgentAlignment.good,
+    AgentAlignment.bad,
+    AgentAlignment.neutral,
+  };
 
- // Current power sort mode.
+  // Current power sort mode.
   PowerSort _powerSort = PowerSort.none;
 
- // The current search query (lowercased).
- String _searchQuery = "";
+  // The current search query (lowercased).
+  String _searchQuery = "";
 
   // ViewModel summaries for the cards. // TODO save the local list in a DataManager and focus on SOC
- // List<AgentSummary> _summaries = [];
+  // List<AgentSummary> _summaries = [];
 
-    @override
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -53,8 +57,10 @@ class _RosterScreenState extends State<RosterScreen> {
   void initState() {
     super.initState();
     _loadAgents();
-    _searchController.addListener((){
-      setState(() => _searchQuery = _searchController.text.trim().toLowerCase(),);
+    _searchController.addListener(() {
+      setState(
+        () => _searchQuery = _searchController.text.trim().toLowerCase(),
+      );
     });
   }
 
@@ -65,14 +71,18 @@ class _RosterScreenState extends State<RosterScreen> {
 
     // 1. Search filter
     if (_searchQuery.isNotEmpty) {
-      list = list.where((a) => a.name.toLowerCase().contains(_searchQuery)).toList();
+      list = list
+          .where((a) => a.name.toLowerCase().contains(_searchQuery))
+          .toList();
     }
 
     // 2. AgentAlignment filter
     list = list.where((a) {
       final alignment = a.biography.alignment.trim().toLowerCase();
-      if (alignment == 'good') return _selectedAlignments.contains(AgentAlignment.good);
-      if (alignment == 'bad') return _selectedAlignments.contains(AgentAlignment.bad);
+      if (alignment == 'good')
+        return _selectedAlignments.contains(AgentAlignment.good);
+      if (alignment == 'bad')
+        return _selectedAlignments.contains(AgentAlignment.bad);
       // Anything else (neutral, empty, unknown) maps to neutral
       return _selectedAlignments.contains(AgentAlignment.neutral);
     }).toList();
@@ -111,7 +121,6 @@ class _RosterScreenState extends State<RosterScreen> {
 
   // Removes an agent from Firestore.
   Future<void> _removeAgent(AgentModel agent) async {
-
     // Remove from UI immediately
     setState(() {
       _allAgents.removeWhere((a) => a.agentId == agent.agentId);
@@ -148,11 +157,13 @@ class _RosterScreenState extends State<RosterScreen> {
           Expanded(
             child: _isLoading
                 ? Center(
-                    child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+                    child: CircularProgressIndicator(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   )
                 : _filteredAgents.isEmpty
-                    ? _buildEmptyState()
-                    : _buildRosterList(),
+                ? _buildEmptyState()
+                : _buildRosterList(),
           ),
         ],
       ),
@@ -183,28 +194,50 @@ class _RosterScreenState extends State<RosterScreen> {
             height: 44,
             child: TextField(
               controller: _searchController,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontSize: 14,
+              ),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: Theme.of(context).colorScheme.onSurface.withAlpha(20),
+                fillColor: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withAlpha(20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary.withAlpha(40)),
+                  borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.primary.withAlpha(40),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary.withAlpha(100)),
+                  borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.primary.withAlpha(100),
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary.withAlpha(40)),
+                  borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.primary.withAlpha(40),
+                  ),
                 ),
                 hintText: "Search roster...",
-                hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
-                prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary, size: 20),
+                hintStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 13,
+                ),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 20,
+                ),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: Icon(Icons.close, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 18),
+                        icon: Icon(
+                          Icons.close,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          size: 18,
+                        ),
                         onPressed: () => _searchController.clear(),
                       )
                     : null,
@@ -219,17 +252,26 @@ class _RosterScreenState extends State<RosterScreen> {
             segments: const [
               ButtonSegment(
                 value: AgentAlignment.good,
-                label: Text("GOOD", style: TextStyle(fontSize: 11)),
-                icon: Icon(Icons.shield, size: 14, color: Colors.cyan,),
+                label: Text(
+                  "HERO",
+                  style: TextStyle(fontSize: 11, letterSpacing: 1),
+                ),
+                icon: Icon(Icons.shield, size: 14, color: Colors.cyan),
               ),
               ButtonSegment(
                 value: AgentAlignment.bad,
-                label: Text("BAD", style: TextStyle(fontSize: 11)),
+                label: Text(
+                  "VILLAIN",
+                  style: TextStyle(fontSize: 11, letterSpacing: 1),
+                ),
                 icon: Icon(Icons.warning_amber, size: 14, color: Colors.red),
               ),
               ButtonSegment(
                 value: AgentAlignment.neutral,
-                label: Text("NEUTRAL", style: TextStyle(fontSize: 11)),
+                label: Text(
+                  "NEUTRAL",
+                  style: TextStyle(fontSize: 11, letterSpacing: 1),
+                ),
                 icon: Icon(Icons.remove_circle_outline, size: 14),
               ),
             ],
@@ -241,20 +283,26 @@ class _RosterScreenState extends State<RosterScreen> {
             },
             multiSelectionEnabled: true,
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+              backgroundColor: WidgetStateProperty.resolveWith<Color?>((
+                states,
+              ) {
                 if (states.contains(WidgetState.selected)) {
                   return Theme.of(context).colorScheme.primary.withAlpha(30);
                 }
                 return Theme.of(context).colorScheme.surface;
               }),
-              foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+              foregroundColor: WidgetStateProperty.resolveWith<Color?>((
+                states,
+              ) {
                 if (states.contains(WidgetState.selected)) {
                   return Theme.of(context).colorScheme.primary;
                 }
                 return Theme.of(context).colorScheme.onSurfaceVariant;
               }),
               side: WidgetStateProperty.all(
-                BorderSide(color: Theme.of(context).colorScheme.primary.withAlpha(40)),
+                BorderSide(
+                  color: Theme.of(context).colorScheme.primary.withAlpha(40),
+                ),
               ),
               textStyle: WidgetStateProperty.all(
                 const TextStyle(fontSize: 11, letterSpacing: 0.5),
@@ -268,16 +316,25 @@ class _RosterScreenState extends State<RosterScreen> {
             segments: const [
               ButtonSegment(
                 value: PowerSort.none,
-                label: Text("DEFAULT", style: TextStyle(fontSize: 11)),
+                label: Text(
+                  "DEFAULT",
+                  style: TextStyle(fontSize: 11, letterSpacing: 1),
+                ),
               ),
               ButtonSegment(
                 value: PowerSort.highest,
-                label: Text("HIGHEST", style: TextStyle(fontSize: 11)),
+                label: Text(
+                  "HIGHEST",
+                  style: TextStyle(fontSize: 11, letterSpacing: 1),
+                ),
                 icon: Icon(Icons.arrow_upward, size: 14),
               ),
               ButtonSegment(
                 value: PowerSort.lowest,
-                label: Text("LOWEST", style: TextStyle(fontSize: 11)),
+                label: Text(
+                  "LOWEST",
+                  style: TextStyle(fontSize: 11, letterSpacing: 1),
+                ),
                 icon: Icon(Icons.arrow_downward, size: 14),
               ),
             ],
@@ -287,20 +344,26 @@ class _RosterScreenState extends State<RosterScreen> {
             },
             multiSelectionEnabled: false,
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+              backgroundColor: WidgetStateProperty.resolveWith<Color?>((
+                states,
+              ) {
                 if (states.contains(WidgetState.selected)) {
                   return Theme.of(context).colorScheme.primary.withAlpha(30);
                 }
                 return Theme.of(context).colorScheme.surface;
               }),
-              foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+              foregroundColor: WidgetStateProperty.resolveWith<Color?>((
+                states,
+              ) {
                 if (states.contains(WidgetState.selected)) {
                   return Theme.of(context).colorScheme.primary;
                 }
                 return Theme.of(context).colorScheme.onSurfaceVariant;
               }),
               side: WidgetStateProperty.all(
-                BorderSide(color: Theme.of(context).colorScheme.primary.withAlpha(40)),
+                BorderSide(
+                  color: Theme.of(context).colorScheme.primary.withAlpha(40),
+                ),
               ),
               textStyle: WidgetStateProperty.all(
                 const TextStyle(fontSize: 11, letterSpacing: 0.5),
@@ -367,10 +430,11 @@ class _RosterScreenState extends State<RosterScreen> {
   //   );
   // }
 
-    // --- EMPTY STATE ---
+  // --- EMPTY STATE ---
   Widget _buildEmptyState() {
     // Different message depending on whether it's empty roster or empty filter result
-    final hasAgentsButFiltered = _allAgents.isNotEmpty && _filteredAgents.isEmpty;
+    final hasAgentsButFiltered =
+        _allAgents.isNotEmpty && _filteredAgents.isEmpty;
 
     return Center(
       child: Column(
@@ -378,10 +442,7 @@ class _RosterScreenState extends State<RosterScreen> {
         children: [
           Opacity(
             opacity: 0.5,
-            child: Image.asset(
-              "assets/icons/app_icon.png",
-              width: 120,
-            ),
+            child: Image.asset("assets/icons/app_icon.png", width: 120),
           ),
           const SizedBox(height: 16),
           Text(
@@ -408,43 +469,43 @@ class _RosterScreenState extends State<RosterScreen> {
     );
   }
 
-//   // VY 2: ROSTER LIST — uses shared AgentCard
-//   Widget _buildRosterList() {
-//     return ListView.builder(
-//       padding: const EdgeInsets.all(16),
-//       itemCount: _summaries.length,
-//       itemBuilder: (context, index) {
-//         final summary = _summaries[index];
-//         return AgentCard(
-//           agent: summary,
-//           layout: AgentCardLayout.list,
-//           onTap: () {
-//             // Cache the full model, then navigate
-//             AgentCache.put(_allAgents[index]);
-//             Navigator.push(
-//               context, 
-//             MaterialPageRoute(
-//               builder: (context) => 
-//                AgentDetailsScreen(agent: _allAgents[index], showSaveButton: false,)));
-//             //context.go('/details/${summary.id}');
-//           },
-//           onDismiss: () {
-//             final name = summary.name;
-//             _removeAgent(index);
-//             ScaffoldMessenger.of(context).showSnackBar(
-//               SnackBar(content: Text("$name REMOVED FROM ROSTER")),
-//             );
-//           },
-//         );
-//       },
-//     );
-//   }
-// }
+  //   // VY 2: ROSTER LIST — uses shared AgentCard
+  //   Widget _buildRosterList() {
+  //     return ListView.builder(
+  //       padding: const EdgeInsets.all(16),
+  //       itemCount: _summaries.length,
+  //       itemBuilder: (context, index) {
+  //         final summary = _summaries[index];
+  //         return AgentCard(
+  //           agent: summary,
+  //           layout: AgentCardLayout.list,
+  //           onTap: () {
+  //             // Cache the full model, then navigate
+  //             AgentCache.put(_allAgents[index]);
+  //             Navigator.push(
+  //               context,
+  //             MaterialPageRoute(
+  //               builder: (context) =>
+  //                AgentDetailsScreen(agent: _allAgents[index], showSaveButton: false,)));
+  //             //context.go('/details/${summary.id}');
+  //           },
+  //           onDismiss: () {
+  //             final name = summary.name;
+  //             _removeAgent(index);
+  //             ScaffoldMessenger.of(context).showSnackBar(
+  //               SnackBar(content: Text("$name REMOVED FROM ROSTER")),
+  //             );
+  //           },
+  //         );
+  //       },
+  //     );
+  //   }
+  // }
 
   // --- ROSTER LIST ---
   Widget _buildRosterList() {
-    final visible = _filteredAgents;
-    final summaries = AgentSummaryMapper.toSummaryList(visible);
+    final agents = _filteredAgents;
+    //final summaries = AgentSummaryMapper.toSummaryList(agents);
 
     return RefreshIndicator(
       color: Theme.of(context).colorScheme.primary,
@@ -453,26 +514,36 @@ class _RosterScreenState extends State<RosterScreen> {
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
-        itemCount: summaries.length,
+        itemCount: agents.length,
         itemBuilder: (context, index) {
-          final summary = summaries[index];
+          final agentSummary = AgentSummaryMapper.toSummary(agents[index]);
           return AgentCard(
-            agent: summary,
+            agent: agentSummary,
             layout: AgentCardLayout.list,
             onTap: () {
               //Cache the full model, then navigate
-              AgentCache.put(_allAgents[index]);
+              //AgentCache.put(_allAgents[index]);
               Navigator.push(
-                context, 
-              MaterialPageRoute(
-                builder: (context) => 
-                 AgentDetailsScreen(agent: _allAgents[index], showSaveButton: false,))
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AgentDetailsScreen(
+                    agent: agents[index],
+                    showSaveButton: false,
+                  ),
+                ),
               );
             },
             onDismiss: () {
-              _removeAgent(visible[index]);
+              _removeAgent(agents[index]);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("${visible[index].name} REMOVED FROM ROSTER")),
+                SnackBar(
+                  content: Center(
+                    child: Text(
+                      "${agents[index].name} removed from roster ✅",
+                      style: TextStyle(letterSpacing: 1, fontWeight: .bold),
+                    ),
+                  ),
+                ),
               );
             },
           );
