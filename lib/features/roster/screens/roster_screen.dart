@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_herodex3000/barrel_files/models.dart';
 import 'package:flutter_herodex3000/data/managers/agent_cache.dart';
 import 'package:flutter_herodex3000/data/repositories/saved_agents_repository.dart';
-import 'package:flutter_herodex3000/features/agent_details/screens/agent_details_screen.dart';
+import 'package:flutter_herodex3000/presentation/widgets/agent_details_screen.dart';
 import 'package:flutter_herodex3000/presentation/helpers/agent_summary_mapper.dart';
 import 'package:flutter_herodex3000/presentation/widgets/agent_card.dart';
+import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dart';
 
 // Which alignments are currently visible.
 enum AgentAlignment { good, bad, neutral }
@@ -137,9 +138,9 @@ class _RosterScreenState extends State<RosterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ResponsiveScaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Column(
+      child: Column(
         children: [
           // --- TOP SECTION: title + search + filters ---
           _buildTopBar(),
