@@ -8,9 +8,6 @@ import 'package:flutter_herodex3000/barrel_files/interfaces.dart';
 class SuperHeroApiRepository implements ISuperHeroApiRepository{
   final String baseUrl;
   final IHttpClientFactory clientFactory;
-  
-  // Create and load dotenv instance
-  //static final dotenvEnv = dotenv.DotEnv(includePlatformEnvironment: true)..load();
 
   SuperHeroApiRepository({
     required this.clientFactory,
@@ -39,7 +36,6 @@ class SuperHeroApiRepository implements ISuperHeroApiRepository{
           }
           else{
             debugPrint("❌ Request misslyckades med status: ${response.statusCode}");
-            // return [];
           } 
           } finally {
               client.close();
