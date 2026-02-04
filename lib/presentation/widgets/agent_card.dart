@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_herodex3000/presentation/view_models/agent_summary.dart';
+import 'package:flutter_herodex3000/presentation/widgets/cors_proxy_image.dart';
 
 /// Shared card widget used in both Search (grid) and Roster (list).
 ///
@@ -208,14 +209,10 @@ class AgentCard extends StatelessWidget {
 
     if (agent.imageUrl.trim().isEmpty) return placeholder;
 
-    return Image.network(
-      agent.imageUrl,
+    return CorsProxyImage(
+      imageUrl:  agent.imageUrl,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => placeholder,
-      loadingBuilder: (context, child, progress) {
-        if (progress == null) return child;
-        return placeholder;
-      },
+      errorWidget: placeholder,
     );
   }
 

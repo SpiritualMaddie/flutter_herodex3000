@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_herodex3000/barrel_files/models.dart';
 import 'package:flutter_herodex3000/barrel_files/interfaces.dart';
@@ -17,12 +17,24 @@ class SuperHeroApiRepository implements ISuperHeroApiRepository{
       throw Exception("❌ baseUrl är tomt.");
     }
   }
+
+    // Proxy API requests on web to bypass CORS.
+  // On mobile, use direct URL.
+  String _getProxiedUrl(String endpoint) {
+    final fullUrl = "$baseUrl$endpoint";
+    
+    // On mobile/desktop: use direct URL
+    if (!kIsWeb) return fullUrl;
+    
+    // On web: proxy through allorigins to bypass CORS
+    return 'https://api.allorigins.win/raw?url=${Uri.encodeComponent(fullUrl)}';
+  }
   
   // Function to get hero/villian by name from the API https://superheroapi.com/ that reads from the .env for the API key
   @override
   Future<List<AgentModel>> getAgentByName(String agentName) async {
-
-    final searchUrl = Uri.parse("$baseUrl/search/$agentName");
+  final searchUrl = Uri.parse(_getProxiedUrl("/search/$agentName"));
+    //final searchUrl = Uri.parse("$baseUrl/search/$agentName");
     
       try {
         for(int attempt = 0; attempt < 3; attempt++){
@@ -35,7 +47,7 @@ class SuperHeroApiRepository implements ISuperHeroApiRepository{
             return _parseAgents(response.body);       
           }
           else{
-            debugPrint("❌ Request misslyckades med status: ${response.statusCode}");
+            debugPrint("❌ Request failed with status: ${response.statusCode}");
           } 
           } finally {
               client.close();
@@ -43,14 +55,17 @@ class SuperHeroApiRepository implements ISuperHeroApiRepository{
               
           if(attempt <2) await Future.delayed(const Duration(seconds: 2));
         }
-      } on FormatException catch (e){ // JSON decode or unexpected body
-          debugPrint("❌ Fel vid tolkning av JSON: $e");
+      } on FormatException catch (e){
+        // JSON decode or unexpected body
+          debugPrint("❌ Error JSON decoding: $e");
           return [];
-      } on SocketException catch (e){ // No internet or DNS issue
-          debugPrint("❌ Nätverksfel: $e");
+      } on SocketException catch (e){
+        // No internet or DNS issue
+          debugPrint("❌ Network error: $e");
           return [];
-      } catch (e, stack) {            // Catch everything else
-          debugPrint("❌ Oväntat fel: $e");
+      } catch (e, stack) {            
+        // Catch everything else
+          debugPrint("❌ Unknown error: $e");
           debugPrint("Stacktrace: $stack");
           return [];
       }

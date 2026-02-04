@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_herodex3000/data/managers/agent_data_manager.dart';
 import 'package:flutter_herodex3000/data/models/agent_model.dart';
 import 'package:flutter_herodex3000/data/repositories/firestore_repository.dart';
+import 'package:flutter_herodex3000/presentation/widgets/cors_proxy_image.dart';
 import 'package:go_router/go_router.dart';
 
 // TODO alignment on card right top
@@ -170,11 +171,11 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
           ),
           child: Center(
             child: hasImage
-                ? Image.network(
-                    imageUrl!,
+                ? CorsProxyImage(
+                    imageUrl: imageUrl,
                     height: 200,
                     fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) =>
+                    errorWidget:
                         Icon(Icons.shield, size: 120, color: _accentColor),
                   )
                 : Icon(Icons.shield, size: 120, color: _accentColor),
