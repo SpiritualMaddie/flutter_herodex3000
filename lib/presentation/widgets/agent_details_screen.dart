@@ -27,6 +27,9 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   final SavedAgentsRepository _savedAgentsRepo = SavedAgentsRepository();
   bool _isSaved = false;
   bool _isSaving = false;
+  String goodAlignment = "hero"; // TODO
+  String badAlignment = "villian";
+  String neutralAlignment = "neutral";
 
   bool get _isHero =>
       widget.agent.biography.alignment.trim().toLowerCase() == 'good';
@@ -64,7 +67,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("${widget.agent.name} SAVED TO ROSTER")),
+          SnackBar(content: Text("${widget.agent.name} SAVED TO ROSTER", style: TextStyle(color: Colors.black, fontWeight: .bold),), backgroundColor: Colors.green,),
         );
       }
     } catch (e, st) {
@@ -82,7 +85,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A111A),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           _buildSliverAppBar(),
@@ -124,7 +127,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     return SliverAppBar(
       backgroundColor: Colors.transparent,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios, color: Colors.cyan),
+        icon: Icon(Icons.arrow_back_ios, color: Theme.of(context).colorScheme.primary),
         onPressed: () => context.pop(),
       ),
       expandedHeight: 300,
@@ -165,7 +168,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
           children: [
             Text(
               "AGENT CODENAME",
-              style: TextStyle(color: _accentColor.withAlpha(180), fontSize: 12),
+              style: TextStyle(color: _accentColor.withAlpha(180), fontSize: 12, fontWeight: .bold, letterSpacing: 1),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -175,7 +178,10 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
                 border: Border.all(color: _accentColor.withAlpha(80)),
               ),
               child: Text(
-                bio.alignment.toUpperCase(),
+                bio.alignment == "good" ? "HERO"
+                  : bio.alignment == "bad" ? "VILLAIN"
+                  : bio.alignment == "neutral" ? "NEUTRAL"
+                  : "UNKNOWN",
                 style: TextStyle(
                   color: _accentColor,
                   fontSize: 10,
@@ -189,8 +195,8 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
         const SizedBox(height: 4),
         Text(
           widget.agent.name,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 32,
             fontWeight: FontWeight.bold,
           ),
@@ -199,12 +205,12 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
         if (_hasContent(bio.fullName))
           Text(
             bio.fullName!,
-            style: const TextStyle(color: Colors.grey, fontSize: 14),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14, fontWeight: .bold),
           ),
         if (_hasContent(bio.alterEgos))
           Text(
             bio.alterEgos!,
-            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 12),
           ),
       ],
     );
@@ -235,7 +241,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(label,
-                  style: const TextStyle(color: Colors.grey, fontSize: 10)),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 10, letterSpacing: 1, fontWeight: .bold)),
               Text(
                 '${value.clamp(0, 100)}',
                 style: TextStyle(
@@ -251,7 +257,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: value.clamp(0, 100) / 100.0,
-              backgroundColor: const Color(0xFF1A2E3D),
+              backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(50),
               color: _accentColor,
               minHeight: 8,
             ),
@@ -375,7 +381,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
         Text(
           title,
           style: TextStyle(
-              color: _accentColor, fontSize: 12, letterSpacing: 2),
+              color: _accentColor, fontSize: 12, letterSpacing: 2, fontWeight: .bold),
         ),
         const SizedBox(height: 12),
         ...rows,
@@ -394,13 +400,13 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
             width: 140,
             child: Text(
               label.toUpperCase(),
-              style: const TextStyle(color: Colors.grey, fontSize: 10),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 10,),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(color: Colors.white, fontSize: 13),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13, fontWeight: .bold),
             ),
           ),
         ],
@@ -419,13 +425,13 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
       return ElevatedButton(
         onPressed: null, // Disabled
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.grey[700],
-          disabledBackgroundColor: Colors.grey[700],
+          backgroundColor: Theme.of(context).colorScheme.onSurface,
+          disabledBackgroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
           minimumSize: const Size(double.infinity, 56),
         ),
-        child: const Text(
+        child: Text(
           "ALREADY IN ROSTER ✓",
-          style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       );
     }
@@ -437,18 +443,18 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
         minimumSize: const Size(double.infinity, 56),
       ),
       child: _isSaving
-          ? const SizedBox(
+          ? SizedBox(
               height: 24,
               width: 24,
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
-                color: Colors.black,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             )
           : Text(
               "SAVE TO ROSTER",
               style: TextStyle(
-                color: _accentColor == Colors.cyan ? Colors.black : Colors.white,
+                color: _accentColor == Theme.of(context).colorScheme.primary ? Colors.black : Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
