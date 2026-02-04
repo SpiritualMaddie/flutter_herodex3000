@@ -138,7 +138,7 @@ class _RosterScreenState extends State<RosterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A111A),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(
         children: [
           // --- TOP SECTION: title + search + filters ---
@@ -146,8 +146,8 @@ class _RosterScreenState extends State<RosterScreen> {
           // --- AGENT LIST or states ---
           Expanded(
             child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: Colors.cyan),
+                ? Center(
+                    child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
                   )
                 : _filteredAgents.isEmpty
                     ? _buildEmptyState()
@@ -161,18 +161,18 @@ class _RosterScreenState extends State<RosterScreen> {
   // --- TOP BAR ---
   Widget _buildTopBar() {
     return Container(
-      color: const Color(0xFF0A111A),
+      color: Theme.of(context).scaffoldBackgroundColor,
       padding: const EdgeInsets.only(top: 56, left: 16, right: 16, bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Title
-          const Text(
+          Text(
             "AGENTS ROSTER",
             style: TextStyle(
               letterSpacing: 2,
               fontSize: 18,
-              color: Colors.cyan,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
           const SizedBox(height: 12),
@@ -182,28 +182,28 @@ class _RosterScreenState extends State<RosterScreen> {
             height: 44,
             child: TextField(
               controller: _searchController,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: const Color(0xFF121F2B),
+                fillColor: Theme.of(context).colorScheme.onSurface.withAlpha(20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.cyan.withAlpha(40)),
+                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary.withAlpha(40)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.cyan.withAlpha(100)),
+                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary.withAlpha(100)),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.cyan.withAlpha(40)),
+                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary.withAlpha(40)),
                 ),
                 hintText: "Search roster...",
-                hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
-                prefixIcon: const Icon(Icons.search, color: Colors.cyan, size: 20),
+                hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
+                prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary, size: 20),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.close, color: Colors.grey, size: 18),
+                        icon: Icon(Icons.close, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 18),
                         onPressed: () => _searchController.clear(),
                       )
                     : null,
@@ -219,12 +219,12 @@ class _RosterScreenState extends State<RosterScreen> {
               ButtonSegment(
                 value: AgentAlignment.good,
                 label: Text("GOOD", style: TextStyle(fontSize: 11)),
-                icon: Icon(Icons.shield, size: 14),
+                icon: Icon(Icons.shield, size: 14, color: Colors.cyan,),
               ),
               ButtonSegment(
                 value: AgentAlignment.bad,
                 label: Text("BAD", style: TextStyle(fontSize: 11)),
-                icon: Icon(Icons.warning_amber, size: 14),
+                icon: Icon(Icons.warning_amber, size: 14, color: Colors.red),
               ),
               ButtonSegment(
                 value: AgentAlignment.neutral,
@@ -242,18 +242,18 @@ class _RosterScreenState extends State<RosterScreen> {
             style: ButtonStyle(
               backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
                 if (states.contains(WidgetState.selected)) {
-                  return Colors.cyan.withAlpha(30);
+                  return Theme.of(context).colorScheme.primary.withAlpha(30);
                 }
-                return const Color(0xFF121F2B);
+                return Theme.of(context).colorScheme.surface;
               }),
               foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
                 if (states.contains(WidgetState.selected)) {
-                  return Colors.cyan;
+                  return Theme.of(context).colorScheme.primary;
                 }
-                return Colors.grey;
+                return Theme.of(context).colorScheme.onSurfaceVariant;
               }),
               side: WidgetStateProperty.all(
-                BorderSide(color: Colors.cyan.withAlpha(40)),
+                BorderSide(color: Theme.of(context).colorScheme.primary.withAlpha(40)),
               ),
               textStyle: WidgetStateProperty.all(
                 const TextStyle(fontSize: 11, letterSpacing: 0.5),
@@ -288,18 +288,18 @@ class _RosterScreenState extends State<RosterScreen> {
             style: ButtonStyle(
               backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
                 if (states.contains(WidgetState.selected)) {
-                  return Colors.cyan.withAlpha(30);
+                  return Theme.of(context).colorScheme.primary.withAlpha(30);
                 }
-                return const Color(0xFF121F2B);
+                return Theme.of(context).colorScheme.surface;
               }),
               foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
                 if (states.contains(WidgetState.selected)) {
-                  return Colors.cyan;
+                  return Theme.of(context).colorScheme.primary;
                 }
-                return Colors.grey;
+                return Theme.of(context).colorScheme.onSurfaceVariant;
               }),
               side: WidgetStateProperty.all(
-                BorderSide(color: Colors.cyan.withAlpha(40)),
+                BorderSide(color: Theme.of(context).colorScheme.primary.withAlpha(40)),
               ),
               textStyle: WidgetStateProperty.all(
                 const TextStyle(fontSize: 11, letterSpacing: 0.5),
@@ -385,8 +385,8 @@ class _RosterScreenState extends State<RosterScreen> {
           const SizedBox(height: 16),
           Text(
             hasAgentsButFiltered ? "NO MATCHING AGENTS" : "NO AGENTS IN ROSTER",
-            style: const TextStyle(
-              color: Colors.cyan,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
               letterSpacing: 2,
               fontSize: 17,
             ),
@@ -395,8 +395,8 @@ class _RosterScreenState extends State<RosterScreen> {
             hasAgentsButFiltered
                 ? "TRY ADJUSTING YOUR FILTERS"
                 : "GO TO SEARCH TO FIND NEW ALLIES",
-            style: const TextStyle(
-              color: Colors.grey,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               letterSpacing: 1,
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -446,8 +446,8 @@ class _RosterScreenState extends State<RosterScreen> {
     final summaries = AgentSummaryMapper.toSummaryList(visible);
 
     return RefreshIndicator(
-      color: Colors.cyan,
-      backgroundColor: const Color(0xFF121F2B),
+      color: Theme.of(context).colorScheme.primary,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       onRefresh: _loadAgents,
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),

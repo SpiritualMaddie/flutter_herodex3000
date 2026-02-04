@@ -155,7 +155,7 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withAlpha(20),
+        color: Theme.of(context).colorScheme.primary.withAlpha(40),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: accentColor.withAlpha(24)),
       ),
@@ -224,7 +224,7 @@ class _FightingPowerCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withAlpha(20),
+        color: Theme.of(context).colorScheme.primary.withAlpha(40),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Theme.of(context).colorScheme.primary.withAlpha(20)),
       ),
@@ -247,7 +247,7 @@ class _FightingPowerCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withAlpha(20),
+                  color: Theme.of(context).colorScheme.primary.withAlpha(40),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(

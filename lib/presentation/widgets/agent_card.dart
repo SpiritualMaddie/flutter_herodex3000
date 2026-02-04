@@ -25,15 +25,14 @@ class AgentCard extends StatelessWidget {
     this.onDismiss,
   });
 
-  // TODO Colors based on alignment doesnt work
-  // Also make small alignment "hero" or "villain" in right corner
+  // TODO Also make small alignment "hero" or "villain" in right corner
   Color get _accentColor => agent.isHero ? Colors.cyan : Colors.redAccent;
 
   @override
   Widget build(BuildContext context) {
     final card = switch (layout) {
-      AgentCardLayout.grid => _buildGridCard(),
-      AgentCardLayout.list => _buildListCard(),
+      AgentCardLayout.grid => _buildGridCard(context),
+      AgentCardLayout.list => _buildListCard(context),
     };
 
     // Wrap in Dismissible only for list layout when onDismiss is provided
@@ -60,12 +59,12 @@ class AgentCard extends StatelessWidget {
   }
 
   // --- GRID CARD (Search) ---
-  Widget _buildGridCard() {
+  Widget _buildGridCard(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF121F2B),
+          color: Theme.of(context).colorScheme.primary.withAlpha(40),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: _accentColor.withAlpha(24)),
         ),
@@ -80,7 +79,7 @@ class AgentCard extends StatelessWidget {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: _buildImageOrPlaceholder(expanded: true),
+                  child: _buildImageOrPlaceholder(expanded: true, context: context),
                 ),
               ),
             ),
@@ -92,8 +91,8 @@ class AgentCard extends StatelessWidget {
                 children: [
                   Text(
                     agent.name,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                     ),
@@ -101,11 +100,11 @@ class AgentCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 6),
-                  _buildMiniStatBar('PWR', agent.power, _accentColor),
+                  _buildMiniStatBar('PWR', agent.power, _accentColor, context),
                   const SizedBox(height: 4),
-                  _buildMiniStatBar('STR', agent.strength, Colors.brown),
+                  _buildMiniStatBar('STR', agent.strength, Colors.brown, context),
                   const SizedBox(height: 4),
-                  _buildMiniStatBar('INT', agent.intelligence, Colors.grey),
+                  _buildMiniStatBar('INT', agent.intelligence, Theme.of(context).colorScheme.secondary.withAlpha(90), context),
                 ],
               ),
             ),
@@ -116,14 +115,14 @@ class AgentCard extends StatelessWidget {
   }
 
   // --- LIST CARD (Roster) ---
-  Widget _buildListCard() {
+  Widget _buildListCard(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF121F2B),
+          color: Theme.of(context).colorScheme.primary.withAlpha(40),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: _accentColor.withAlpha(20)),
         ),
@@ -135,7 +134,7 @@ class AgentCard extends StatelessWidget {
               height: 60,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: _buildImageOrPlaceholder(expanded: false),
+                child: _buildImageOrPlaceholder(expanded: false, context: context),
               ),
             ),
             const SizedBox(width: 16),
@@ -149,28 +148,40 @@ class AgentCard extends StatelessWidget {
                     children: [
                       Text(
                         agent.name,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                       ),
-                      Text(
-                        agent.alignment.toUpperCase(),
-                        style: TextStyle(
-                          color: _accentColor,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: _accentColor.withAlpha(30),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: _accentColor.withAlpha(80)),
+              ),
+              child: Text(
+                agent.alignment == "good" ? "HERO"
+                  : agent.alignment == "bad" ? "VILLAIN"
+                  : agent.alignment == "neutral" ? "NEUTRAL"
+                  : "UNKNOWN",
+                style: TextStyle(
+                  color: _accentColor,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
+              ),
+            ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  _buildMiniStatBar('PWR', agent.power, _accentColor),
+                  _buildMiniStatBar('PWR', agent.power, _accentColor, context),
                   const SizedBox(height: 4),
-                  _buildMiniStatBar('STR', agent.strength, Colors.brown),
+                  _buildMiniStatBar('STR', agent.strength, Colors.brown, context),
                   const SizedBox(height: 4),
-                  _buildMiniStatBar('INT', agent.intelligence, Colors.grey),
+                  _buildMiniStatBar('INT', agent.intelligence, Colors.grey, context),
                 ],
               ),
             ),
@@ -183,9 +194,9 @@ class AgentCard extends StatelessWidget {
   // --- SHARED HELPERS ---
 
   /// Shows the agent image if available, otherwise a placeholder icon.
-  Widget _buildImageOrPlaceholder({required bool expanded}) {
+  Widget _buildImageOrPlaceholder({required bool expanded, required BuildContext context}) {
     final placeholder = Container(
-      color: const Color(0xFF0A111A),
+      color: Theme.of(context).colorScheme.surface,
       child: Center(
         child: Icon(
           Icons.person,
@@ -210,14 +221,14 @@ class AgentCard extends StatelessWidget {
 
   /// Compact stat bar used in both grid and list cards.
   /// [value] is 0–100 from the API, normalized to 0.0–1.0 for the progress indicator.
-  Widget _buildMiniStatBar(String label, int value, Color color) {
+  Widget _buildMiniStatBar(String label, int value, Color color, BuildContext context) {
     return Row(
       children: [
         SizedBox(
           width: 30,
           child: Text(
             label,
-            style: const TextStyle(color: Colors.grey, fontSize: 8),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 8),
           ),
         ),
         Expanded(

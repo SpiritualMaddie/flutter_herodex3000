@@ -80,13 +80,13 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A111A),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: TextField(
           controller: _searchController,
           onChanged: _onSearchChanged,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
           decoration: InputDecoration(
             hintText: "SEARCH FOR FELLOW AGENTS...",
             hintStyle: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 12),
@@ -115,10 +115,10 @@ class _SearchScreenState extends State<SearchScreen> {
             "AWAITING INPUT",
             style: TextStyle(color: Theme.of(context).colorScheme.primary, letterSpacing: 2, fontSize: 17),
           ),
-          const Text(
+          Text(
             "READY TO SEARCH",
             style: TextStyle(
-              color: Colors.grey,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               letterSpacing: 1,
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -141,8 +141,8 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
       itemCount: 6,
       itemBuilder: (context, index) => Shimmer.fromColors(
-        baseColor: const Color(0xFF121F2B),
-        highlightColor: const Color(0xFF1A2E3D),
+        baseColor: Theme.of(context).colorScheme.primary.withAlpha(20),
+        highlightColor: Theme.of(context).colorScheme.primary.withAlpha(60),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.black,

@@ -208,8 +208,8 @@ class RootNavigation extends StatelessWidget {
     int currentIndex = 0;
 
     if (location.startsWith("/home")) currentIndex = 0;
-    if (location.startsWith("/search")) currentIndex = 1;
-    if (location.startsWith("/roster")) currentIndex = 2;
+    if (location.startsWith("/roster")) currentIndex = 1;
+    if (location.startsWith("/search")) currentIndex = 2;
     if (location.startsWith("/settings")) currentIndex = 3;
 
     return Scaffold(
