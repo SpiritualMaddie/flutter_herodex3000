@@ -260,7 +260,12 @@ import 'package:flutter/material.dart';
 ///   fit: BoxFit.cover,
 /// )
 /// ```
-class CorsProxyImage extends StatelessWidget {
+/// 
+/// 
+/// 
+
+// This kind of works, mostly
+class CorsProxyImage extends StatefulWidget {
   final String? imageUrl;
   final double? width;
   final double? height;
@@ -278,52 +283,153 @@ class CorsProxyImage extends StatelessWidget {
     this.errorWidget,
   });
 
-  // CORS proxy for web. Uses a public proxy service.
-  // Alternative proxies if this one goes down:
-  // - https://corsproxy.io/?
-  /// - https://api.allorigins.win/raw?url=
-  static const String _corsProxy = 'https://api.allorigins.win/raw?url=';
+  @override
+  State<CorsProxyImage> createState() => _CorsProxyImageState();
+}
 
-  String? get _proxiedUrl {
-    if (imageUrl == null || imageUrl!.isEmpty) return null;
-    
-    // On web, prepend the CORS proxy
-    if (kIsWeb) {
-      return '$_corsProxy${Uri.encodeComponent(imageUrl!)}';
+class _CorsProxyImageState extends State<CorsProxyImage> {
+      // Simple in-memory cache: URL → Image widget
+  // Survives for the session, cleared when app restarts
+  static final Map<String, Image> _imageCache = {};
+
+  // CORS proxy for web. Uses a public proxy service.
+  // List of CORS proxies to try (in order)
+  static const List<String> _corsProxies = [
+    'https://corsproxy.io/?', // Usually more reliable
+    'https://api.allorigins.win/raw?url=',
+    '', // Last attempt: try direct URL (might work for some images)
+  ];
+
+
+  int _currentProxyIndex = 0;
+
+  bool _isLoading = true;
+
+  bool _hasError = false;
+
+    @override
+  void initState() {
+    super.initState();
+    _loadImage();
+  }
+
+  String? get _currentProxiedUrl {
+    if (widget.imageUrl == null || widget.imageUrl!.isEmpty) return null;
+
+    // On mobile/desktop, always use direct URL
+    if (!kIsWeb) return widget.imageUrl;
+
+    // On web, try current proxy
+    final proxy = _corsProxies[_currentProxyIndex];
+    if (proxy.isEmpty) return widget.imageUrl; // Direct attempt
+
+    // Encode URL for proxy
+    return '$proxy${Uri.encodeComponent(widget.imageUrl!)}';
+  }
+
+   void _loadImage() {
+    final url = _currentProxiedUrl;
+    if (url == null) {
+      setState(() {
+        _isLoading = false;
+        _hasError = true;
+      });
+      return;
+    } 
+
+    // Check cache first
+    if (_imageCache.containsKey(url)) {
+      setState(() {
+        _isLoading = false;
+        _hasError = false;
+      });
+      return;
     }
-    
-    // On mobile/desktop, use original URL
-    return imageUrl;
+
+    // Otherwise, Image.network will handle loading
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+  }
+
+  void _tryNextProxy() {
+    if (_currentProxyIndex < _corsProxies.length - 1) {
+      setState(() {
+        _currentProxyIndex++;
+        debugPrint('🔄 Trying next CORS proxy (${_currentProxyIndex + 1}/${_corsProxies.length})');
+      });
+      _loadImage();
+    } else {
+      // All proxies failed
+      setState(() {
+        _isLoading = false;
+        _hasError = true;
+      });
+      debugPrint('❌ All CORS proxies failed for: ${widget.imageUrl}');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final url = _proxiedUrl;
+    final url = _currentProxiedUrl;
 
-    if (url == null) {
+    if (url == null || _hasError) {
       return _buildFallback();
+    }
+
+    // Check cache
+    if (_imageCache.containsKey(url)) {
+      return _imageCache[url]!;
     }
 
     return Image.network(
       url,
-      width: width,
-      height: height,
-      fit: fit ?? BoxFit.cover,
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit ?? BoxFit.cover,
       loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        return placeholder ?? _buildPlaceholder();
+        if (loadingProgress == null) {
+          // Image loaded successfully - cache it!
+          final imageWidget = Image.network(
+            url,
+            width: widget.width,
+            height: widget.height,
+            fit: widget.fit ?? BoxFit.cover,
+          );
+          _imageCache[url] = imageWidget;
+
+          return child;
+        }
+
+        // Still loading - show spinner
+        return widget.placeholder ?? _buildPlaceholder();
       },
       errorBuilder: (context, error, stackTrace) {
-        debugPrint('❌ CorsProxyImage failed to load: $imageUrl\nError: $error');
-        return errorWidget ?? _buildFallback();
+        debugPrint('❌ CorsProxyImage error (proxy ${_currentProxyIndex + 1}/${_corsProxies.length}): ${widget.imageUrl}\nError: $error');
+
+        // Try next proxy
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _tryNextProxy();
+          }
+        });
+
+        // Show loading spinner while trying next proxy
+        if (_currentProxyIndex < _corsProxies.length - 1) {
+          return _buildPlaceholder();
+        }
+
+        // All proxies failed - show fallback
+        return widget.errorWidget ?? _buildFallback();
       },
     );
   }
 
   Widget _buildPlaceholder() {
     return Container(
-      width: width,
-      height: height,
+      width: widget.width,
+      height: widget.height,
       color: const Color(0xFF121F2B),
       child: const Center(
         child: CircularProgressIndicator(
@@ -332,12 +438,12 @@ class CorsProxyImage extends StatelessWidget {
         ),
       ),
     );
-  }
+  } 
 
   Widget _buildFallback() {
     return Container(
-      width: width,
-      height: height,
+      width: widget.width,
+      height: widget.height,
       decoration: BoxDecoration(
         color: const Color(0xFF121F2B),
         borderRadius: BorderRadius.circular(8),

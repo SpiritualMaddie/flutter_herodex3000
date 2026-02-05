@@ -54,8 +54,7 @@ class SuperHeroApiRepository implements ISuperHeroApiRepository {
       debugPrint('🔍 Searching: $agentName (proxy attempt ${proxyIndex + 1}/${_corsProxies.length + 1})');
 
       try {
-        for (int attempt = 0; attempt < 2; attempt++) {
-          // Reduced from 3 to 2 for faster fallback
+        for (int attempt = 0; attempt < 3; attempt++) {
           final client = clientFactory.create();
           try {
             final response = await client
