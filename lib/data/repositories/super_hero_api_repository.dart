@@ -54,12 +54,12 @@ class SuperHeroApiRepository implements ISuperHeroApiRepository {
       debugPrint('🔍 Searching: $agentName (proxy attempt ${proxyIndex + 1}/${_corsProxies.length + 1})');
 
       try {
-        for (int attempt = 0; attempt < 3; attempt++) {
+        for (int attempt = 0; attempt < 5; attempt++) {
           final client = clientFactory.create();
           try {
             final response = await client
                 .get(searchUrl)
-                .timeout(const Duration(seconds: 8)); // Reduced from 10 to 8
+                .timeout(const Duration(seconds: 8));
 
             if (response.statusCode == 200) {
               final agents = await _parseAgents(response.body);
@@ -68,7 +68,7 @@ class SuperHeroApiRepository implements ISuperHeroApiRepository {
                 return agents;
               } else {
                 debugPrint('⚠️ API returned success but no results');
-                return []; // Empty results is valid, don't retry
+                return [];
               }
             } else {
               debugPrint("❌ Request failed with status: ${response.statusCode}");
