@@ -342,7 +342,7 @@ HeroDex 3000 follows **Clean Architecture** principles with clear separation of 
    
    Replace `YOUR_API_KEY_HERE` with your actual SuperHero API key.
 
-4. **Set up Firebase - if needed**
+4. **Set up Firebase**
    
    a. Create a new Firebase project at [Firebase Console](https://console.firebase.google.com/)
    
@@ -556,6 +556,11 @@ flutter test --coverage
 - iOS: ATT implemented but not tested (no Mac/iOS simulator)
 - macOS: Firebase configured but not tested
 - Linux: Expected to work but not validated
+
+### Firebase Setup Required
+- Users must create their own Firebase project
+- Cannot use developer's Firebase instance (security rules)
+- Requires manual configuration of Auth, Firestore, Analytics, Crashlytics  
 
 ---
 
