@@ -1,10 +1,8 @@
-// features/agent_details/screens/agent_details_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_herodex3000/data/managers/agent_data_manager.dart';
 import 'package:flutter_herodex3000/data/models/agent_model.dart';
-import 'package:flutter_herodex3000/data/repositories/firestore_repository.dart';
 import 'package:flutter_herodex3000/presentation/widgets/cors_proxy_image.dart';
+import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dart';
 import 'package:go_router/go_router.dart';
 
 // TODO alignment on card right top
@@ -110,9 +108,9 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ResponsiveScaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: CustomScrollView(
+      child: CustomScrollView(
         slivers: [
           _buildSliverAppBar(),
           SliverToBoxAdapter(

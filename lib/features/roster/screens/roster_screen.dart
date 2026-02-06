@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_herodex3000/barrel_files/models.dart';
 import 'package:flutter_herodex3000/data/managers/agent_data_manager.dart';
-import 'package:flutter_herodex3000/presentation/widgets/agent_details_screen.dart';
+import 'package:flutter_herodex3000/data/managers/settings_manager.dart';
+import 'package:flutter_herodex3000/data/services/shared_preferences_service.dart';
+import 'package:flutter_herodex3000/presentation/screens/agent_details_screen.dart';
 import 'package:flutter_herodex3000/presentation/helpers/agent_summary_mapper.dart';
 import 'package:flutter_herodex3000/presentation/widgets/agent_card.dart';
 import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dart';
 import 'package:flutter_herodex3000/presentation/widgets/screen_header.dart';
-import 'package:flutter_herodex3000/presentation/widgets/section_header.dart';
 
 // Which alignments are currently visible.
 enum AgentAlignment { good, bad, neutral }
@@ -24,9 +25,12 @@ class RosterScreen extends StatefulWidget {
 class _RosterScreenState extends State<RosterScreen> {
   final AgentDataManager _agentDataRepo = AgentDataManager();
   final TextEditingController _searchController = TextEditingController();
+  late final SharedPreferencesService _sharedPrefsService;
+  late final SettingsManager _settingsManager;
 
   bool _isLoading = true;
   List<AgentModel> _allAgents = [];
+  bool _showSwipeHint = false;
 
   // Which alignment checkboxes are active. Start with all selected.
   Set<AgentAlignment> _selectedAlignments = {
@@ -50,12 +54,47 @@ class _RosterScreenState extends State<RosterScreen> {
   @override
   void initState() {
     super.initState();
+    _sharedPrefsService = SharedPreferencesService();
+    _settingsManager = SettingsManager(_sharedPrefsService);
     _loadAgents();
     _searchController.addListener(() {
       setState(
         () => _searchQuery = _searchController.text.trim().toLowerCase(),
       );
     });
+    _checkFirstVisit();
+  }
+
+  // Check if this is user's first time seeing the roster with items
+  Future<void> _checkFirstVisit() async {
+    final hasSeenHint = _settingsManager.rosterSwipeHintSeen;
+    debugPrint(
+      "🔵 _checkFirstVisit() - _settingsManager.rosterSwipeHintSeen = ${_settingsManager.rosterSwipeHintSeen}",
+    );
+
+    // Wait a bit for agents to load and let the user take in whats happening
+    await Future.delayed(const Duration(seconds: 3));
+    debugPrint("🔵 _allAgents.length: ${_allAgents.length}");
+
+    if (!hasSeenHint && _allAgents.isNotEmpty && mounted) {
+      setState(() => _showSwipeHint = true);
+
+      // Auto-hide after x seconds
+      Future.delayed(const Duration(seconds: 25), () {
+        if (mounted) {
+          _dismissSwipeHint();
+          debugPrint("🔵 Autohides and calls _dismissSwipeHint");
+        }
+      });
+    }
+  }
+
+  void _dismissSwipeHint() {
+    setState(() => _showSwipeHint = false);
+    _settingsManager.saveRosterSwipeHintSeen(value: true);
+    debugPrint(
+      "🔵 _dismissSwipeHint() - _settingsManager.rosterSwipeHintSeen = ${_settingsManager.rosterSwipeHintSeen}",
+    );
   }
 
   // Derives the visible list by applying search, alignment filter, then sort.
@@ -113,6 +152,11 @@ class _RosterScreenState extends State<RosterScreen> {
 
   // Removes an agent from Firestore.
   Future<void> _removeAgent(AgentModel agent) async {
+    // Dismiss hint if still showing
+    if (_showSwipeHint) {
+      _dismissSwipeHint();
+      debugPrint("🔴 _dismissSwipeHint() called in _removeAgents()");
+    }
     // Remove from UI immediately
     setState(() {
       _allAgents.removeWhere((a) => a.agentId == agent.agentId);
@@ -147,34 +191,110 @@ class _RosterScreenState extends State<RosterScreen> {
   Widget build(BuildContext context) {
     return ResponsiveScaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      child: Column(
-        children: [
-          // --- HEADER with filters ---
-          ScreenHeader(
-            title: "AGENTS ROSTER",
-            titleIcon: Icons.shield,
-            searchController: _searchController,
-            searchHint: "Search roster...",
-            currentQuery: _searchQuery,
-            onSearchChanged: (query) {
-              // Search is handled by the listener in initState
-              // This callback is just for triggering the rebuild
-            },
-            additionalContent: _buildFilters(),
+      child: SafeArea(
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                // --- HEADER with filters ---
+                ScreenHeader(
+                  title: "AGENTS ROSTER",
+                  titleIcon: Icons.shield,
+                  searchController: _searchController,
+                  searchHint: "Search roster...",
+                  currentQuery: _searchQuery,
+                  onSearchChanged: (query) {
+                    // Search is handled by the listener in initState
+                    // This callback is just for triggering the rebuild
+                  },
+                  additionalContent: _buildFilters(),
+                ),
+                // --- AGENT LIST or states ---
+                Expanded(
+                  child: _isLoading
+                      ? Center(
+                          child: CircularProgressIndicator(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        )
+                      : _filteredAgents.isEmpty
+                      ? _buildEmptyState()
+                      : _buildRosterList(),
+                ),
+              ],
+            ),
+        
+            // Swipe hint overlay
+            if (_showSwipeHint) _buildSwipeHintOverlay(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- SWIPE HINT OVERLAY ---
+  Widget _buildSwipeHintOverlay() {
+    return Positioned(
+      bottom: 80,
+      left: 16,
+      right: 16,
+      child: GestureDetector(
+        onTap: _dismissSwipeHint,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(80),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.swipe_left, color: Theme.of(context).colorScheme.onPrimary, size: 32),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "SWIPE LEFT TO REMOVE",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "Swipe any agent card left to delete from roster",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary.withAlpha(200),
+                          fontSize: 14,
+                          letterSpacing: 1.5,
+                          fontWeight: .bold
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.close, color: Theme.of(context).colorScheme.onPrimary, size: 20),
+                  onPressed: _dismissSwipeHint,
+                  tooltip: 'Dismiss hint',
+                ),
+              ],
+            ),
           ),
-          // --- AGENT LIST or states ---
-          Expanded(
-            child: _isLoading
-                ? Center(
-                    child: CircularProgressIndicator(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  )
-                : _filteredAgents.isEmpty
-                ? _buildEmptyState()
-                : _buildRosterList(),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -188,17 +308,26 @@ class _RosterScreenState extends State<RosterScreen> {
           segments: const [
             ButtonSegment(
               value: AgentAlignment.good,
-              label: Text("HERO", style: TextStyle(fontSize: 11, letterSpacing: 1)),
+              label: Text(
+                "HERO",
+                style: TextStyle(fontSize: 11, letterSpacing: 1),
+              ),
               icon: Icon(Icons.shield, size: 14, color: Colors.cyan),
             ),
             ButtonSegment(
               value: AgentAlignment.bad,
-              label: Text("VILLAIN", style: TextStyle(fontSize: 11, letterSpacing: 1)),
+              label: Text(
+                "VILLAIN",
+                style: TextStyle(fontSize: 11, letterSpacing: 1),
+              ),
               icon: Icon(Icons.warning_amber, size: 14, color: Colors.red),
             ),
             ButtonSegment(
               value: AgentAlignment.neutral,
-              label: Text("NEUTRAL", style: TextStyle(fontSize: 11, letterSpacing: 1)),
+              label: Text(
+                "NEUTRAL",
+                style: TextStyle(fontSize: 11, letterSpacing: 1),
+              ),
               icon: Icon(Icons.remove_circle_outline, size: 14),
             ),
           ],
@@ -222,7 +351,9 @@ class _RosterScreenState extends State<RosterScreen> {
               return Theme.of(context).colorScheme.onSurfaceVariant;
             }),
             side: WidgetStateProperty.all(
-              BorderSide(color: Theme.of(context).colorScheme.primary.withAlpha(40)),
+              BorderSide(
+                color: Theme.of(context).colorScheme.primary.withAlpha(40),
+              ),
             ),
           ),
         ),
@@ -233,16 +364,25 @@ class _RosterScreenState extends State<RosterScreen> {
           segments: const [
             ButtonSegment(
               value: PowerSort.none,
-              label: Text("DEFAULT", style: TextStyle(fontSize: 11, letterSpacing: 1)),
+              label: Text(
+                "DEFAULT",
+                style: TextStyle(fontSize: 11, letterSpacing: 1),
+              ),
             ),
             ButtonSegment(
               value: PowerSort.highest,
-              label: Text("HIGHEST", style: TextStyle(fontSize: 11, letterSpacing: 1)),
+              label: Text(
+                "HIGHEST",
+                style: TextStyle(fontSize: 11, letterSpacing: 1),
+              ),
               icon: Icon(Icons.arrow_upward, size: 14),
             ),
             ButtonSegment(
               value: PowerSort.lowest,
-              label: Text("LOWEST", style: TextStyle(fontSize: 11, letterSpacing: 1)),
+              label: Text(
+                "LOWEST",
+                style: TextStyle(fontSize: 11, letterSpacing: 1),
+              ),
               icon: Icon(Icons.arrow_downward, size: 14),
             ),
           ],
@@ -265,14 +405,16 @@ class _RosterScreenState extends State<RosterScreen> {
               return Theme.of(context).colorScheme.onSurfaceVariant;
             }),
             side: WidgetStateProperty.all(
-              BorderSide(color: Theme.of(context).colorScheme.primary.withAlpha(40)),
+              BorderSide(
+                color: Theme.of(context).colorScheme.primary.withAlpha(40),
+              ),
             ),
           ),
         ),
       ],
     );
   }
- 
+
   // --- EMPTY STATE ---
   Widget _buildEmptyState() {
     // Different message depending on whether it's empty roster or empty filter result

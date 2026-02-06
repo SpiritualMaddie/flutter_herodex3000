@@ -1,4 +1,4 @@
-export 'package:flutter_herodex3000/presentation/widgets/agent_details_screen.dart';
+export 'package:flutter_herodex3000/presentation/screens/agent_details_screen.dart';
 export 'package:flutter_herodex3000/features/roster/screens/roster_screen.dart';
 export 'package:flutter_herodex3000/features/search/screens/search_screen.dart';
 export 'package:flutter_herodex3000/features/home/screens/home_screen.dart';

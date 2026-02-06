@@ -5,7 +5,7 @@ import 'package:flutter_herodex3000/data/managers/agent_data_manager.dart';
 import 'package:flutter_herodex3000/presentation/helpers/agent_summary_mapper.dart';
 import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dart';
 import 'package:flutter_herodex3000/presentation/widgets/screen_header.dart';
-import 'package:flutter_herodex3000/presentation/widgets/agent_details_screen.dart';
+import 'package:flutter_herodex3000/presentation/screens/agent_details_screen.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter_herodex3000/presentation/widgets/agent_card.dart';
 

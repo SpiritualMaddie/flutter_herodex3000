@@ -1,5 +1,8 @@
 import 'package:shared_preferences/shared_preferences.dart';
-
+///
+/// SharedPreferences that creates and handles device specific preferences
+/// like theme, onboarding done, analytics, crashlytics, tooltips shown
+///
 class SharedPreferencesService {
   SharedPreferencesService._internal();
 
@@ -20,10 +23,11 @@ class SharedPreferencesService {
           "onboarding_completed",
           "analytics_approved",
           "crashlytics_approved",
-          "location_analytics_approved",
+          //"location_analytics_approved",
           "ios_att_approved",
           "app_theme",
           "splash_shown",
+          "roster_swipe_hint_seen"
         },
       ),
     );
@@ -38,8 +42,8 @@ class SharedPreferencesService {
   Future<void> setCrashlyticsToApproved(bool value) =>
       _prefs.setBool("crashlytics_approved", value);
 
-  Future<void> setLocationAnalyticsToApproved(bool value) =>
-      _prefs.setBool("location_analytics_approved", value);
+  // Future<void> setLocationAnalyticsToApproved(bool value) =>
+  //     _prefs.setBool("location_analytics_approved", value);
 
   Future<void> setIosAttToApproved(bool value) =>
       _prefs.setBool("ios_att_approved", value);
@@ -50,8 +54,8 @@ class SharedPreferencesService {
   bool get crashlyticsIsApproved =>
       _prefs.getBool("crashlytics_approved") ?? false;
 
-  bool get locationAnalyticsIsApproved =>
-      _prefs.getBool("location_analytics_approved") ?? false;
+  // bool get locationAnalyticsIsApproved =>
+  //     _prefs.getBool("location_analytics_approved") ?? false;
 
   bool get iosAttIsApproved => _prefs.getBool("ios_att_approved") ?? false;
 
@@ -66,7 +70,15 @@ class SharedPreferencesService {
   Future<void> setAppTheme(String value) =>
       _prefs.setString("app_theme", value);
 
-  String get currentAppTheme => _prefs.getString("app_theme") ?? "heroDark";
+  String get currentAppTheme => 
+      _prefs.getString("app_theme") ?? "heroDark";
+
+  // --- SET & GET - Roster Swipe Hint ---
+  Future<void> setRosterSwipeHintSeen(bool value) =>
+      _prefs.setBool("roster_swipe_hint_seen", value);
+
+    bool get rosterSwipeHintSeen =>
+      _prefs.getBool("roster_swipe_hint_seen") ?? false;
 
   // --- SET & GET - Splash Screen ---
   // Future<void> setSplashShown(bool value) =>
