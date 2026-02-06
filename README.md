@@ -106,7 +106,7 @@ To stop the invasion completely, humanity needs a new HeroDex — modern, stable
 ### Onboarding & Authentication
 <p align="center">
   <img src="assets/screenshots/onboarding.JPG" alt="Onboarding Flow" width="30%"/>
-  &nbsp;
+  &nbsp; &nbsp; &nbsp;
   <img src="assets/screenshots/login.JPG" alt="Login Screen" width="30%"/>
 </p>
 <p align="center">
@@ -117,9 +117,9 @@ To stop the invasion completely, humanity needs a new HeroDex — modern, stable
 ### Core Functionality
 <p align="center">
   <img src="assets/screenshots/home.JPG" alt="Mission Control" width="30%"/>
-  &nbsp;
+  &nbsp; &nbsp; &nbsp;
   <img src="assets/screenshots/search.JPG" alt="Agent Search" width="30%"/>
-  &nbsp;
+  &nbsp; &nbsp; &nbsp;
   <img src="assets/screenshots/roster.JPG" alt="Agent Roster" width="30%"/>
 </p>
 <p align="center">
@@ -128,7 +128,7 @@ To stop the invasion completely, humanity needs a new HeroDex — modern, stable
 
 <p align="center">
   <img src="assets/screenshots/details.JPG" alt="Agent Details" width="30%"/>
-  &nbsp;
+  &nbsp; &nbsp; &nbsp;
   <img src="assets/screenshots/settings.JPG" alt="Settings" width="30%"/>
 </p>
 <p align="center">
