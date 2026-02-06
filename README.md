@@ -105,8 +105,8 @@ To stop the invasion completely, humanity needs a new HeroDex — modern, stable
 
 ### Onboarding & Authentication
 <p align="center">
-  <img src="assets/screenshots/onboarding.JPG" alt="Onboarding Flow" width="45%"/>
-  <img src="assets/screenshots/login.JPG" alt="Login Screen" width="45%"/>
+  <img src="assets/screenshots/onboarding.JPG" alt="Onboarding Flow" width="35%"/>
+  <img src="assets/screenshots/login.JPG" alt="Login Screen" width="35%"/>
 </p>
 <p align="center">
   <em>Left: First-time user experience with permission selection and theme picker</em><br/>
@@ -115,17 +115,17 @@ To stop the invasion completely, humanity needs a new HeroDex — modern, stable
 
 ### Core Functionality
 <p align="center">
-  <img src="assets/screenshots/home.JPG" alt="Mission Control" width="30%"/>
-  <img src="assets/screenshots/search.JPG" alt="Agent Search" width="30%"/>
-  <img src="assets/screenshots/roster.JPG" alt="Agent Roster" width="30%"/>
+  <img src="assets/screenshots/home.JPG" alt="Mission Control" width="20%"/>
+  <img src="assets/screenshots/search.JPG" alt="Agent Search" width="20%"/>
+  <img src="assets/screenshots/roster.JPG" alt="Agent Roster" width="20%"/>
 </p>
 <p align="center">
   <em>War statistics • Real-time search • Agent roster with filters</em>
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/details.JPG" alt="Agent Details" width="45%"/>
-  <img src="assets/screenshots/settings.JPG" alt="Settings" width="45%"/>
+  <img src="assets/screenshots/details.JPG" alt="Agent Details" width="35%"/>
+  <img src="assets/screenshots/settings.JPG" alt="Settings" width="35%"/>
 </p>
 <p align="center">
   <em>Left: Comprehensive agent information • Right: App settings and configuration</em>
