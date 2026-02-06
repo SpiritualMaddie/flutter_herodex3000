@@ -29,7 +29,7 @@ class ScreenHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
-      padding: const EdgeInsets.only(top: 56, left: 16, right: 16, bottom: 12),
+      padding: const EdgeInsets.only(top: 24, left: 16, right: 16, bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -59,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return ResponsiveScaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.only(top: 56, bottom: 24, left: 16, right: 16),
+        padding: const EdgeInsets.only(top: 24, bottom: 24, left: 16, right: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

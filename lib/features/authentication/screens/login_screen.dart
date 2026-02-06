@@ -1,7 +1,9 @@
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_herodex3000/core/utils/responsive.dart';
 import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_cubit.dart';
 import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_state.dart';
 import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dart';
@@ -45,8 +47,8 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Sign in failed: ${e.code} - ${e.message}"),
-          backgroundColor: Colors.redAccent,
+          content: Center(child: Text("❌ Sign in failed. \n${e.message}")),
+          backgroundColor: const Color.fromARGB(255, 247, 224, 224),
         ),
       );
     } catch (e) {
@@ -54,8 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Sign in faile: ${e.toString()}"),
-          backgroundColor: Colors.redAccent,
+          content: Center(child: Text("❌ Sign in failed. \n${e.toString()}")),
+          backgroundColor: const Color.fromARGB(255, 247, 224, 224),
         ),
       );
     }
@@ -72,12 +74,13 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 32.0),
           child: SingleChildScrollView(
             child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: height - MediaQuery.of(context).padding.vertical),
+              constraints: BoxConstraints(
+                minHeight: height - MediaQuery.of(context).padding.vertical,
+              ),
               child: IntrinsicHeight(
                 child: Form(
                   key: _formKey,
                   child: Column(
-                    
                     mainAxisAlignment: .center,
                     children: [
                       Image(
@@ -105,13 +108,24 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 48),
-                      _buildTerminalField("EMAIL ADDRESS", _emailController, false),
+                      _buildTerminalField(
+                        "EMAIL ADDRESS",
+                        _emailController,
+                        false,
+                      ),
                       const SizedBox(height: 16),
-                      _buildTerminalField("PASSWORD", _passwordController, true),
+                      _buildTerminalField(
+                        "PASSWORD",
+                        _passwordController,
+                        true,
+                      ),
                       const SizedBox(height: 32),
                       _buildPrimaryButton("ACCESS TERMINAL", _handleSignIn),
                       const SizedBox(height: 12),
-                      _buildSecondaryButton("SIGN UP NEW AGENT", _showEnlistModal),
+                      _buildSecondaryButton(
+                        "SIGN UP NEW AGENT",
+                        _showEnlistModal,
+                      ),
                     ],
                   ),
                 ),
@@ -225,23 +239,27 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
   bool _loading = false;
 
   void _showStatusSnackbar(BuildContext context, bool success, String message) {
-    if(!mounted) return;
+    // TODO DRY
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: success ? Colors.greenAccent : Colors.redAccent,
+        backgroundColor: success ? const Color.fromARGB(255, 163, 240, 202) : const Color.fromARGB(255, 247, 224, 224),
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(20),
-        content: Text(
-          message,
-          style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
+        content: Center(
+          child: Text(
+            message,
+            style: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.5,
+            ),
           ),
         ),
       ),
     );
 
-// DO NOT pop synchronously here — defer to next frame to avoid navigator locked errors
+    // DO NOT pop synchronously here — defer to next frame to avoid navigator locked errors
     // if (success) {
     //   WidgetsBinding.instance.addPostFrameCallback((_){
     //     if(!mounted) return;
@@ -272,16 +290,15 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
       _showStatusSnackbar(
         context,
         true,
-        "AGENT ENROLLED SUCCESSFULLY. WELCOME.",
+        "✅ Agent enrolled successfully. \nWelcome!",
       );
-    } on FirebaseAuthException catch (e) { // TODO sync all snackbars to look and work the same
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Sign up failed: ${e.code} - ${e.message}")),
-      );
+    } on FirebaseAuthException catch (e) {
+      // TODO sync all snackbars to look and work the same
+      _showStatusSnackbar(context, false, "❌ Sign up failed. \n${e.message}");
+      
     } catch (e) {
       if (!mounted) return;
-      _showStatusSnackbar(context, false, "ENLISTMENT FAILED: ${e.toString()}");
+      _showStatusSnackbar(context, false, "❌ Enlistment failed. \n${e.toString()}");
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -289,16 +306,15 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
 
   @override
   Widget build(BuildContext context) {
-    
     return BlocListener<AuthCubit, AuthState>(
-      listener: (context, state){
-        if(state is AuthAuthenticated){
-          WidgetsBinding.instance.addPostFrameCallback((_){
-            if(!mounted) return;
-            try{
+      listener: (context, state) {
+        if (state is AuthAuthenticated) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            try {
               if (Navigator.of(context).canPop()) Navigator.of(context).pop();
-            } catch (_){
-// swallow navigation errors to avoid crashes during simultaneous navigations
+            } catch (_) {
+              // swallow navigation errors to avoid crashes during simultaneous navigations
             }
           });
         }
@@ -306,6 +322,10 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Dialog(
+          constraints: BoxConstraints(
+            maxWidth: context.maxContentWidth,
+            maxHeight: double.infinity,
+          ),
           backgroundColor: const Color(0xFF0D1721),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -345,20 +365,26 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
                 ElevatedButton(
                   onPressed: _loading ? null : _handleSignUp,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00E5FF).withAlpha(20),
-                    minimumSize: const Size(double.infinity, 50),
-                    side: const BorderSide(color: Color(0xFF00E5FF)),
+                    backgroundColor: const Color(0xFF00E5FF),
+                    minimumSize: const Size(double.infinity, 56),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                   child: _loading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text(
-                          "SIGN UP",
-                          style: TextStyle(color: Color(0xFF00E5FF)),
-                        ),
+                  ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2,),
+                  ) 
+                  : const Text(
+                    "SIGN UP",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
                 ),
               ],
             ),
