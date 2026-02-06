@@ -1,4 +1,4 @@
-import 'package:flutter_herodex3000/data/models/agent_model.dart';
+import 'package:flutter_herodex3000/barrel_files/models.dart';
 import 'package:flutter_herodex3000/presentation/view_models/agent_summary.dart';
 
 /// Maps between data models and view models.

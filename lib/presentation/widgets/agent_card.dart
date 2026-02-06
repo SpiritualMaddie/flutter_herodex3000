@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 import 'package:flutter_herodex3000/presentation/view_models/agent_summary.dart';
-import 'package:flutter_herodex3000/presentation/widgets/cors_proxy_image.dart';
+import 'package:flutter_herodex3000/barrel_files/widgets.dart';
 
 /// Shared card widget used in both Search (grid) and Roster (list).
 ///
@@ -26,7 +26,7 @@ class AgentCard extends StatelessWidget {
     this.onDismiss,
   });
 
-  // TODO Also make small alignment "hero" or "villain" in right corner
+  // TODO Neutral should be different color
   Color get _accentColor => agent.isHero ? Colors.cyan : Colors.redAccent;
 
   @override

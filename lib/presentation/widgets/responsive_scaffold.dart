@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_herodex3000/core/utils/responsive.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
+import 'package:flutter_herodex3000/barrel_files/utils.dart';
 
 /// Responsive scaffold that centers content on larger screens.
 /// 
-/// **Mobile (< 600px)**: Content fills the screen TODO
-/// **Tablet/Desktop (> 600px)**: Content is centered with max width, background fills screen
+/// **Mobile: Content fills the screen
+/// **Tablet/Desktop: Content is centered with max width, background fills screen
 /// 
 
 class ResponsiveScaffold extends StatelessWidget {

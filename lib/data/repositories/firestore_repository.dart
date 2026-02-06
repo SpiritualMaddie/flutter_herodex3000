@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_herodex3000/data/models/agent_model.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
+import 'package:flutter_herodex3000/barrel_files/models.dart';
+import 'package:flutter_herodex3000/barrel_files/firebase.dart';
 
 /// Handles saving/loading the user's roster in Firestore.
 ///

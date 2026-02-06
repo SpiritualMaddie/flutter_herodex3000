@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
  
-class AuthRepository { // TODO error handling deluxe in detail it CAN NOT crash, ever
+class AuthRepository {
   final FirebaseAuth _firebaseAuth;
 
   AuthRepository({FirebaseAuth? firebaseAuth})

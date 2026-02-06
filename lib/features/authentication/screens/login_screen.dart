@@ -1,12 +1,9 @@
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_herodex3000/core/utils/responsive.dart';
-import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_cubit.dart';
-import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_state.dart';
-import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
+import 'package:flutter_herodex3000/barrel_files/authentication.dart';
+import 'package:flutter_herodex3000/barrel_files/widgets.dart';
+import 'package:flutter_herodex3000/barrel_files/utils.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -239,7 +236,6 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
   bool _loading = false;
 
   void _showStatusSnackbar(BuildContext context, bool success, String message) {
-    // TODO DRY
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -293,7 +289,6 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
         "✅ Agent enrolled successfully. \nWelcome!",
       );
     } on FirebaseAuthException catch (e) {
-      // TODO sync all snackbars to look and work the same
       _showStatusSnackbar(context, false, "❌ Sign up failed. \n${e.message}");
       
     } catch (e) {

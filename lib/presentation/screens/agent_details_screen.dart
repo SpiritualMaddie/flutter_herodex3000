@@ -1,11 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_herodex3000/data/managers/agent_data_manager.dart';
-import 'package:flutter_herodex3000/data/models/agent_model.dart';
-import 'package:flutter_herodex3000/presentation/widgets/cors_proxy_image.dart';
-import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_herodex3000/barrel_files/routing.dart';
+import 'package:flutter_herodex3000/barrel_files/widgets.dart';
+import 'package:flutter_herodex3000/barrel_files/models.dart';
+import 'package:flutter_herodex3000/barrel_files/managers.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
-// TODO alignment on card right top
 /// Full detail view for an agent.
 /// Receives the complete [AgentModel] so it can display all stats.
 class AgentDetailsScreen extends StatefulWidget {
@@ -46,7 +44,6 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   }
 
   Future<void> _checkIfSaved() async {
-    // TODO via agent_data_manager
     try {
       final saved = await _agentDataRepo.isAgentInFirestore(
         widget.agent.agentId,

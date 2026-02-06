@@ -1,11 +1,6 @@
-
-import 'package:flutter/material.dart';
-import 'package:flutter_herodex3000/data/managers/agent_data_manager.dart';
-import 'package:flutter_herodex3000/data/repositories/firestore_repository.dart';
-import 'package:flutter_herodex3000/data/services/firebase_service.dart';
-import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dart';
-import 'package:flutter_herodex3000/presentation/widgets/section_header.dart';
-import 'package:flutter_herodex3000/presentation/widgets/info_card.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
+import 'package:flutter_herodex3000/barrel_files/widgets.dart';
+import 'package:flutter_herodex3000/barrel_files/managers.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -130,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? "Your roster is empty. Head to SEARCH and start recruiting agents to help fight the invasion."
                       : "Your roster contributes ${_heroCount + _villainCount} agent${(_heroCount + _villainCount) > 1 ? 's' : ''} "
                           "with a combined fighting power of ${_totalStrength + _totalPower}. "
-                          "Keep recruiting to strengthen the resistance.",
+                          "Keep recruiting in SEARCH to strengthen the resistance.",
             ),
           ],
         ),

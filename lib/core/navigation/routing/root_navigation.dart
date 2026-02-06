@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_herodex3000/core/utils/responsive.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_herodex3000/barrel_files/routing.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
+import 'package:flutter_herodex3000/barrel_files/utils.dart';
 
 /// Bottom navigation bar that wraps authenticated screens.
 class RootNavigation extends StatelessWidget {
@@ -66,8 +66,8 @@ class RootNavigation extends StatelessWidget {
                   label: Text('ROSTER'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.search_outlined),
-                  selectedIcon: Icon(Icons.search),
+                  icon: Icon(Icons.radar),
+                  selectedIcon: Icon(Icons.radar),
                   label: Text('SEARCH'),
                 ),
                 NavigationRailDestination(
@@ -109,7 +109,7 @@ class RootNavigation extends StatelessWidget {
           destinations: [
             NavigationDestination(icon: Icon(Icons.home), label: "HUB"),
             NavigationDestination(icon: Icon(Icons.shield), label: "ROSTER"),
-            NavigationDestination(icon: Icon(Icons.search), label: "SEARCH"),
+            NavigationDestination(icon: Icon(Icons.radar), label: "SEARCH"),
             NavigationDestination(
               icon: Icon(Icons.settings),
               label: "SETTINGS",

@@ -1,4 +1,4 @@
-class SplashManager { // TODO look over
+class SplashManager {
   static DateTime? _splashStartTime;
   static const Duration minimumSplashDuration = Duration(seconds: 8);
   

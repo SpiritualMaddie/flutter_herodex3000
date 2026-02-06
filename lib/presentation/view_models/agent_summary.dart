@@ -19,6 +19,5 @@ class AgentSummary {
     required this.intelligence,
   });
 
-// TODO doesnt work?
   bool get isHero => alignment.trim().toLowerCase() == 'good';
 }

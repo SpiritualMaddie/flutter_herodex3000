@@ -1,11 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
+import 'package:flutter_herodex3000/barrel_files/authentication.dart';
+import 'package:flutter_herodex3000/barrel_files/managers.dart';
+import 'package:flutter_herodex3000/barrel_files/services.dart';
+import 'package:flutter_herodex3000/barrel_files/theme.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_herodex3000/core/theme/cubit/theme_cubit.dart';
-import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_cubit.dart';
-import 'package:flutter_herodex3000/features/authentication/controllers/repository/auth_repository.dart';
-import 'package:flutter_herodex3000/data/managers/settings_manager.dart';
-import 'package:flutter_herodex3000/data/services/shared_preferences_service.dart';
 
 // Creates all the providers for the app.
 

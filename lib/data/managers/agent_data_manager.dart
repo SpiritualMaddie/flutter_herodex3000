@@ -2,7 +2,6 @@ import 'package:flutter_herodex3000/barrel_files/models.dart';
 import 'package:flutter_herodex3000/barrel_files/interfaces.dart';
 import 'package:flutter_herodex3000/barrel_files/factories.dart';
 import 'package:flutter_herodex3000/barrel_files/repositories.dart';
-import 'package:flutter_herodex3000/data/repositories/firestore_repository.dart';
 
 /// Handles [AgentModel] data from and to Firestore 
 /// and from the api https://superheroapi.com/

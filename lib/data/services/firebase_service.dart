@@ -1,6 +1,6 @@
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_herodex3000/barrel_files/firebase.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
 /// Centralized service for Firebase Analytics and Crashlytics.
 /// Respects user permissions set in onboarding/settings.

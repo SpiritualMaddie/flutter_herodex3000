@@ -1,14 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_herodex3000/core/theme/cubit/theme_cubit.dart';
-import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_cubit.dart';
-import 'package:flutter_herodex3000/data/managers/settings_manager.dart';
-import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dart';
-import 'package:flutter_herodex3000/presentation/widgets/section_header.dart';
-import 'package:flutter_herodex3000/presentation/widgets/info_card.dart';
-import 'package:flutter_herodex3000/presentation/widgets/theme_picker.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
+import 'package:flutter_herodex3000/barrel_files/widgets.dart';
+import 'package:flutter_herodex3000/barrel_files/managers.dart';
+import 'package:flutter_herodex3000/barrel_files/theme.dart';
+import 'package:flutter_herodex3000/barrel_files/authentication.dart';
 
 late Future<PackageInfo> _packageInfo;
 

@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_herodex3000/core/theme/app_theme.dart';
-import 'package:flutter_herodex3000/core/theme/cubit/theme_cubit.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
+import 'package:flutter_herodex3000/barrel_files/theme.dart';
 
 // // Map AppTheme enum -> ThemeData and expose convenience accessors.
 extension AppThemeData on AppTheme {

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
 /// Defines the three alignment-based themes for HeroDex 3000.
 /// Each has a distinct color scheme to match hero/villain/neutral aesthetics.
