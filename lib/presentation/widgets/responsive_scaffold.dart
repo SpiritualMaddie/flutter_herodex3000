@@ -29,11 +29,13 @@ class ResponsiveScaffold extends StatelessWidget {
 
     // On mobile, just uses normal scaffold (full width)
     if (isMobile || !centerContent) {
-      return Scaffold(
-        backgroundColor: backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
-        appBar: appBar,
-        body: child,
-        bottomNavigationBar: bottomNavigationBar,
+      return SafeArea(
+        child: Scaffold(
+          backgroundColor: backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
+          appBar: appBar,
+          body: child,
+          bottomNavigationBar: bottomNavigationBar,
+        ),
       );
     }
 
