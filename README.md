@@ -112,19 +112,19 @@ To stop the invasion completely, humanity needs a new HeroDex — modern, stable
 
 ### Core Functionality
 
-![Mission Control](screenshots/home.JPG)
+![Mission Control](assets/screenshots/home.JPG)
 *War statistics and intelligence briefings*
 
-![Agent Search](screenshots/search.JPG)
+![Agent Search](assets/screenshots/search.JPG)
 *Real-time search with debouncing and shimmer loading*
 
-![Agent Roster](screenshots/roster.JPG)
+![Agent Roster](assets/screenshots/roster.JPG)
 *Saved agents with filtering and swipe-to-delete*
 
-![Agent Details](screenshots/details.JPG)
+![Agent Details](assets/screenshots/details.JPG)
 *Comprehensive agent information view*
 
-![Settings](screenshots/settings.JPG)
+![Settings](assets/screenshots/settings.JPG)
 *Ability to change settings at any time*
 
 ---
