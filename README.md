@@ -28,7 +28,6 @@ HeroDex 3000 is a mission-critical hero and villain roster management system dev
 - [Testing](#-testing)
 - [Accessibility](#-accessibility)
 - [Known Limitations](#-known-limitations)
-- [Assignment Requirements](#-assignment-requirements)
 - [Future Improvements](#-future-improvements)
 - [License](#-license)
 
