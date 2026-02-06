@@ -104,27 +104,27 @@ To stop the invasion completely, humanity needs a new HeroDex — modern, stable
 ## 📱 Screenshots
 
 ### Onboarding & Authentication
-![Onboarding Flow](screenshots/onboarding.png)
+![Onboarding Flow](screenshots/onboarding.JPG)
 *First-time user experience with permission selection and theme picker*
 
-![Login Screen](screenshots/login.png)
+![Login Screen](screenshots/login.JPG)
 *Secure authentication portal*
 
 ### Core Functionality
 
-![Mission Control](screenshots/home.png)
+![Mission Control](screenshots/home.JPG)
 *War statistics and intelligence briefings*
 
-![Agent Search](screenshots/search.png)
+![Agent Search](screenshots/search.JPG)
 *Real-time search with debouncing and shimmer loading*
 
-![Agent Roster](screenshots/roster.png)
+![Agent Roster](screenshots/roster.JPG)
 *Saved agents with filtering and swipe-to-delete*
 
-![Agent Details](screenshots/details.png)
+![Agent Details](screenshots/details.JPG)
 *Comprehensive agent information view*
 
-![Settings](screenshots/settings.png)
+![Settings](screenshots/settings.JPG)
 *Ability to change settings at any time*
 
 ---
