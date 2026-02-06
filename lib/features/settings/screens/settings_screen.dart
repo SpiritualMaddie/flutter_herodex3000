@@ -8,9 +8,23 @@ import 'package:flutter_herodex3000/presentation/widgets/responsive_scaffold.dar
 import 'package:flutter_herodex3000/presentation/widgets/section_header.dart';
 import 'package:flutter_herodex3000/presentation/widgets/info_card.dart';
 import 'package:flutter_herodex3000/presentation/widgets/theme_picker.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
-class SettingsScreen extends StatelessWidget {
+late Future<PackageInfo> _packageInfo;
+
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _packageInfo = PackageInfo.fromPlatform();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,12 +41,12 @@ class SettingsScreen extends StatelessWidget {
               elevation: 0,
               pinned: false,
               title: // Title
-            const SectionHeader(
-              icon: Icons.settings,
-              title: "SETTINGS",
-              titleFontSize: 22,
-              padding: EdgeInsets.only(bottom: 12, top: 38),
-            ),
+              const SectionHeader(
+                icon: Icons.settings,
+                title: "SETTINGS",
+                titleFontSize: 22,
+                padding: EdgeInsets.only(bottom: 12, top: 38),
+              ),
             ),
 
             // All content in one sliver list
@@ -105,10 +119,7 @@ class SettingsScreen extends StatelessWidget {
                             ).colorScheme.primary.withAlpha(40),
                             height: 24,
                           ),
-                          _ManifestRow(
-                            label: "VERSION",
-                            value: "v3.0.1-STABLE",
-                          ),
+                          buildVersionRow(),
                           Divider(
                             color: Theme.of(
                               context,
@@ -155,6 +166,29 @@ class SettingsScreen extends StatelessWidget {
       ),
     );
   }
+
+Widget buildVersionRow() {
+  return FutureBuilder<PackageInfo>(
+    future: PackageInfo.fromPlatform(),
+    builder: (context, snapshot) {
+      if (!snapshot.hasData) {
+        return const _ManifestRow(
+          label: "VERSION",
+          value: "v–",
+        );
+      }
+
+      final info = snapshot.data!;
+      final suffix = kReleaseMode ? " STABLE" : " DEV";
+
+      return _ManifestRow(
+        label: "VERSION",
+        value: "v${info.version} - $suffix",
+      );
+    },
+  );
+}
+
 
   void _showATTDialog(BuildContext context) {
     showDialog(
@@ -277,6 +311,7 @@ class _ManifestRow extends StatelessWidget {
             color: Theme.of(context).colorScheme.onSurfaceVariant,
             fontSize: 10,
             fontWeight: FontWeight.bold,
+            letterSpacing: 1.5
           ),
         ),
         Text(
@@ -285,6 +320,7 @@ class _ManifestRow extends StatelessWidget {
             color: Theme.of(context).colorScheme.onSurface,
             fontSize: 11,
             fontFamily: 'monospace',
+            letterSpacing: 1
           ),
         ),
       ],
