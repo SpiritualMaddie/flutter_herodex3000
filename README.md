@@ -557,11 +557,6 @@ flutter test --coverage
 - macOS: Firebase configured but not tested
 - Linux: Expected to work but not validated
 
-### Firebase Setup Required
-- Users must create their own Firebase project
-- Cannot use developer's Firebase instance (security rules)
-- Requires manual configuration of Auth, Firestore, Analytics, Crashlytics
-
 ---
 
 ## 🚀 Future Improvements
@@ -570,6 +565,7 @@ flutter test --coverage
 - [ ] Explicit delete button on AgentDetailsScreen (accessibility)
 - [ ] Neutral agent theming with purple accents
 - [ ] Include neutral agents in Home screen statistics
+- [ ] Better SOC and things like shared SnackBars
 
 ### v1.2.0 (Wishlist)
 - [ ] Search history with suggestions
