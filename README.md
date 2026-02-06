@@ -383,7 +383,6 @@ flutter pub upgrade
 - Direct API and image requests (no proxy needed)
 - Crashlytics error reporting
 - Native splash screens
-- Full offline support via Firestore
 
 ---
 
@@ -406,53 +405,18 @@ flutter test --coverage
 **Test Files:**
 - `test/agent_model_test.dart` - AgentModel JSON parsing and serialization
 - `test/agent_summary_mapper_test.dart` - View model mapping logic
+- `test/biography_model_test.dart` - Empty data handling
 - `test/powerstats_model_test.dart` - Safe parsing of nullable stats
-- `test/edge_cases_test.dart` - Malformed data handling
+- `test/appearance_model_test.dart` - Malformed data handling
 
 **What's Tested:**
 - ✅ JSON deserialization from SuperHero API
 - ✅ Null safety (handles "null" strings, empty strings, actual nulls)
-- ✅ AgentModel → AgentSummary transformation
+- ✅ AgentModel → AgentSummary mapping
 - ✅ Alignment detection (hero/villain/neutral)
 - ✅ PowerStats safe parsing
 - ✅ Edge cases (long names, empty arrays, malformed data)
 
-**Test Results:**
-```
-✓ AgentModel Tests > fromJson should parse valid JSON correctly
-✓ AgentModel Tests > fromJson should handle null and missing fields gracefully
-✓ AgentModel Tests > toJson should serialize AgentModel correctly
-✓ AgentSummaryMapper Tests > toSummary should map AgentModel correctly
-✓ AgentSummaryMapper Tests > toSummary should correctly identify villain alignment
-✓ AgentSummaryMapper Tests > toSummary should handle missing image URL
-✓ Powerstats Safe Parsing Tests > _safeParse should handle string "null"
-✓ Powerstats Safe Parsing Tests > _safeParse should handle empty strings
-✓ Powerstats Safe Parsing Tests > _safeParse should handle actual null values
-✓ Edge Cases Tests > AgentModel should handle extremely long names
-✓ Edge Cases Tests > Biography should handle empty aliases array
-✓ Edge Cases Tests > Appearance should handle malformed height/weight arrays
-
-All tests passed!
-```
-
-### Manual Testing Checklist
-
-- [x] Authentication flow (signup → login → logout)
-- [x] Onboarding completion and skip
-- [x] Search with debounce
-- [x] Save agents to roster
-- [x] Roster filtering (Hero/Villain/Neutral)
-- [x] Roster sorting (Highest/Lowest power)
-- [x] Swipe-to-delete with undo
-- [x] Pull-to-refresh
-- [x] Theme switching
-- [x] Analytics/Crashlytics toggles
-- [x] Navigation between all screens
-- [x] Responsive layouts (mobile, tablet, desktop)
-- [x] Error handling (network failures, empty states)
-- [x] App never crashes under any circumstances
-
----
 
 ## ♿ Accessibility
 
@@ -460,22 +424,20 @@ All tests passed!
 
 **Swipe-to-Delete Discovery Tooltip**
 - First-time hint overlay on Roster screen
-- Auto-dismisses after 5 seconds
+- Auto-dismisses after 25 seconds - time to read
 - Manual dismissal via tap or close button
-- High contrast white-on-primary color scheme
+- High contrast
 - Persistent setting (never shows again after dismissal)
 - Shows only when roster has agents
 
 **Visual Accessibility**
-- High contrast theme options (Hero/Villain/Neutral)
+- High contrast theme options (Hero/Villain/Neutral) - tested via [WEBAIM - Contrast Checker](https://webaim.org/resources/contrastchecker/)
 - Large, clear typography throughout
-- Icon + text labels on all buttons
+- Icon + text labels on buttons
 - Color-coded alignments (cyan/red/purple)
 
 **Interaction Accessibility**
-- Touch targets ≥44×44 pixels (iOS guidelines)
 - Swipe gestures with visual feedback
-- Semantic labels on interactive elements
 - Error states with clear messaging
 
 ### Planned Improvements (Future Versions)
@@ -487,7 +449,7 @@ All tests passed!
 - Note: Ran out of time before deadline, marked as high-priority improvement
 
 **Neutral Agent Theming**
-- Current limitation: Neutral agents use generic styling
+- Current limitation: Neutral agents use villain styling
 - Planned: Purple accent colors for neutral alignment
 - Planned: Include neutral agents in Home screen statistics
 
