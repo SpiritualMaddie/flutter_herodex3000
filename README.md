@@ -104,28 +104,32 @@ To stop the invasion completely, humanity needs a new HeroDex — modern, stable
 ## 📱 Screenshots
 
 ### Onboarding & Authentication
-![Onboarding Flow](assets/screenshots/onboarding.JPG)
-*First-time user experience with permission selection and theme picker*
-
-![Login Screen](assests/screenshots/login.JPG)
-*Secure authentication portal*
+<p align="center">
+  <img src="assets/screenshots/onboarding.JPG" alt="Onboarding Flow" width="45%"/>
+  <img src="assets/screenshots/login.JPG" alt="Login Screen" width="45%"/>
+</p>
+<p align="center">
+  <em>Left: First-time user experience with permission selection and theme picker</em><br/>
+  <em>Right: Secure authentication portal</em>
+</p>
 
 ### Core Functionality
+<p align="center">
+  <img src="assets/screenshots/home.JPG" alt="Mission Control" width="30%"/>
+  <img src="assets/screenshots/search.JPG" alt="Agent Search" width="30%"/>
+  <img src="assets/screenshots/roster.JPG" alt="Agent Roster" width="30%"/>
+</p>
+<p align="center">
+  <em>War statistics • Real-time search • Agent roster with filters</em>
+</p>
 
-![Mission Control](assets/screenshots/home.JPG)
-*War statistics and intelligence briefings*
-
-![Agent Search](assets/screenshots/search.JPG)
-*Real-time search with debouncing and shimmer loading*
-
-![Agent Roster](assets/screenshots/roster.JPG)
-*Saved agents with filtering and swipe-to-delete*
-
-![Agent Details](assets/screenshots/details.JPG)
-*Comprehensive agent information view*
-
-![Settings](assets/screenshots/settings.JPG)
-*Ability to change settings at any time*
+<p align="center">
+  <img src="assets/screenshots/details.JPG" alt="Agent Details" width="45%"/>
+  <img src="assets/screenshots/settings.JPG" alt="Settings" width="45%"/>
+</p>
+<p align="center">
+  <em>Left: Comprehensive agent information • Right: App settings and configuration</em>
+</p>
 
 ---
 
