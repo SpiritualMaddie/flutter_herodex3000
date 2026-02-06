@@ -1,12 +1,8 @@
-import 'dart:async';
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_herodex3000/data/services/firebase_service.dart';
-import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_state.dart';
-import 'package:flutter_herodex3000/features/authentication/controllers/repository/auth_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
+import 'package:flutter_herodex3000/barrel_files/firebase.dart';
+import 'package:flutter_herodex3000/barrel_files/authentication.dart';
+import 'package:flutter_herodex3000/barrel_files/services.dart';
 
 class AuthCubit extends Cubit<AuthState> {
   final AuthRepository _authRepository;

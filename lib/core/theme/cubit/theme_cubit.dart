@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_herodex3000/core/theme/app_theme.dart';
+import 'package:flutter_herodex3000/barrel_files/theme.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
 /// The available theme alignments in HeroDex 3000.
 /// Each has both a dark and light variant.

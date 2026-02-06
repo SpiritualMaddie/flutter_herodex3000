@@ -1,11 +1,8 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:flutter_herodex3000/core/navigation/routing/root_navigation.dart';
-import 'package:go_router/go_router.dart';
-import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_cubit.dart';
-import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_state.dart';
-import 'package:flutter_herodex3000/data/managers/settings_manager.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
+import 'package:flutter_herodex3000/barrel_files/authentication.dart';
+import 'package:flutter_herodex3000/barrel_files/managers.dart';
 import 'package:flutter_herodex3000/barrel_files/screens.dart';
+import 'package:flutter_herodex3000/barrel_files/routing.dart';
 
 // Creates the GoRouter configuration for the app.
 GoRouter createAppRouter(AuthCubit authCubit, SettingsManager settingsManager) {

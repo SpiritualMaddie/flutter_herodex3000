@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
 /// Reusable dark card with optional icon, title, and body text.
 /// Used for war cards, system manifest, protocol tiles, etc.

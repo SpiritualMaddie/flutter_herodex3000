@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_herodex3000/presentation/widgets/section_header.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
+import 'package:flutter_herodex3000/barrel_files/widgets.dart';
+
 
 // Screen header with title and search bar.
 

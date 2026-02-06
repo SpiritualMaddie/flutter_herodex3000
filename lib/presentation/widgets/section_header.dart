@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
 /// Reusable cyan section header used throughout the app.
 /// Provides consistent spacing and styling.
-class SectionHeader extends StatelessWidget { // TODO colors by theme
+class SectionHeader extends StatelessWidget {
   final IconData? icon;
   final String title;
   final String? subtitle;

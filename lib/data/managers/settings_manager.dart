@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_herodex3000/data/services/firebase_service.dart';
-import 'package:flutter_herodex3000/data/services/shared_preferences_service.dart';
+import 'package:flutter_herodex3000/barrel_files/services.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
 class SettingsManager extends ChangeNotifier {
   final SharedPreferencesService _prefs;
@@ -11,7 +10,7 @@ class SettingsManager extends ChangeNotifier {
     required bool crashlytics,
     //required bool location,
     required String appThemeChosen,
-    bool iosAtt = false, // TODO does it work? set conditions
+    bool iosAtt = false,
   }) async {
     await _prefs.setAnalyticsToApproved(analytics);
     await _prefs.setCrashlyticsToApproved(crashlytics);

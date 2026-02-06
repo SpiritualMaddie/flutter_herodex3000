@@ -1,4 +1,4 @@
-import 'package:flutter_herodex3000/data/models/agent_model.dart';
+import 'package:flutter_herodex3000/barrel_files/models.dart';
 
 /// In-memory cache so go_router can look up a full [AgentModel] by ID.
 /// Never used but planned to be implemented - ran out of time

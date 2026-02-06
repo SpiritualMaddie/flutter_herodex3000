@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-// TODO fix to work if time
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
+// TODO fix to work if time to work as all snackbars
 class CustomSnackbar extends StatelessWidget {
   final String text;
   final bool isSuccess;

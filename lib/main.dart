@@ -1,18 +1,12 @@
-import 'dart:async';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_herodex3000/core/navigation/routing/app_router.dart';
+import 'package:flutter_herodex3000/barrel_files/firebase.dart';
+import 'package:flutter_herodex3000/barrel_files/theme.dart';
+import 'package:flutter_herodex3000/barrel_files/routing.dart';
+import 'package:flutter_herodex3000/barrel_files/services.dart';
+import 'package:flutter_herodex3000/barrel_files/authentication.dart';
+import 'package:flutter_herodex3000/barrel_files/managers.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 import 'package:flutter_herodex3000/core/providers/app_providers.dart';
-import 'package:flutter_herodex3000/core/theme/cubit/theme_cubit.dart';
-import 'package:flutter_herodex3000/data/services/firebase_service.dart';
-import 'package:flutter_herodex3000/features/authentication/controllers/cubit/auth_cubit.dart';
-import 'package:flutter_herodex3000/firebase_options.dart';
-import 'package:flutter_herodex3000/data/managers/settings_manager.dart';
-import 'package:flutter_herodex3000/data/services/shared_preferences_service.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart'
     show kIsWeb, defaultTargetPlatform, TargetPlatform;
 

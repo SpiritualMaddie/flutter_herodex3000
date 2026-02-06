@@ -1,5 +1,4 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
 
 class SplashScreen extends StatefulWidget {
