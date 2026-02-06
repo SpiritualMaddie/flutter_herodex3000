@@ -74,7 +74,7 @@ To stop the invasion completely, humanity needs a new HeroDex — modern, stable
 - **Pull to Refresh** - Manual sync with Firestore
 - **Optimistic Updates** - Instant UI feedback with automatic rollback on errors
 
-### 🏠 Mission Control (Home)
+### 🏠 Mission Control (Hub)
 - **Real-time Statistics** - Hero count, Villain count, total fighting power
 - **War Updates** - Dynamic situation reports based on roster composition
 - **Recent Developments** - Intelligence briefings that adapt to agent alignment
@@ -111,6 +111,10 @@ To stop the invasion completely, humanity needs a new HeroDex — modern, stable
 *Secure authentication portal*
 
 ### Core Functionality
+
+![Mission Control](screenshots/home.png)
+*War statistics and intelligence briefings*
+
 ![Agent Search](screenshots/search.png)
 *Real-time search with debouncing and shimmer loading*
 
@@ -120,8 +124,8 @@ To stop the invasion completely, humanity needs a new HeroDex — modern, stable
 ![Agent Details](screenshots/details.png)
 *Comprehensive agent information view*
 
-![Mission Control](screenshots/home.png)
-*War statistics and intelligence briefings*
+![Settings](screenshots/settings.png)
+*Ability to change settings at any time*
 
 ---
 
@@ -171,38 +175,111 @@ To stop the invasion completely, humanity needs a new HeroDex — modern, stable
 HeroDex 3000 follows **Clean Architecture** principles with clear separation of concerns:
 
 ```
-lib/
-├── core/                    # Cross-cutting concerns
-│   ├── navigation/         # Routing and navigation logic
-│   ├── providers/          # BLoC/Cubit providers
-│   ├── theme/              # Theme definitions and management
-│   └── utils/              # Responsive helpers and utilities
-│
-├── data/                    # Data layer
-│   ├── factories/          # Object creation patterns
-│   ├── managers/           # Business logic coordinators
-│   ├── models/             # Data models (AgentModel, etc.)
-│   ├── repositories/       # Data source abstractions
-│   └── services/           # External service integrations
-│
-├── features/               # Feature modules
-│   ├── authentication/     # Login, signup, auth state
-│   ├── home/               # Mission control dashboard
-│   ├── onboarding/         # First-time user flow
-│   ├── roster/             # Saved agents management
-│   ├── search/             # Agent discovery
-│   └── settings/           # App configuration
-│
-├── presentation/           # Presentation layer
-│   ├── helpers/            # View model mappers
-│   ├── screens/            # Shared screens (details, splash)
-│   ├── view_models/        # Lightweight UI models
-│   └── widgets/            # Reusable UI components
-│
-├── barrel_files/           # Export aggregators
-├── firebase_options.dart   # Firebase configuration
-└── main.dart               # Application entry point
+├── 📁 barrel_files
+│   ├── 📄 authentication.dart
+│   ├── 📄 dart_flutter_packages.dart
+│   ├── 📄 factories.dart
+│   ├── 📄 firebase.dart
+│   ├── 📄 interfaces.dart
+│   ├── 📄 managers.dart
+│   ├── 📄 models.dart
+│   ├── 📄 repositories.dart
+│   ├── 📄 routing.dart
+│   ├── 📄 screens.dart
+│   ├── 📄 services.dart
+│   ├── 📄 theme.dart
+│   ├── 📄 utils.dart
+│   └── 📄 widgets.dart
+├── 📁 core
+│   ├── 📁 errors
+│   ├── 📁 navigation
+│   │   └── 📁 routing
+│   │       ├── 📄 app_router.dart
+│   │       └── 📄 root_navigation.dart
+│   ├── 📁 providers
+│   │   └── 📄 app_providers.dart
+│   ├── 📁 theme
+│   │   ├── 📁 cubit
+│   │   │   └── 📄 theme_cubit.dart
+│   │   └── 📄 app_theme.dart
+│   └── 📁 utils
+│       └── 📄 responsive.dart
+├── 📁 data
+│   ├── 📁 factories
+│   │   └── 📄 http_client_factory.dart
+│   ├── 📁 managers
+│   │   ├── 📄 agent_cache.dart
+│   │   ├── 📄 agent_data_manager.dart
+│   │   ├── 📄 settings_manager.dart
+│   │   └── 📄 splash_manager.dart
+│   ├── 📁 models
+│   │   ├── 📄 agent_model.dart
+│   │   ├── 📄 appearance_model.dart
+│   │   ├── 📄 biography_model.dart
+│   │   ├── 📄 connections_model.dart
+│   │   ├── 📄 image_model.dart
+│   │   ├── 📄 powerstats_model.dart
+│   │   └── 📄 work_model.dart
+│   ├── 📁 repositories
+│   │   ├── 📁 interfaces
+│   │   │   ├── 📄 iagent_data_manager.dart
+│   │   │   ├── 📄 ihttp_client_factory.dart
+│   │   │   └── 📄 isuper_hero_api_repository.dart
+│   │   ├── 📄 firestore_repository.dart
+│   │   └── 📄 super_hero_api_repository.dart
+│   └── 📁 services
+│       ├── 📄 firebase_service.dart
+│       └── 📄 shared_preferences_service.dart
+├── 📁 features
+│   ├── 📁 authentication
+│   │   ├── 📁 controllers
+│   │   │   ├── 📁 cubit
+│   │   │   │   ├── 📄 auth_cubit.dart
+│   │   │   │   └── 📄 auth_state.dart
+│   │   │   └── 📁 repository
+│   │   │       └── 📄 auth_repository.dart
+│   │   └── 📁 screens
+│   │       └── 📄 login_screen.dart
+│   ├── 📁 home
+│   │   └── 📁 screens
+│   │       └── 📄 home_screen.dart
+│   ├── 📁 onboarding
+│   │   └── 📁 screens
+│   │       └── 📄 onboarding_screen.dart
+│   ├── 📁 roster
+│   │   └── 📁 screens
+│   │       └── 📄 roster_screen.dart
+│   ├── 📁 search
+│   │   └── 📁 screens
+│   │       └── 📄 search_screen.dart
+│   └── 📁 settings
+│       └── 📁 screens
+│           └── 📄 settings_screen.dart
+├── 📁 presentation
+│   ├── 📁 helpers
+│   │   └── 📄 agent_summary_mapper.dart
+│   ├── 📁 screens
+│   │   ├── 📄 agent_details_screen.dart
+│   │   ├── 📄 error_screen.dart
+│   │   └── 📄 splash_screen.dart
+│   ├── 📁 view_models
+│   │   └── 📄 agent_summary.dart
+│   └── 📁 widgets
+│       ├── 📄 agent_card.dart
+│       ├── 📄 cors_proxy_image.dart
+│       ├── 📄 custom_snackbar.dart
+│       ├── 📄 info_card.dart
+│       ├── 📄 responsive_scaffold.dart
+│       ├── 📄 screen_header.dart
+│       ├── 📄 section_header.dart
+│       └── 📄 theme_picker.dart
+├── 📁 utils
+├── 📄 firebase_options.dart
+└── 📄 main.dart
 ```
+
+---
+*Generated by FileTree Pro Extension*
 
 ### Key Design Patterns
 
@@ -213,8 +290,7 @@ lib/
 
 **Singleton Pattern**
 - `AgentDataManager` - Centralized data access coordinator
-- `SettingsManager` - Global settings with ChangeNotifier
-- `FirebaseService` - Platform-aware Firebase service wrapper
+- `SharedPreferencesService` - Handles device specific preferences
 
 **View Model Pattern**
 - `AgentSummary` - Lightweight model for list/card displays
@@ -258,7 +334,7 @@ lib/
    
    Replace `YOUR_API_KEY_HERE` with your actual SuperHero API key.
 
-4. **Set up Firebase**
+4. **Set up Firebase - if needed**
    
    a. Create a new Firebase project at [Firebase Console](https://console.firebase.google.com/)
    
@@ -278,27 +354,13 @@ lib/
       flutterfire configure
       ```
 
-5. **Configure Firestore Security Rules**
-   
-   In Firebase Console → Firestore Database → Rules:
-   ```javascript
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /users/{userId}/saved_agents/{agentId} {
-         allow read, write: if request.auth != null && request.auth.uid == userId;
-       }
-     }
-   }
-   ```
-
-6. **Generate app icons and splash screens**
+5. **Generate app icons and splash screens**
    ```bash
    dart run flutter_launcher_icons
    dart run flutter_native_splash:create
    ```
 
-7. **Run the app**
+6. **Run the app**
    ```bash
    # Android
    flutter run -d android
@@ -346,7 +408,7 @@ flutter pub upgrade
 ### ⚠️ Partially Supported
 - **Web** (Chrome, Edge, Firefox)
   - Search and navigation fully functional
-  - ~60% of images load successfully (CORS limitations from SuperHeroDB CDN)
+  - ~20% of images load successfully (CORS limitations from SuperHeroDB CDN)
   - Graceful fallback to shield placeholders for blocked images
   - Crashlytics disabled (not supported on web)
   - *Tip: Scroll through roster/search a few times if images don't load initially*
@@ -366,7 +428,7 @@ flutter pub upgrade
 - **macOS** (Desktop)
   - Firebase services configured
   - Responsive layouts implemented
-  - *Not tested due to hardware limitations*
+  - *Not tested due to lack of Mac/iOS simulator*
 
 - **Linux** (Desktop)
   - Flutter support available
@@ -500,23 +562,16 @@ flutter test --coverage
 - [ ] Explicit delete button on AgentDetailsScreen (accessibility)
 - [ ] Neutral agent theming with purple accents
 - [ ] Include neutral agents in Home screen statistics
-- [ ] Persistent API response caching (SQLite or Hive)
-- [ ] Persistent image caching (cached_network_image package)
 
 ### v1.2.0 (Wishlist)
 - [ ] Search history with suggestions
 - [ ] Offline mode with cached data
-- [ ] Agent comparison tool (side-by-side stats)
-- [ ] Export roster to PDF or CSV
-- [ ] Share agents via deep links
-- [ ] Dark web optimization (improve CORS handling)
 
 ### v2.0.0 (Major)
 - [ ] Location-based features (agent battle map)
 - [ ] Weather integration for mission planning
 - [ ] Network error toaster notifications
 - [ ] Animated statistics dashboard
-- [ ] Real-time collaboration (multi-user rosters)
 - [ ] Push notifications for war updates
 
 ---
@@ -533,10 +588,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **SuperHero API** - Hero and villain data source
 - **Firebase** - Backend infrastructure
 - **Flutter Community** - Packages and support
+- **Claude AI** - README and coding support
 
 ---
 
-## 📞 Contact
+## About me
 
 **Developer:** SpiritualMaddie  
 **GitHub:** [@SpiritualMaddie](https://github.com/SpiritualMaddie)  
