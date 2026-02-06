@@ -118,9 +118,10 @@ To stop the invasion completely, humanity needs a new HeroDex — modern, stable
 <p align="center">
   <img src="assets/screenshots/home.JPG" alt="Mission Control" width="30%"/>
   &nbsp; &nbsp; &nbsp;
-  <img src="assets/screenshots/search.JPG" alt="Agent Search" width="30%"/>
-  &nbsp; &nbsp; &nbsp;
   <img src="assets/screenshots/roster.JPG" alt="Agent Roster" width="30%"/>
+  &nbsp; &nbsp; &nbsp;
+  <img src="assets/screenshots/search.JPG" alt="Agent Search" width="30%"/>
+  
 </p>
 <p align="center">
   <em>War statistics • Real-time search • Agent roster with filters</em>
