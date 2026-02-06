@@ -104,10 +104,10 @@ To stop the invasion completely, humanity needs a new HeroDex — modern, stable
 ## 📱 Screenshots
 
 ### Onboarding & Authentication
-![Onboarding Flow](screenshots/onboarding.JPG)
+![Onboarding Flow](assets/screenshots/onboarding.JPG)
 *First-time user experience with permission selection and theme picker*
 
-![Login Screen](screenshots/login.JPG)
+![Login Screen](assests/screenshots/login.JPG)
 *Secure authentication portal*
 
 ### Core Functionality
