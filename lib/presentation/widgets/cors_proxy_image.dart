@@ -38,7 +38,7 @@ class _CorsProxyImageState extends State<CorsProxyImage> {
 
   // List of CORS proxies to try (in order)
   static const List<String> _corsProxies = [
-    'https://corsproxy.io/?', // Usually more reliable
+    'https://corsproxy.io/?url=', // Usually more reliable
     'https://api.allorigins.win/raw?url=',
     '', // Last attempt: try direct URL (might work for some images)
   ];
