@@ -1,6 +1,11 @@
 import 'package:flutter_herodex3000/barrel_files/services.dart';
 import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
+///
+/// Handles the settings in the app
+/// e.g permissions, theme
+/// 
+
 class SettingsManager extends ChangeNotifier {
   final SharedPreferencesService _prefs;
   SettingsManager(this._prefs);
@@ -20,7 +25,7 @@ class SettingsManager extends ChangeNotifier {
     await _prefs.setOnboardingToCompleted(true);
     //await _prefs.setRosterSwipeHintSeen(false);
 
-    // Update Firebase services with new permissions
+    /// Update Firebase services with new permissions
     await FirebaseService.setAnalyticsEnabled(analytics);
     await FirebaseService.setCrashlyticsEnabled(crashlytics);
 
@@ -49,11 +54,13 @@ class SettingsManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// TODO shouldnt be in settings manager
   Future<void> saveRosterSwipeHintSeen({required bool value}) async {
     await _prefs.setRosterSwipeHintSeen(value);
     notifyListeners();
   }
 
+  /// TODO shouldnt be in settings manager
   //   Future<void> saveSplashShown({required bool value}) async {
   //   await _prefs.setSplashShown(value);
   //   notifyListeners();

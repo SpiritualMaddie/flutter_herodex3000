@@ -1,6 +1,15 @@
 import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
-
+///
+/// Initial splash screen shown while app initializes.
+/// 
+/// Features:
+/// - Full-screen splash image
+/// - Loading progress bar
+/// - 15-second timer (placeholder for actual initialization)
+/// 
+/// TODO: have it stay longer when its been on screen for 15 seconds or maybe more?
+///  It doest show atm when app inits
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 

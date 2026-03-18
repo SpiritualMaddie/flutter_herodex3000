@@ -1,7 +1,16 @@
 import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
-/// Reusable cyan section header used throughout the app.
-/// Provides consistent spacing and styling.
+///
+/// Reusable section header with [IconData], [title], and optional [subtitle].
+/// 
+/// Features:
+/// - Optional [IconData] (aligned with title)
+/// - Optional [subtitle] (smaller, gray text below title)
+/// - Configurable font sizes
+/// - Configurable padding
+/// - Theme primary color for title/icon
+/// 
+
 class SectionHeader extends StatelessWidget {
   final IconData? icon;
   final String title;
@@ -27,13 +36,14 @@ class SectionHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Title row with optional icon
           Row(
             children: [
               if (icon != null) ...[
                 Icon(
                   icon,
                   color: Theme.of(context).colorScheme.primary,
-                  size: titleFontSize + 4,
+                  size: titleFontSize + 4, // Icon scales with title
                 ),
                 const SizedBox(width: 8),
               ],
@@ -48,6 +58,7 @@ class SectionHeader extends StatelessWidget {
               ),
             ],
           ),
+          // Optional subtitle
           if (subtitle != null) ...[
             const SizedBox(height: 4),
             Text(

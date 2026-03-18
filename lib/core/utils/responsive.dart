@@ -1,5 +1,9 @@
 import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
+///
+/// Handles the responsive design, screen size, of the app
+/// 
+
 /// Breakpoints for responsive design
 class Breakpoints {
   static const double mobile = 600;    // Phones
@@ -46,11 +50,11 @@ extension ResponsiveContext on BuildContext {
   double get maxContentWidth {
     switch (deviceType) {
       case DeviceType.mobile:
-        return double.infinity; // Full width
+        return double.infinity; /// Full width
       case DeviceType.tablet:
-        return 800; // Constrained for readability
+        return 800; /// Constrained for readability
       case DeviceType.desktop:
-        return 700; // Even more constrained on desktop
+        return 700; /// Even more constrained on desktop
     }
   }
 }

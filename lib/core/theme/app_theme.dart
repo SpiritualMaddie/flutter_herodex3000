@@ -1,11 +1,14 @@
 import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
+/// 
 /// Defines the three alignment-based themes for HeroDex 3000.
 /// Each has a distinct color scheme to match hero/villain/neutral aesthetics.
+/// 
+
 class AppThemes {
 
   // ========================================================================
-  // TEXT THEME
+  // TEXT THEME - TODO
   // ========================================================================
     static const TextTheme _textTheme = TextTheme(
     headlineMedium: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.5),
@@ -124,7 +127,7 @@ class AppThemes {
   );
 
   // ========================================================================
-  // LEGACY (for backwards compatibility with existing code) // TODO remove?
+  // LEGACY (for backwards compatibility with existing code) // TODO remove? update?
   // ========================================================================
   
   /// Alias for heroDark — keeps existing `AppThemes.dark` calls working
@@ -133,19 +136,3 @@ class AppThemes {
   /// Alias for heroLight — keeps existing `AppThemes.light` calls working
   static final ThemeData light = heroLight;
 }
-
-// import 'package:flutter/material.dart';
-
-// class AppThemes {
-//   static final light = ThemeData(
-//     brightness: Brightness.light,
-//     useMaterial3: true,
-//     colorSchemeSeed: const Color.fromARGB(255, 118, 175, 250),
-//   );
-
-//   static final dark = ThemeData(
-//     brightness: Brightness.dark,
-//     useMaterial3: true,
-//     colorSchemeSeed: const Color(0xFF121F2B),
-//   );
-// }

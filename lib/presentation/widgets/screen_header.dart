@@ -1,8 +1,25 @@
 import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 import 'package:flutter_herodex3000/barrel_files/widgets.dart';
 
-
-// Screen header with title and search bar.
+///
+/// Standardized header for Search and Roster screens.
+/// 
+/// Components:
+/// 1. [SectionHeader] - Title with optional icon
+/// 2. Search bar - [TextField] with clear button
+/// 3. Additional content - Filters, buttons, etc. (optional)
+/// 
+/// Features:
+/// - Consistent spacing and styling across screens
+/// - Clear button appears when text is entered
+/// - Customizable hint text
+/// - [onChanged] callback for search logic
+/// - Optional [additionalContent] slot for filters/buttons
+/// 
+/// Used in:
+/// - SearchScreen: Title "AGENT SEARCH", no additional content
+/// - RosterScreen: Title "AGENTS ROSTER", additional content = filters
+/// 
 
 class ScreenHeader extends StatelessWidget {
   final String title;
@@ -11,7 +28,7 @@ class ScreenHeader extends StatelessWidget {
   final String searchHint;
   final String currentQuery;
   final ValueChanged<String> onSearchChanged;
-  final VoidCallback? onClearSearch;
+  final VoidCallback? onClearSearch; // Custom clear logic (optional)
   final Widget? additionalContent; // For filters, buttons, etc. below search
 
   const ScreenHeader({
@@ -34,7 +51,7 @@ class ScreenHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title
+          // Title with optional icon
           SectionHeader(
             icon: titleIcon,
             title: title,
@@ -83,6 +100,7 @@ class ScreenHeader extends StatelessWidget {
                   color: Theme.of(context).colorScheme.primary,
                   size: 20,
                 ),
+                // Clear button (only shown when query is not empty)
                 suffixIcon: currentQuery.isNotEmpty
                     ? IconButton(
                         icon: Icon(

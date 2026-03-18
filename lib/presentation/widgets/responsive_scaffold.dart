@@ -1,10 +1,19 @@
 import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 import 'package:flutter_herodex3000/barrel_files/utils.dart';
 
+///
 /// Responsive scaffold that centers content on larger screens.
 /// 
-/// **Mobile: Content fills the screen
-/// **Tablet/Desktop: Content is centered with max width, background fills screen
+/// Breakpoint behavior (defined in screen_utils.dart):
+/// - Mobile (<600px): Content fills screen width
+/// - Tablet (600-1200px): Content centered with 800px max width
+/// - Desktop (>1200px): Content centered with 1000px max width
+/// 
+/// Features:
+/// - Automatic responsive layout based on screen width
+/// - Optional centering (centerContent: false for full-width)
+/// - Shadow effect on centered content (gives depth on large screens)
+/// - Compatible with standard Scaffold params (appBar, bottomNav, etc.)
 /// 
 
 class ResponsiveScaffold extends StatelessWidget {
@@ -25,9 +34,9 @@ class ResponsiveScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = context.isMobile;
+    final isMobile = context.isMobile; // From screen_utils extension
 
-    // On mobile, just uses normal scaffold (full width)
+    // On mobile, or if centering disabled → use normal full-width scaffold
     if (isMobile || !centerContent) {
       return SafeArea(
         child: Scaffold(

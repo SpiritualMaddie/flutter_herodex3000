@@ -6,6 +6,23 @@ import 'package:flutter_herodex3000/barrel_files/managers.dart';
 import 'package:flutter_herodex3000/barrel_files/routing.dart';
 import 'package:flutter_herodex3000/barrel_files/theme.dart';
 
+/// Three-page onboarding flow for first-time users.
+/// 
+/// Pages:
+/// 1. Story - Explains the invasion narrative and app purpose
+/// 2. How It Works - Feature overview with icons
+/// 3. Permissions - Analytics, Crashlytics, iOS ATT, and theme selection
+/// 
+/// Features:
+/// - Segmented progress bar at top
+/// - Non-swipeable pages (button navigation only)
+/// - Scrollable page content for smaller screens
+/// - iOS ATT (App Tracking Transparency) integration
+/// - Saves all preferences before navigating to home
+/// 
+/// Navigation flow:
+/// Complete onboarding → saves preferences → redirects to /home
+/// 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -18,24 +35,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentPage = 0;
   static const int _totalPages = 3;
 
-  // Permission states
+  // Permission states (defaults to enabled)
   bool _analyticsEnabled = true;
   bool _crashlyticsEnabled = true;
   //bool _locationEnabled = true;
-  bool _attEnabled = true;
+  bool _attEnabled = true; // iOS App Tracking Transparency
   String _themePicked = "heroDark";
 
   @override
   void initState() {
     super.initState();
 
-    // Check ATT status on iOS only
+    // Check existing ATT status on iOS (doesn't prompt, just reads current state)
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _checkATTStatus());
     }
   }
 
-  // Check existing ATT status whithout prompting
+  /// Checks existing ATT status without prompting the user.
+  /// 
+  /// Called on iOS only to initialize the toggle with current permission state.
+  /// Does NOT show Apple's system dialog - just reads the status.
   Future<void> _checkATTStatus() async {
     final status = await AppTrackingTransparency.trackingAuthorizationStatus;
     if (!mounted) return;
@@ -44,13 +64,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     });
   }
 
-  /// Request ATT permission (shows Apple's system dialog if not determined)
+  /// Requests ATT permission (shows Apple's system dialog if not determined).
+  /// 
+  /// ATT States:
+  /// - notDetermined: Never asked → shows Apple's dialog
+  /// - authorized: User granted permission → toggle stays on
+  /// - denied: User denied permission → toggle can't be turned back on
+  /// - restricted: Device/MDM restrictions → toggle disabled
+  /// 
+  /// Note: Once denied, user must go to iOS Settings to re-enable.
+  /// App can only prompt once per install.
   Future<void> _requestATT() async {
     final currentStatus =
         await AppTrackingTransparency.trackingAuthorizationStatus;
 
     if (currentStatus == TrackingStatus.notDetermined) {
-      // Request Apple's system dialog
+      // Show Apple's system dialog (can only be shown once)
       final newStatus =
           await AppTrackingTransparency.requestTrackingAuthorization();
       if (!mounted) return;
@@ -58,8 +87,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         _attEnabled = newStatus == TrackingStatus.authorized;
       });
     } else {
-      // Already determined (authorized, denied, or restricted)
-      // Updates the toggle to reflect current status
+      // Already determined - update toggle to reflect current status
       if (!mounted) return;
       setState(() {
         _attEnabled = currentStatus == TrackingStatus.authorized;
@@ -67,6 +95,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
+  /// Navigates to next page with animation.
   void _nextPage() {
     if (_currentPage < _totalPages - 1) {
       _pageController.nextPage(
@@ -76,6 +105,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
+  /// Navigates to previous page with animation.
   void _previousPage() {
     if (_currentPage > 0) {
       _pageController.previousPage(
@@ -98,7 +128,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: SafeArea(
         child: Column(
           children: [
-            // Progress bar stays fixed at top
+            // Progress bar (fixed at top)
             Padding(
               padding: const EdgeInsets.only(
                 left: 24,
@@ -111,11 +141,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 totalPages: _totalPages,
               ),
             ),
-            // Pages scroll under it, wrapped in Expanded + LayoutBuilder
+            
+            // Pages (scrollable, fills remaining space)
             Expanded(
               child: PageView(
                 controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(), // Prevent swipe navigation
                 onPageChanged: (index) {
                   setState(() => _currentPage = index);
                 },
@@ -132,7 +163,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  // --- PAGE 1: Story ---
+  // ===========================================================================
+  // PAGE BUILDERS
+  // ===========================================================================
+
+  /// Page 1: Story and app purpose.
   Widget _buildStoryPage() {
     return _OnboardingPageLayout(
       title: "THE INVASION\nIS NOT OVER YET",
@@ -142,15 +177,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           "your forces to rebuild the world again.",
       buttonText: "NEXT",
       onNext: _nextPage,
-      onBack: null, // first page, no back
+      onBack: null, // No back button on first page
     );
   }
 
-  // --- PAGE 2: How to use ---
+  /// Page 2: Feature overview with icons.
   Widget _buildHowToUsePage() {
     return _OnboardingPageLayout(
       title: "HOW IT WORKS",
-      body: null, // We pass null and use the custom builder instead
+      body: null, // Using custom bodyWidget instead
       buttonText: "NEXT",
       onNext: _nextPage,
       onBack: _previousPage,
@@ -182,7 +217,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  // --- PAGE 3: Permissions ---
+  /// Page 3: Permissions and theme selection.
+  /// 
+  /// Permissions:
+  /// - Analytics: Firebase Analytics tracking
+  /// - Crashlytics: Error reporting to Firebase
+  /// - ATT (iOS only): Cross-app tracking permission
+  /// 
+  /// Theme: User selects initial app theme (Hero/Villain/Neutral × Dark/Light)
   Widget _buildPermissionsPage() {
     final settings = context.watch<SettingsManager>();
     return _OnboardingPageLayout(
@@ -193,36 +235,44 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       buttonText: "ESTABLISH SECURE LINK",
       onNext: _onEstablishLink,
       onBack: _previousPage,
-      isLastPage: true,
+      isLastPage: true, // Changes button style
       bodyWidget: Column(
         children: [
+          // Analytics toggle
           _buildPermissionTile(
             "ANALYTICS TRACKING",
             "Helps us improve the app by gathering usage data.",
             _analyticsEnabled,
             (val) => setState(() => _analyticsEnabled = val),
           ),
+
+          // Crashlytics toggle
           _buildPermissionTile(
             "CRASH REPORTING",
             "Helps us fix issues by sending crash reports.",
             _crashlyticsEnabled,
             (val) => setState(() => _crashlyticsEnabled = val),
           ),
+
+          // Location toggle
           // _buildPermissionTile(
           //   "LOCATION",
           //   "Maps your location for local hero support.",
           //   _locationEnabled,
           //   (val) => setState(() => _locationEnabled = val),
           // ),
-          // ATT - iOS only
+          
+          // ATT toggle (iOS only)
           if (defaultTargetPlatform == TargetPlatform.iOS) _buildATTTile(),
+
+          // Theme picker section
           SectionHeader(
             title: "WHATS YOUR ALIGNMENT?",
             subtitle: "(choose app theme)",
             titleFontSize: 16,
             subtitleFontSize: 12,
           ),
-          ThemePicker(onThemeSelected: (theme) {
+          ThemePicker(onThemeSelected: (theme) { // TODO look over the saving of themes and saved prefs
                         context.read<ThemeCubit>().setTheme(theme);
                         settings.saveCurrentAppTheme(value: theme.name);
                       },),
@@ -231,6 +281,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  /// iOS ATT toggle tile.
+  /// 
+  /// Special handling:
+  /// - Turning ON: Shows Apple's system dialog via _requestATT()
+  /// - Turning OFF: Not allowed programmatically (iOS restriction)
+  /// - Toggle reflects current permission status
+  /// 
+  /// Note: Apple's ATT can only prompt once per app install.
+  /// If user denies, they must enable in iOS Settings → Privacy.
   Widget _buildATTTile() {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -273,8 +332,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 // Turning on → show Apple's system dialog
                 _requestATT();
               }
-              // Turning off is not allowed programmatically on iOS,
-              // so we just ignore it — the switch won't move
+              // Turning off is not allowed programmatically on iOS
+              // Switch won't move if user tries to disable
             },
             activeThumbColor: Colors.cyan,
             activeTrackColor: Colors.cyan.withAlpha(60),
@@ -285,7 +344,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-
+  /// Generic permission toggle tile (Analytics, Crashlytics).
   Widget _buildPermissionTile(
     String title,
     String desc,
@@ -336,8 +395,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  /// Saves all onboarding choices and navigates to home.
+  /// 
+  /// Saves to SharedPreferences:
+  /// - Analytics enabled/disabled
+  /// - Crashlytics enabled/disabled
+  /// - iOS ATT status
+  /// - Selected theme (TODO does it though?)
+  /// - Onboarding completed flag
+  /// 
+  /// Then navigates to /home (which triggers auth redirect if needed).
   Future<void> _onEstablishLink() async {
-    // Save all permission choices
     await context.read<SettingsManager>().saveOnboardingPreferences(
       analytics: _analyticsEnabled,
       crashlytics: _crashlyticsEnabled,
@@ -350,7 +418,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     context.go("/home");
   }
 
-  /// Wraps page content in SingleChildScrollView with height constraints
+  /// Wraps page content in SingleChildScrollView with height constraints.
+  /// 
+  /// Why this pattern:
+  /// - Allows scrolling if content exceeds screen height
+  /// - Ensures minimum height fills screen (for proper spacing)
+  /// - LayoutBuilder provides accurate constraints
   Widget _buildScrollablePage(Widget child) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -365,11 +438,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Segmented progress bar
-// ---------------------------------------------------------------------------
-/// Draws a row of segments, filled up to [currentPage].
-/// Each segment is a rounded rectangle with a small gap between them.
+// ===========================================================================
+// REUSABLE WIDGETS
+// ===========================================================================
+
+/// Segmented progress bar showing current page.
+/// 
+/// Draws horizontal segments (one per page), filled up to [currentPage].
+/// Animates smoothly when page changes.
 class _SegmentedProgressBar extends StatelessWidget {
   final int currentPage;
   final int totalPages;
@@ -404,16 +480,19 @@ class _SegmentedProgressBar extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Reusable page layout
-// ---------------------------------------------------------------------------
-/// Standard layout for each onboarding page.
-/// If [bodyWidget] is provided it's used instead of [body] text.
-/// [isLastPage] changes the button style to the outlined "establish" look.
+/// Standard layout template for onboarding pages.
+/// 
+/// Layout structure:
+/// - Back button (if onBack provided)
+/// - Title (large cyan text)
+/// - Body text OR custom bodyWidget
+/// - Next/Finish button at bottom
+/// 
+/// [isLastPage] changes button style to outlined "establish link" variant.
 class _OnboardingPageLayout extends StatelessWidget {
   final String title;
-  final String? body;
-  final Widget? bodyWidget;
+  final String? body; // Plain text body
+  final Widget? bodyWidget; // Custom widget body (takes precedence over body)
   final String buttonText;
   final VoidCallback onNext;
   final VoidCallback? onBack;
@@ -437,10 +516,10 @@ class _OnboardingPageLayout extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: .spaceBetween,
         children: [
+          // Top content
           Column(
             children: [
-              // Top content
-              // Back button row — invisible placeholder on first page to keep layout stable
+              // Back button (invisible placeholder on first page for layout stability)
               SizedBox(
                 height: 40,
                 child: onBack != null
@@ -459,6 +538,7 @@ class _OnboardingPageLayout extends StatelessWidget {
                     : const SizedBox.shrink(),
               ),
               const SizedBox(height: 8),
+              
               // Title
               Column(
                 crossAxisAlignment: .start,
@@ -477,7 +557,7 @@ class _OnboardingPageLayout extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Body — either plain text or a custom widget
+              // Body content (either plain text or custom widget)
               if (body != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
@@ -506,6 +586,7 @@ class _OnboardingPageLayout extends StatelessWidget {
     );
   }
 
+  /// Standard "NEXT" button (cyan background, right-aligned).
   Widget _buildNextButton(BuildContext context) {
     return Align(
       alignment: Alignment.centerRight,
@@ -531,6 +612,8 @@ class _OnboardingPageLayout extends StatelessWidget {
     );
   }
 
+  /// "ESTABLISH SECURE LINK" button (outlined, full-width, with icon).
+  /// Used only on final page.
   Widget _buildEstablishButton() {
     return OutlinedButton(
       onPressed: onNext,
@@ -559,9 +642,9 @@ class _OnboardingPageLayout extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// How-to row (used on page 2)
-// ---------------------------------------------------------------------------
+/// Icon + text row used in "How It Works" page.
+/// 
+/// Layout: Icon in colored square on left, description text on right.
 class _HowToRow extends StatelessWidget {
   final IconData icon;
   final String text;
@@ -574,6 +657,7 @@ class _HowToRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
         children: [
+          // Icon container
           Container(
             width: 44,
             height: 44,
@@ -584,6 +668,8 @@ class _HowToRow extends StatelessWidget {
             child: Center(child: Icon(icon, color: Colors.cyan, size: 20)),
           ),
           const SizedBox(width: 16),
+          
+          // Description text
           Expanded(
             child: Text(
               text,

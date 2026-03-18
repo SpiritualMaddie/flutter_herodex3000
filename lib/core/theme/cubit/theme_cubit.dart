@@ -1,8 +1,11 @@
 import 'package:flutter_herodex3000/barrel_files/theme.dart';
 import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
+///
 /// The available theme alignments in HeroDex 3000.
 /// Each has both a dark and light variant.
+/// 
+
 enum AppTheme {
   heroDark,
   heroLight,
@@ -40,9 +43,11 @@ enum AppTheme {
   }
 }
 
-
+///
 /// Manages the app's current theme.
 /// Emits [AppTheme] enum values, which get mapped to actual ThemeData in main.dart.
+/// 
+
 class ThemeCubit extends Cubit<AppTheme> {
   ThemeCubit({AppTheme initial = AppTheme.heroDark}) : super(initial);
 
@@ -101,27 +106,3 @@ class ThemeCubit extends Cubit<AppTheme> {
     }
   }
 }
-
-// import 'package:flutter/material.dart';
-// import 'package:flutter_bloc/flutter_bloc.dart';
-
-// enum AppTheme { light, dark }
-
-// class ThemeCubit extends Cubit<AppTheme> {
-//   ThemeCubit({AppTheme? initial}) : super(initial ?? AppTheme.light);
-
-//   void themeToggle() {
-//     debugPrint("Before toggle $state");
-
-//     emit(state == AppTheme.light ? AppTheme.dark : AppTheme.light);
-
-//     debugPrint("After toggle $state");
-//   }
-
-//   void setTheme(AppTheme theme){
-//     if(theme != state){
-//       emit(theme);
-//       debugPrint("Theme set to $theme");
-//     }
-//   }
-// }

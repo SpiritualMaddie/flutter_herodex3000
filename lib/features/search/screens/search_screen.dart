@@ -5,6 +5,21 @@ import 'package:flutter_herodex3000/barrel_files/widgets.dart';
 import 'package:flutter_herodex3000/barrel_files/managers.dart';
 import 'package:flutter_herodex3000/barrel_files/screens.dart';
 
+///
+/// Agent search screen with debounced API calls and shimmer loading.
+/// 
+/// Features:
+/// - 1200ms debounced search (prevents excessive API calls)
+/// - Three UI states: Initial (radar), Loading (shimmer), Results (grid)
+/// - Grid layout for search results
+/// - Navigates to detail screen with save button enabled
+/// 
+/// Why debounce:
+/// - User types "spider" → only searches once after 1200ms pause
+/// - Without debounce: Would search 6 times (s, sp, spi, spid, spide, spider)
+/// - Saves API quota and improves performance
+/// 
+
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
 
@@ -18,8 +33,8 @@ class _SearchScreenState extends State<SearchScreen> {
   Timer? _debounce;
   bool _isLoading = false;
 
-  // List of full models
-  List<AgentModel> _fullAgents = [];
+  // Full agent models from API
+  List<AgentModel> _fullAgents = []; 
 
   // Current search query (for UI state)
   String _searchQuery = '';
@@ -27,11 +42,21 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
+    // Update search query state whenever controller changes
     _searchController.addListener(() {
       setState(() => _searchQuery = _searchController.text.trim());
     });
   }
 
+  /// Handles search input with 1200ms debounce.
+  /// 
+  /// Flow:
+  /// 1. Cancel any pending search timer
+  /// 2. If query is empty, clear results immediately
+  /// 3. Otherwise, start new timer for 1200ms
+  /// 4. When timer fires, perform actual API search
+  /// 
+  /// Why 1200ms: Balance between responsiveness and API efficiency.
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     
@@ -43,6 +68,7 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
     
+    // Show loading state immediately
     setState(() => _isLoading = true);
     
     _debounce = Timer(const Duration(milliseconds: 1200), () {
@@ -50,11 +76,18 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  /// Performs actual API search via AgentDataManager.
+  /// 
+  /// Handles:
+  /// - API call via SuperHero API (with CORS proxy on web)
+  /// - Empty results (valid API response with no agents)
+  /// - Network/parsing errors
+  /// - Widget disposal during async operation
   Future<void> _performSearch(String query) async {
     try {
       final agents = await _dataManager.getAgentByNameApi(query);
 
-      if (!mounted) return;
+      if (!mounted) return; // Widget disposed, don't update state
 
       setState(() {
         _fullAgents = agents;
@@ -83,7 +116,7 @@ class _SearchScreenState extends State<SearchScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       child: Column(
         children: [
-          // --- HEADER ---
+          // Header with search bar
           ScreenHeader(
             title: "AGENT SEARCH",
             titleIcon: Icons.radar,
@@ -93,20 +126,22 @@ class _SearchScreenState extends State<SearchScreen> {
             onSearchChanged: _onSearchChanged,
           ),
 
-          // --- CONTENT AREA ---
+          // Dynamic content area (changes based on state)
           Expanded(
             child: _isLoading
-                ? _buildLoadingState()
+                ? _buildLoadingState() // Shimmer skeleton
                 : _fullAgents.isEmpty
-                    ? _buildInitialState()
-                    : _buildResultsState(),
+                    ? _buildInitialState() // Radar icon
+                    : _buildResultsState(), // Grid of agents
           ),
         ],
       ),
     );
   }
 
-  // VIEW 1: INITIAL STATE (before any search)
+  /// Initial state: Shown before any search is performed.
+  /// 
+  /// Visual: Large radar icon with "AWAITING INPUT" text.
   Widget _buildInitialState() {
     return Center(
       child: Column(
@@ -140,7 +175,7 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  // VIEW 2: LOADING STATE (shimmer effect)
+  /// Loading state: Shimmer skeleton grid while searching.
   Widget _buildLoadingState() {
     return GridView.builder(
       padding: const EdgeInsets.all(16),
@@ -164,7 +199,7 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  // VIEW 3: RESULTS STATE — grid of agent cards
+  /// Results state: Grid of agent cards from search results.
   Widget _buildResultsState() {
     return GridView.builder(
       padding: const EdgeInsets.all(16),
@@ -181,6 +216,7 @@ class _SearchScreenState extends State<SearchScreen> {
           agent: summary,
           layout: AgentCardLayout.grid,
           onTap: () {
+            // Navigate to detail view (with save button)
             Navigator.push(
               context,
               MaterialPageRoute(

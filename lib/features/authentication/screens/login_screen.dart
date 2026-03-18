@@ -5,6 +5,19 @@ import 'package:flutter_herodex3000/barrel_files/authentication.dart';
 import 'package:flutter_herodex3000/barrel_files/widgets.dart';
 import 'package:flutter_herodex3000/barrel_files/utils.dart';
 
+///
+/// Login screen with terminal/command center aesthetic.
+/// 
+/// Features:
+/// - Email/password authentication via Firebase
+/// - Sign-up modal dialog for new users
+/// - Responsive design (centered on tablet/desktop)
+/// 
+/// Navigation:
+/// - On successful login: AuthCubit emits AuthAuthenticated → Router redirects to /home
+/// - On sign-up success: Modal closes automatically via BlocListener
+/// 
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
   @override
@@ -16,6 +29,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  /// Shows the sign-up modal dialog.
+  /// Modal is dismissible by tapping outside (barrierDismissible: true).
   void _showEnlistModal() {
     showDialog(
       context: context,
@@ -31,6 +46,11 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  /// Handles sign-in button press.
+  /// 
+  /// Validates form → calls AuthCubit.signIn() → shows errors if any.
+  /// On success, AuthCubit automatically emits AuthAuthenticated and
+  /// the router redirects to /home (no manual navigation needed).
   Future<void> _handleSignIn() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -39,8 +59,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await context.read<AuthCubit>().signIn(email, password);
-      // On success, AuthCubit should emit authenticated and router will redirect.
+      // On success, AuthCubit emits authenticated → router handles redirect
     } on FirebaseAuthException catch (e) {
+      // Firebase-specific errors (wrong password, user not found, etc.)
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -49,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     } catch (e) {
-      // show error to user
+      // Unexpected errors (network issues, etc.)
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -71,6 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 32.0),
           child: SingleChildScrollView(
             child: ConstrainedBox(
+              // Ensures content fills screen height for proper centering
               constraints: BoxConstraints(
                 minHeight: height - MediaQuery.of(context).padding.vertical,
               ),
@@ -80,12 +102,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     mainAxisAlignment: .center,
                     children: [
+                      // App logo
                       Image(
                         image: const AssetImage("assets/icons/app_icon.png"),
                         width: 80,
                         height: 80,
                       ),
                       const SizedBox(height: 16),
+                      // App title and tagline
                       const Text(
                         "HERODEX 3000",
                         style: TextStyle(
@@ -105,20 +129,25 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 48),
+                      // Email field
                       _buildTerminalField(
                         "EMAIL ADDRESS",
                         _emailController,
                         false,
                       ),
                       const SizedBox(height: 16),
+                      // Password field
                       _buildTerminalField(
                         "PASSWORD",
                         _passwordController,
                         true,
                       ),
                       const SizedBox(height: 32),
+                      // Sign in button
                       _buildPrimaryButton("ACCESS TERMINAL", _handleSignIn),
                       const SizedBox(height: 12),
+
+                      // Sign up button
                       _buildSecondaryButton(
                         "SIGN UP NEW AGENT",
                         _showEnlistModal,
@@ -134,6 +163,11 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  /// Builds a terminal-styled text field with label.
+  /// 
+  /// [label] - Field label (e.g., "EMAIL ADDRESS")
+  /// [controller] - TextEditingController for form management
+  /// [isPassword] - If true, obscures text input
   Widget _buildTerminalField(
     String label,
     TextEditingController controller,
@@ -142,6 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Field label
         Text(
           label,
           style: const TextStyle(
@@ -151,6 +186,8 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         const SizedBox(height: 8),
+
+        // Input field with validation
         TextFormField(
           controller: controller,
           obscureText: isPassword,
@@ -159,6 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
             if (value == null || value.trim().isEmpty) {
               return 'Required';
             }
+            // Email validation for non-password fields
             if (!isPassword && !value.contains('@')) {
               return 'Enter a valid email';
             }
@@ -181,6 +219,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+/// Primary action button (cyan background, black text).
   Widget _buildPrimaryButton(String label, VoidCallback onPressed) {
     return ElevatedButton(
       onPressed: onPressed,
@@ -200,6 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+ /// Secondary action button (outlined, no fill).
   Widget _buildSecondaryButton(String label, VoidCallback onPressed) {
     return OutlinedButton(
       onPressed: onPressed,
@@ -220,8 +260,22 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// Enlist New Agent modal — keeps the original visual style but wires sign up logic.
-// Converted to StatefulWidget so controllers are disposed and async signUp can be handled.
+// ===========================================================================
+// SIGN-UP MODAL
+// ===========================================================================
+
+/// Modal dialog for new agent enrollment (sign-up).
+/// 
+/// Features:
+/// - Blur backdrop effect
+/// - Form validation (email format, password length)
+/// - Loading state during sign-up
+/// - Auto-closes on successful authentication via BlocListener
+/// 
+/// Why StatefulWidget:
+/// - Need local state for form controllers and loading indicator
+/// - BlocListener triggers navigation only on AuthAuthenticated state
+/// 
 class EnlistAgentModal extends StatefulWidget {
   const EnlistAgentModal({super.key});
 
@@ -235,6 +289,11 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
   final _passwordController = TextEditingController();
   bool _loading = false;
 
+  /// Shows success/error snackbar.
+  /// 
+  /// Note: We don't pop the dialog here because BlocListener handles it.
+  /// Popping synchronously can cause "Navigator locked" errors during
+  /// simultaneous state changes.
   void _showStatusSnackbar(BuildContext context, bool success, String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -254,16 +313,6 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
         ),
       ),
     );
-
-    // DO NOT pop synchronously here — defer to next frame to avoid navigator locked errors
-    // if (success) {
-    //   WidgetsBinding.instance.addPostFrameCallback((_){
-    //     if(!mounted) return;
-    //     if(Navigator.of(context).canPop()){
-    //       Navigator.of(context).pop();
-    //     }
-    //   });
-    // }
   }
 
   @override
@@ -273,6 +322,10 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
     super.dispose();
   }
 
+  /// Handles sign-up form submission.
+  /// 
+  /// Validates → calls AuthCubit.signUp() → shows feedback.
+  /// On success, BlocListener (in build()) auto-closes the dialog.
   Future<void> _handleSignUp() async {
     if (!_formKeySignUp.currentState!.validate()) return;
 
@@ -289,6 +342,7 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
         "✅ Agent enrolled successfully. \nWelcome!",
       );
     } on FirebaseAuthException catch (e) {
+      // Firebase errors (email already in use, weak password, etc.)
       _showStatusSnackbar(context, false, "❌ Sign up failed. \n${e.message}");
       
     } catch (e) {
@@ -302,6 +356,7 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthCubit, AuthState>(
+      // Auto-close dialog when user becomes authenticated
       listener: (context, state) {
         if (state is AuthAuthenticated) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -309,7 +364,7 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
             try {
               if (Navigator.of(context).canPop()) Navigator.of(context).pop();
             } catch (_) {
-              // swallow navigation errors to avoid crashes during simultaneous navigations
+              // Swallow navigation errors during simultaneous navigations (to avoid crashes)
             }
           });
         }
@@ -318,7 +373,7 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Dialog(
           constraints: BoxConstraints(
-            maxWidth: context.maxContentWidth,
+            maxWidth: context.maxContentWidth, // Responsive width
             maxHeight: double.infinity,
           ),
           backgroundColor: const Color(0xFF0D1721),
@@ -331,6 +386,7 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Title
                 const Text(
                   "NEW AGENT ENLISTMENT",
                   style: TextStyle(
@@ -341,6 +397,8 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
                   ),
                 ),
                 const SizedBox(height: 24),
+
+                // Form fields
                 Form(
                   key: _formKeySignUp,
                   child: Column(
@@ -357,6 +415,8 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
                   ),
                 ),
                 const SizedBox(height: 24),
+
+                // Submit button with loading indicator
                 ElevatedButton(
                   onPressed: _loading ? null : _handleSignUp,
                   style: ElevatedButton.styleFrom(
@@ -389,6 +449,12 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
     );
   }
 
+  /// Builds a simple underlined text field for the modal.
+  /// 
+  /// Validates:
+  /// - Required fields
+  /// - Email format (@ symbol)
+  /// - Password length (minimum 6 characters)
   Widget _buildModalField(
     String label,
     TextEditingController controller, {

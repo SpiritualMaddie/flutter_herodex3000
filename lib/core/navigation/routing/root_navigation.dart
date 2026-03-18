@@ -2,7 +2,11 @@ import 'package:flutter_herodex3000/barrel_files/routing.dart';
 import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 import 'package:flutter_herodex3000/barrel_files/utils.dart';
 
-/// Bottom navigation bar that wraps authenticated screens.
+///
+/// Handles the Navigation of the app
+/// 
+
+/// Navigation bar that wraps authenticated screens.
 class RootNavigation extends StatelessWidget {
   final Widget child;
   
@@ -20,6 +24,8 @@ class RootNavigation extends StatelessWidget {
 
     final useRailOnLeft = context.isDesktop;
 
+    /// Checks if the screen is desktop or landscape and adds
+    /// navigation to the left side of screen
     if (useRailOnLeft) {
       return Scaffold(
         body: Row(
@@ -78,13 +84,13 @@ class RootNavigation extends StatelessWidget {
               ],
             ),
             const VerticalDivider(width: 4),
-            // main content expands to take remaining space
             Expanded(child: child),
           ],
         ),
       );
     } else {
-      // Mobile / narrow tablet: bottom navigation bar
+      /// Else if the screen is mobile or not landscape,
+      /// the navigation bar will be at the bottom of the screen
       return Scaffold(
         body: child,
         bottomNavigationBar: NavigationBar(

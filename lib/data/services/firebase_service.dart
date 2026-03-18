@@ -2,11 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_herodex3000/barrel_files/firebase.dart';
 import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
+///
 /// Centralized service for Firebase Analytics and Crashlytics.
 /// Respects user permissions set in onboarding/settings.
 /// 
 /// IMPORTANT: Crashlytics only works on Android/iOS — all Crashlytics calls
 /// are guarded to prevent crashes on web/desktop.
+///
+
 class FirebaseService {
   static final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
   
@@ -21,7 +24,7 @@ class FirebaseService {
     required bool analyticsEnabled,
     required bool crashlyticsEnabled,
   }) async {
-    // Configure Analytics (works on web, Android, iOS, macOS)
+    /// Configure Analytics (works on web, Android, iOS, macOS)
     try {
       final bool analyticsSupported = kIsWeb ||
           defaultTargetPlatform == TargetPlatform.android ||
@@ -42,12 +45,12 @@ class FirebaseService {
       debugPrint('⚠️ Firebase Analytics: error toggling collection: $e\n$st');
     }
 
-    // Configure Crashlytics (ONLY on Android/iOS — never on web)
+    /// Configure Crashlytics (ONLY on Android/iOS — never on web)
     if (!_crashlyticsSupported) {
       debugPrint(
         '⚠️ Firebase Crashlytics: not supported on platform: $defaultTargetPlatform',
       );
-      return; // Exit early — don't attempt any Crashlytics calls
+      return; /// Exit early — don't attempt any Crashlytics calls
     }
 
     try {
@@ -58,7 +61,7 @@ class FirebaseService {
         '🔥 Firebase Crashlytics: ${crashlyticsEnabled ? "ENABLED" : "DISABLED"}',
       );
 
-      // Set up error handlers only if enabled AND supported
+      /// Set up error handlers only if enabled AND supported
       if (crashlyticsEnabled) {
         FlutterError.onError = (errorDetails) {
           FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
@@ -103,7 +106,7 @@ class FirebaseService {
     }
   }
 
-  // --- Analytics event helpers ---
+  /// --- Analytics event helpers ---
 
   static Future<void> logLogin(String method) async {
     try {
@@ -144,14 +147,14 @@ class FirebaseService {
     }
   }
 
-  // --- Crashlytics helpers (all guarded) ---
+  /// --- Crashlytics helpers (all guarded) ---
 
   static Future<void> recordError(
     dynamic error,
     StackTrace? stack, {
     String? reason,
   }) async {
-    if (!_crashlyticsSupported) return; // Skip on web
+    if (!_crashlyticsSupported) return; /// Skip on web
 
     try {
       await FirebaseCrashlytics.instance.recordError(
@@ -167,7 +170,7 @@ class FirebaseService {
   }
 
   static Future<void> setUserId(String? userId) async {
-    if (!_crashlyticsSupported) return; // Skip on web
+    if (!_crashlyticsSupported) return; /// Skip on web
 
     try {
       await FirebaseCrashlytics.instance.setUserIdentifier(userId ?? '');
@@ -178,7 +181,7 @@ class FirebaseService {
   }
 
   static Future<void> setCustomKey(String key, dynamic value) async {
-    if (!_crashlyticsSupported) return; // Skip on web
+    if (!_crashlyticsSupported) return; /// Skip on web
 
     try {
       await FirebaseCrashlytics.instance.setCustomKey(key, value);

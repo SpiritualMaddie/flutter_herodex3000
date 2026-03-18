@@ -1,5 +1,6 @@
+///
 /// Lightweight view model used for list cards in Search and Roster.
-/// Maps from the full [AgentModel] so the UI never touches the data layer directly.
+/// 
 class AgentSummary {
   final String id;
   final String name;

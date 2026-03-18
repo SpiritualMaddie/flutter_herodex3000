@@ -2,14 +2,22 @@ import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 import 'package:flutter_herodex3000/presentation/view_models/agent_summary.dart';
 import 'package:flutter_herodex3000/barrel_files/widgets.dart';
 
+///
 /// Shared card widget used in both Search (grid) and Roster (list).
 ///
-/// [layout] controls the shape:
-///   - [AgentCardLayout.grid]  → tall card for the search grid
-///   - [AgentCardLayout.list]  → horizontal row for the roster list
-///
-/// [onTap] navigates to detail.
-/// [onDismiss] is only used in Roster (swipe to remove). Pass null in Search.
+/// Features:
+/// - Two layouts: [AgentCardLayout.grid] (tall card) and [AgentCardLayout.list] (horizontal row)
+/// - Swipe-to-delete support (list layout only)
+/// - Mini stat bars for power, strength, intelligence
+/// - Alignment badge (list layout only)
+/// - [CorsProxyImage] with error handling
+/// 
+/// Layout differences:
+/// - Grid: Image above, stats below, compact (for search results)
+/// - List: Image left, info right, spacious (for roster management)
+/// 
+/// TODO: Add neutral agent purple accent color support
+/// 
 enum AgentCardLayout { grid, list }
 
 class AgentCard extends StatelessWidget {
@@ -26,7 +34,7 @@ class AgentCard extends StatelessWidget {
     this.onDismiss,
   });
 
-  // TODO Neutral should be different color
+  // TODO: Neutral should be different color (purple)
   Color get _accentColor => agent.isHero ? Colors.cyan : Colors.redAccent;
 
   @override
@@ -59,7 +67,13 @@ class AgentCard extends StatelessWidget {
     return card;
   }
 
-  // --- GRID CARD (Search) ---
+  /// Grid card layout: Image above, stats below.
+  /// 
+  /// Used in SearchScreen.
+  /// 
+  /// Layout:
+  /// - Top: Image (fills expanded space)
+  /// - Bottom: Name + 3 mini stat bars (PWR, STR, INT)
   Widget _buildGridCard(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
@@ -115,7 +129,13 @@ class AgentCard extends StatelessWidget {
     );
   }
 
-  // --- LIST CARD (Roster) ---
+  /// List card layout: Image left, info right.
+  /// 
+  /// Used in RosterScreen.
+  /// 
+  /// Layout:
+  /// - Left: Thumbnail (60x60)
+  /// - Right: Name + alignment badge + 3 mini stat bars
   Widget _buildListCard(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
@@ -129,7 +149,7 @@ class AgentCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Thumbnail
+            // Thumbnail (square)
             SizedBox(
               width: 60,
               height: 60,
@@ -194,7 +214,10 @@ class AgentCard extends StatelessWidget {
 
   // --- SHARED HELPERS ---
 
-  /// Shows the agent image if available, otherwise a placeholder icon.
+/// Shows agent image if available, otherwise a placeholder icon.
+  /// 
+  /// Uses [CorsProxyImage] for automatic web CORS handling.
+  /// Fallback: Person icon with accent color.
   Widget _buildImageOrPlaceholder({required bool expanded, required BuildContext context}) {
     final placeholder = Container(
       color: Theme.of(context).colorScheme.surface,
@@ -216,8 +239,10 @@ class AgentCard extends StatelessWidget {
     );
   }
 
-  /// Compact stat bar used in both grid and list cards.
-  /// [value] is 0–100 from the API, normalized to 0.0–1.0 for the progress indicator.
+  /// Compact stat bar: Label (30px) + progress bar.
+  /// 
+  /// Used for Power, Strength, Intelligence display.
+  /// Value is 0–100 from API, normalized to 0.0–1.0 for progress indicator.
   Widget _buildMiniStatBar(String label, int value, Color color, BuildContext context) {
     return Row(
       children: [

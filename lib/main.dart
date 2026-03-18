@@ -10,20 +10,25 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart'
     show kIsWeb, defaultTargetPlatform, TargetPlatform;
 
+///
+/// Main file of the app where things get initialized, loaded
+/// and where the root of the app is set
+/// 
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables
+  /// Load environment variables
   await dotenv.load(fileName: ".env");
 
-  // Initialize SharedPreferences
+  /// Initialize SharedPreferences
   final prefsService = SharedPreferencesService();
   await prefsService.init();
 
-  // Initialize Firebase
+  /// Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Enable debug mode for analytics only on supported platforms.
+  /// Enable debug mode for analytics only on supported platforms.
   try {
     final bool analyticsSupported =
         kIsWeb ||
@@ -33,29 +38,29 @@ Future<void> main() async {
     if (analyticsSupported) {
       await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
     } else {
-      // Windows (and other unsupported platforms) skip analytics calls to avoid channel errors.
+      /// Windows (and other unsupported platforms) skip analytics calls to avoid channel errors.
       debugPrint(
         'FirebaseAnalytics: skipping setAnalyticsCollectionEnabled on unsupported platform: $defaultTargetPlatform',
       );
     }
   } catch (e, st) {
-    // Safe fallback: log and continue — do not let platform-channel errors crash the app
+    /// Safe fallback: log and continue — do not let platform-channel errors crash the app
     debugPrint('FirebaseAnalytics: error enabling analytics: $e\n$st');
   }
 
-  // Initialize Firebase Analytics & Crashlytics with user permissions
+  /// Initialize Firebase Analytics & Crashlytics with user permissions
   await FirebaseService.initialize(
     analyticsEnabled: prefsService.analyticsIsApproved,
     crashlyticsEnabled: prefsService.crashlyticsIsApproved,
   );
 
-  // Run app with all providers
+  /// Run app with all providers
   runApp(
     createAppProviders(prefsService: prefsService, child: const HeroDex()),
   );
 }
 
-// Root app widget.
+/// Root app widget.
 class HeroDex extends StatefulWidget {
   const HeroDex({super.key});
 
