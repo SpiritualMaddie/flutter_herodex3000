@@ -47,6 +47,8 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   final AgentDataManager _agentDataRepo = AgentDataManager();
   bool _isSaved = false;
   bool _isSaving = false;
+  bool _isDeleted = false;
+  bool _isDeleting = false;
   String goodAlignment = "hero";
   String badAlignment = "villian";
   String neutralAlignment = "neutral";
@@ -162,8 +164,8 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
                   const SizedBox(height: 24),
                   _buildConnections(),
                   const SizedBox(height: 48),
-                  // Only show save button if opened from Search
-                  if (widget.showSaveButton) _buildSaveButton(),
+                  // Show Save button from Search and Delete button from Roster
+                  widget.showSaveButton ? _buildSaveButton() : _buildDeleteButton(),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -585,5 +587,87 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
               ),
             ),
     );
+  }
+
+  Widget _buildDeleteButton() {
+    return ElevatedButton(
+      onPressed: _isDeleting ? null : _deleteAgent,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.redAccent,
+        minimumSize: const Size(double.infinity, 56),
+      ),
+      child: _isDeleting
+          ? SizedBox(
+              height: 24,
+              width: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            )
+          : Text(
+              "DELETE FROM ROSTER",
+              style: TextStyle(
+                color:Colors.black,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
+              ),
+            ),
+    );
+  }
+
+  /// Deletes agent from Firestore with optimistic UI update.
+  /// 
+  /// Flow:
+  /// 1. Call Firestore delete
+  /// 2. On success: show success SnackBar
+  /// 3. On error: Keep button enabled, show error SnackBar
+  Future<void> _deleteAgent() async {
+    if (_isDeleting) return;
+    setState(() => _isDeleting = true);
+
+    try {
+      await _agentDataRepo.deleteAgentFromFirestore(widget.agent.agentId);
+      if (!mounted) return;
+      setState(() {
+        _isDeleted = true;
+        _isDeleting = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Center(
+              child: Text(
+                "${widget.agent.name} deleted from roster ✅",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: .bold,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ),
+            backgroundColor: Colors.green.withAlpha(90),
+          ),
+        );
+        Navigator.pop(context, true); // Return true = deleted
+      }
+    } catch (e, st) {
+      debugPrint('❌ AgentDetailsScreen._deleteAgent: $e\n$st');
+      if (!mounted) return;
+      setState(() => _isDeleting = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Center(
+              child: Text(
+                "❌ Failed to delete. Try again.",
+                style: TextStyle(fontWeight: .bold, letterSpacing: 1.5),
+              ),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
