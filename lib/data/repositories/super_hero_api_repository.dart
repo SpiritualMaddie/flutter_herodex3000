@@ -22,10 +22,18 @@ class SuperHeroApiRepository implements ISuperHeroApiRepository {
     }
   }
 
-  /// List of CORS proxies to try (in order)
+  /// List of CORS proxies to try in order.
+  /// 
+  /// Order:
+  /// 1. corsproxy.io: Usually most reliable
+  /// 2. cors-anywhere: Backup proxy 
+  /// 3. api.codetabs: Backup proxy
+  /// 4. Empty string: Direct URL as last resort
   static const List<String> _corsProxies = [
-    'https://corsproxy.io/?url=', // Usually more reliable
-    'https://api.allorigins.win/raw?url=',
+    'https://corsproxy.io/?url=',
+    'https://cors-anywhere.com/',
+    'https://api.codetabs.com/v1/proxy/?quest=',
+    '',
   ];
 
   /// Proxy API requests on web to bypass CORS.

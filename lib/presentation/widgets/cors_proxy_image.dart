@@ -44,13 +44,15 @@ class _CorsProxyImageState extends State<CorsProxyImage> {
 
   /// List of CORS proxies to try in order.
   /// 
-  /// Order matters:
+  /// Order:
   /// 1. corsproxy.io: Usually most reliable
-  /// 2. allorigins.win: Backup proxy
-  /// 3. Empty string: Direct URL as last resort
+  /// 2. cors-anywhere: Backup proxy 
+  /// 3. api.codetabs: Backup proxy
+  /// 4. Empty string: Direct URL as last resort
   static const List<String> _corsProxies = [
     'https://corsproxy.io/?url=',
-    'https://api.allorigins.win/raw?url=',
+    'https://cors-anywhere.com/',
+    'https://api.codetabs.com/v1/proxy/?quest=',
     '',
   ];
 
