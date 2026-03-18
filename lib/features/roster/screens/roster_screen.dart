@@ -7,12 +7,29 @@ import 'package:flutter_herodex3000/barrel_files/widgets.dart';
 import 'package:flutter_herodex3000/barrel_files/managers.dart';
 import 'package:flutter_herodex3000/barrel_files/screens.dart';
 
-// Which alignments are currently visible.
+/// Enum defining which agent alignments are visible in the filter.
 enum AgentAlignment { good, bad, neutral }
 
-// How the list is sorted by power.
+/// Enum defining how the roster list is sorted by power stat.
 enum PowerSort { none, highest, lowest }
 
+/// Roster management screen showing saved agents with filtering and search.
+/// 
+/// Features:
+/// - Multi-select alignment filter (Hero/Villain/Neutral)
+/// - Power sorting (Highest/Lowest/Default)
+/// - Local search within saved agents
+/// - Swipe-to-delete with optimistic UI updates
+/// - Pull-to-refresh to reload from Firestore
+/// - First-time swipe hint tooltip (auto-dismisses or user taps) TODO: Tooltip button?
+/// 
+/// Data Flow:
+/// 1. Loads all agents from Firestore on mount
+/// 2. Applies filters/search/sort locally for performance
+/// 3. Swipe-to-delete updates UI immediately, rollback on Firestore failure
+/// 
+/// TODO: Add neutral agent support with purple accent colors
+/// 
 class RosterScreen extends StatefulWidget {
   const RosterScreen({super.key});
 
@@ -30,14 +47,14 @@ class _RosterScreenState extends State<RosterScreen> {
   List<AgentModel> _allAgents = [];
   bool _showSwipeHint = false;
 
-  // Which alignment checkboxes are active. Start with all selected.
+  // Start with all alignments selected (show everything)
   Set<AgentAlignment> _selectedAlignments = {
     AgentAlignment.good,
     AgentAlignment.bad,
     AgentAlignment.neutral,
   };
 
-  // Current power sort mode.
+  // Current power sort mode (none - show everything)
   PowerSort _powerSort = PowerSort.none;
 
   // The current search query (lowercased).
@@ -55,29 +72,43 @@ class _RosterScreenState extends State<RosterScreen> {
     _sharedPrefsService = SharedPreferencesService();
     _settingsManager = SettingsManager(_sharedPrefsService);
     _loadAgents();
+
+    // Listen to search controller changes and update query
     _searchController.addListener(() {
       setState(
         () => _searchQuery = _searchController.text.trim().toLowerCase(),
       );
     });
+
     _checkFirstVisit();
   }
 
-  // Check if this is user's first time seeing the roster with items
+  /// Checks if user has seen the swipe-to-delete hint before.
+  /// 
+  /// Accessibility improvement: Shows hint on first roster visit when agents exist.
+  /// 
+  /// Flow:
+  /// 1. Check SharedPreferences for 'roster_swipe_hint_seen' flag
+  /// 2. Wait 3 seconds for agents to load and user to orient themselves
+  /// 3. Show hint if: not seen before AND roster has agents AND widget mounted
+  /// 4. Auto-dismiss after 25 seconds
+  /// 
+  /// Why 3-second delay: Gives user time to see their roster before showing hint
+  /// Why 25-second timeout: Long enough to read, short enough not to be annoying
   Future<void> _checkFirstVisit() async {
     final hasSeenHint = _settingsManager.rosterSwipeHintSeen;
     debugPrint(
       "🔵 _checkFirstVisit() - _settingsManager.rosterSwipeHintSeen = ${_settingsManager.rosterSwipeHintSeen}",
     );
 
-    // Wait a bit for agents to load and let the user take in whats happening
+    // Wait for agents to load and user to take in the info on screen
     await Future.delayed(const Duration(seconds: 3));
     debugPrint("🔵 _allAgents.length: ${_allAgents.length}");
 
     if (!hasSeenHint && _allAgents.isNotEmpty && mounted) {
       setState(() => _showSwipeHint = true);
 
-      // Auto-hide after x seconds
+      // Auto-hide after 25 seconds
       Future.delayed(const Duration(seconds: 25), () {
         if (mounted) {
           _dismissSwipeHint();
@@ -87,6 +118,13 @@ class _RosterScreenState extends State<RosterScreen> {
     }
   }
 
+  /// Dismisses the swipe hint and saves the flag to SharedPreferences.
+  /// 
+  /// Called when:
+  /// - User taps the close button
+  /// - User taps anywhere on the hint overlay
+  /// - Hint auto-dismisses after timeout
+  /// - User performs first swipe-to-delete
   void _dismissSwipeHint() {
     setState(() => _showSwipeHint = false);
     _settingsManager.saveRosterSwipeHintSeen(value: true);
@@ -95,18 +133,30 @@ class _RosterScreenState extends State<RosterScreen> {
     );
   }
 
-  // Derives the visible list by applying search, alignment filter, then sort.
+  /// Derives filtered and sorted agent list from _allAgents.
+  /// 
+  /// Processing order:
+  /// 1. Search filter (by name)
+  /// 2. Alignment filter (hero/villain/neutral)
+  /// 3. Power sort (highest/lowest/none)
+  /// 
+  /// Why this order:
+  /// - Search first (most restrictive)
+  /// - Then alignment (reduces set further)
+  /// - Finally sort (only on visible items)
+  /// 
+  /// Note: Filtering is local/instant - no Firestore calls.
   List<AgentModel> get _filteredAgents {
     var list = _allAgents.toList();
 
-    // 1. Search filter
+    // 1. Search filter (case-insensitive name match)
     if (_searchQuery.isNotEmpty) {
       list = list
           .where((a) => a.name.toLowerCase().contains(_searchQuery))
           .toList();
     }
 
-    // 2. AgentAlignment filter
+    // 2. Alignment filter
     list = list.where((a) {
       final alignment = a.biography.alignment.trim().toLowerCase();
       if (alignment == 'good') {
@@ -126,13 +176,18 @@ class _RosterScreenState extends State<RosterScreen> {
       case PowerSort.lowest:
         list.sort((a, b) => a.powerstats.power.compareTo(b.powerstats.power));
       case PowerSort.none:
-        break;
+        break; // Keep original order
     }
 
     return list;
   }
 
-  // Loads all saved agents from Firestore.
+  /// Loads all saved agents from Firestore.
+  /// 
+  /// Called:
+  /// - On screen mount (initState)
+  /// - On pull-to-refresh gesture
+  /// - When returning to this tab (via didChangeDependencies in some setups)
   Future<void> _loadAgents() async {
     try {
       final agents = await _agentDataRepo.getAllAgentsFromFirestore();
@@ -148,14 +203,26 @@ class _RosterScreenState extends State<RosterScreen> {
     }
   }
 
-  // Removes an agent from Firestore.
+  /// Removes an agent from Firestore with optimistic UI update.
+  /// 
+  /// Flow:
+  /// 1. Dismiss swipe hint if showing (user has learned the gesture)
+  /// 2. Remove from UI immediately (optimistic)
+  /// 3. Delete from Firestore
+  /// 4. If Firestore fails, roll back by re-adding to local list
+  /// 
+  /// Why optimistic updates:
+  /// - Feels instant and responsive
+  /// - Network failures are rare
+  /// - Rollback handles errors gracefully
   Future<void> _removeAgent(AgentModel agent) async {
-    // Dismiss hint if still showing
+    // User has performed a swipe, they know how it works
     if (_showSwipeHint) {
       _dismissSwipeHint();
       debugPrint("🔴 _dismissSwipeHint() called in _removeAgents()");
     }
-    // Remove from UI immediately
+
+    // Optimistic UI update (remove immediately)
     setState(() {
       _allAgents.removeWhere((a) => a.agentId == agent.agentId);
     });
@@ -164,11 +231,14 @@ class _RosterScreenState extends State<RosterScreen> {
       await _agentDataRepo.deleteAgentFromFirestore(agent.agentId);
     } catch (e, st) {
       debugPrint('❌ RosterScreen._removeAgent: $e\n$st');
-      // If Firestore fails, put it back
+      
+      // Rollback: put agent back in list
       if (!mounted) return;
       setState(() {
         _allAgents.add(agent);
       });
+
+      // Show error to user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -192,9 +262,10 @@ class _RosterScreenState extends State<RosterScreen> {
       child: SafeArea(
         child: Stack(
           children: [
+            // Main content
             Column(
               children: [
-                // --- HEADER with filters ---
+                // Header with search and filters
                 ScreenHeader(
                   title: "AGENTS ROSTER",
                   titleIcon: Icons.shield,
@@ -202,12 +273,13 @@ class _RosterScreenState extends State<RosterScreen> {
                   searchHint: "Search roster...",
                   currentQuery: _searchQuery,
                   onSearchChanged: (query) {
-                    // Search is handled by the listener in initState
-                    // This callback is just for triggering the rebuild
+                    // Search handled by listener in initState
+                    // This callback just triggers rebuild
                   },
                   additionalContent: _buildFilters(),
                 ),
-                // --- AGENT LIST or states ---
+                
+                // Agent list or loading/empty states
                 Expanded(
                   child: _isLoading
                       ? Center(
@@ -222,7 +294,7 @@ class _RosterScreenState extends State<RosterScreen> {
               ],
             ),
         
-            // Swipe hint overlay
+            // Swipe hint overlay (positioned above content when visible)
             if (_showSwipeHint) _buildSwipeHintOverlay(),
           ],
         ),
@@ -230,14 +302,22 @@ class _RosterScreenState extends State<RosterScreen> {
     );
   }
 
-  // --- SWIPE HINT OVERLAY ---
+  /// Builds the swipe-to-delete hint overlay.
+  /// 
+  /// Accessibility feature:
+  /// - Large touch target (entire overlay is tappable)
+  /// - High contrast colors (primary color background)
+  /// - Clear icon and text instructions
+  /// - Close button for explicit dismissal
+  /// 
+  /// Positioned at bottom (above nav bar) so it doesn't cover roster.
   Widget _buildSwipeHintOverlay() {
     return Positioned(
-      bottom: 80,
+      bottom: 80, // Above bottom nav bar
       left: 16,
       right: 16,
       child: GestureDetector(
-        onTap: _dismissSwipeHint,
+        onTap: _dismissSwipeHint, // Tap anywhere to dismiss
         child: Material(
           color: Colors.transparent,
           child: Container(
@@ -255,8 +335,11 @@ class _RosterScreenState extends State<RosterScreen> {
             ),
             child: Row(
               children: [
+                // Swipe icon
                 Icon(Icons.swipe_left, color: Theme.of(context).colorScheme.onPrimary, size: 32),
                 const SizedBox(width: 16),
+
+                // Text instructions
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -284,6 +367,8 @@ class _RosterScreenState extends State<RosterScreen> {
                     ],
                   ),
                 ),
+
+                // Close button
                 IconButton(
                   icon: Icon(Icons.close, color: Theme.of(context).colorScheme.onPrimary, size: 20),
                   onPressed: _dismissSwipeHint,
@@ -297,11 +382,19 @@ class _RosterScreenState extends State<RosterScreen> {
     );
   }
 
-  // --- FILTERS (passed as additionalContent to ScreenHeader) ---
+  /// Builds alignment and power sort filters.
+  /// 
+  /// Alignment: Multi-select (can show heroes + villains together)
+  /// Power: Single-select (only one sort direction at a time)
+  /// 
+  /// Why SegmentedButton:
+  /// - Material 3 component (modern, consistent)
+  /// - Built-in multi/single-select support
+  /// - Clear visual feedback for selected states
   Widget _buildFilters() {
     return Column(
       children: [
-        // Alignment filter
+        // Alignment filter (multi-select)
         SegmentedButton<AgentAlignment>(
           segments: const [
             ButtonSegment(
@@ -331,6 +424,7 @@ class _RosterScreenState extends State<RosterScreen> {
           ],
           selected: _selectedAlignments,
           onSelectionChanged: (newSelection) {
+            // Prevent deselecting all (would show nothing)
             if (newSelection.isEmpty) return;
             setState(() => _selectedAlignments = newSelection);
           },
@@ -357,7 +451,7 @@ class _RosterScreenState extends State<RosterScreen> {
         ),
         const SizedBox(height: 8),
 
-        // Power sort
+        // Power sort (single-select)
         SegmentedButton<PowerSort>(
           segments: const [
             ButtonSegment(
@@ -384,7 +478,7 @@ class _RosterScreenState extends State<RosterScreen> {
               icon: Icon(Icons.arrow_downward, size: 14),
             ),
           ],
-          selected: {_powerSort},
+          selected: {_powerSort}, // Set with single value for single-select
           onSelectionChanged: (newSelection) {
             setState(() => _powerSort = newSelection.first);
           },
@@ -413,9 +507,12 @@ class _RosterScreenState extends State<RosterScreen> {
     );
   }
 
-  // --- EMPTY STATE ---
+  /// Empty state shown when no agents match filters or roster is empty.
+  /// 
+  /// Shows different messages depending on context:
+  /// - Empty roster: "Go to Search to find allies"
+  /// - Filtered out: "Try adjusting filters"
   Widget _buildEmptyState() {
-    // Different message depending on whether it's empty roster or empty filter result
     final hasAgentsButFiltered =
         _allAgents.isNotEmpty && _filteredAgents.isEmpty;
 
@@ -452,7 +549,14 @@ class _RosterScreenState extends State<RosterScreen> {
     );
   }
 
-  // --- ROSTER LIST ---
+  /// Builds scrollable list of agent cards with swipe-to-delete.
+  /// 
+  /// Features:
+  /// - RefreshIndicator: Pull down to reload from Firestore
+  /// - ListView.builder: Efficient rendering for large rosters
+  /// - AgentCard with list layout: Horizontal cards
+  /// - Dismissible gesture: Swipe left to delete
+  /// - Success feedback: Green SnackBar on deletion
   Widget _buildRosterList() {
     final agents = _filteredAgents;
 
@@ -461,7 +565,7 @@ class _RosterScreenState extends State<RosterScreen> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       onRefresh: _loadAgents,
       child: ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
+        physics: const AlwaysScrollableScrollPhysics(), // Enable pull-to-refresh even when list is short
         padding: const EdgeInsets.all(16),
         itemCount: agents.length,
         itemBuilder: (context, index) {
@@ -470,17 +574,19 @@ class _RosterScreenState extends State<RosterScreen> {
             agent: agentSummary,
             layout: AgentCardLayout.list,
             onTap: () {
+              // Navigate to details (without save button since already in roster)
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => AgentDetailsScreen(
                     agent: agents[index],
-                    showSaveButton: false,
+                    showSaveButton: false, // Hide save button
                   ),
                 ),
               );
             },
             onDismiss: () {
+              // Handle swipe-to-delete
               _removeAgent(agents[index]);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

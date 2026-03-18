@@ -4,12 +4,33 @@ import 'package:flutter_herodex3000/barrel_files/models.dart';
 import 'package:flutter_herodex3000/barrel_files/managers.dart';
 import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
-/// Full detail view for an agent.
-/// Receives the complete [AgentModel] so it can display all stats.
+///
+/// Full details view that takes an [AgentModel] and display all available information.
+/// 
+/// Features:
+/// - Collapsing image header (SliverAppBar)
+/// - Complete biography, appearance, work, and connections data
+/// - Six powerstats with progress bars
+/// - Conditional save button (hidden when viewed from Roster)
+/// - Checks Firestore to see if already saved (disables button)
+/// - Optimistic UI with error handling
+/// 
+/// Data Sections (only shown if data exists):
+/// - Intel: Place of birth, first appearance, publisher, aliases
+/// - Appearance: Gender, race, eye/hair color, height, weight
+/// - Work: Occupation, base of operations
+/// - Connections: Group affiliation, relatives
+/// 
+/// Why conditional sections: API data is inconsistent - some agents have
+/// full bios, others have minimal info. Hiding empty sections keeps UI clean.
+/// 
 class AgentDetailsScreen extends StatefulWidget {
   final AgentModel agent;
 
-  /// Set to false when navigating from Roster so the save button is hidden.
+  /// Controls save button visibility.
+  /// 
+  /// true: Opened from Search → show save button
+  /// false: Opened from Roster → hide save button (already saved)
   final bool showSaveButton;
 
   const AgentDetailsScreen({
@@ -30,6 +51,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   String badAlignment = "villian";
   String neutralAlignment = "neutral";
 
+  // Convenience getters for alignment-based styling
   bool get _isHero =>
       widget.agent.biography.alignment.trim().toLowerCase() == 'good';
   Color get _accentColor => _isHero ? Colors.cyan : Colors.redAccent;
@@ -37,12 +59,16 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    // Only bother checking Firestore if the button is visible
+    // Only check Firestore if save button is visible
     if (widget.showSaveButton) {
       _checkIfSaved();
     }
   }
 
+  /// Checks if agent already exists in user's Firestore roster.
+  /// 
+  /// Called only when showSaveButton is true (opened from Search).
+  /// Updates _isSaved state to disable save button if already saved.
   Future<void> _checkIfSaved() async {
     try {
       final saved = await _agentDataRepo.isAgentInFirestore(
@@ -55,6 +81,14 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     }
   }
 
+  /// Saves agent to Firestore with optimistic UI update.
+  /// 
+  /// Flow:
+  /// 1. Prevent double-saves with _isSaving lock
+  /// 2. Set _isSaving = true (shows spinner on button)
+  /// 3. Call Firestore save
+  /// 4. On success: Set _isSaved = true (disables button), show success SnackBar
+  /// 5. On error: Keep button enabled, show error SnackBar
   Future<void> _saveAgent() async {
     if (_isSaving) return;
     setState(() => _isSaving = true);
@@ -140,7 +174,11 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     );
   }
 
-  // --- SLIVER APP BAR ---
+  /// Collapsing app bar with agent image.
+  /// 
+  /// Features:
+  /// - CorsProxyImage with error handling
+  /// - Custom back button with accent color
   Widget _buildSliverAppBar() {
     final imageUrl = widget.agent.image?.url;
     final hasImage = imageUrl != null && imageUrl.trim().isNotEmpty;
@@ -180,7 +218,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     );
   }
 
-  // --- NAME + ALIGNMENT BADGE ---
+  /// Agent name and alignment badge.
   Widget _buildHeader() {
     final bio = widget.agent.biography;
 
@@ -255,7 +293,9 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     );
   }
 
-  // --- POWERSTATS ---
+  /// Six powerstats with labeled progress bars.
+  /// 
+  /// - Progress bar (0-100 normalized to 0.0-1.0)
   Widget _buildAllStats() {
     final stats = widget.agent.powerstats;
     return Column(
@@ -270,6 +310,9 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     );
   }
 
+  /// Single powerstat row with label, value, and progress bar.
+  /// 
+  /// Value is clamped to 0-100 (API sometimes returns out-of-range values).
   Widget _buildStatRow(String label, int value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
@@ -315,7 +358,10 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     );
   }
 
-  // --- BIOGRAPHY ---
+  /// Biography section
+  /// 
+  /// Section only renders if at least one field has content.
+  /// Uses _hasContent() to filter out null/empty strings.
   Widget _buildBiography() {
     final bio = widget.agent.biography;
 
@@ -335,13 +381,16 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
       rows.add(_buildInfoRow("Aliases", bio.aliases!.join(', ')));
     }
 
-    // If nothing to show, don't render the section at all
+    // Don't render section if no data
     if (rows.isEmpty) return const SizedBox.shrink();
 
     return _buildSection("INTEL", rows);
   }
 
-  // --- APPEARANCE ---
+  /// Appearance section
+  /// 
+  /// Height/weight are arrays like ["6'2\"", "188 cm"] - joined with " / ".
+  /// Filters out null/empty values before joining.
   Widget _buildAppearance() {
     final app = widget.agent.appearance;
     final rows = <Widget>[];
@@ -358,7 +407,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     if (_hasContent(app.hairColor)) {
       rows.add(_buildInfoRow("Hair Color", app.hairColor!));
     }
-    // Height and weight are lists like ["6'2"", "188 cm"]
+  
     if (app.height.isNotEmpty) {
       final heightStr = app.height
           .where((v) => v != null && v.toString().trim().isNotEmpty)
@@ -381,7 +430,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     return _buildSection("APPEARANCE", rows);
   }
 
-  // --- WORK ---
+  /// Work section
   Widget _buildWork() {
     final work = widget.agent.work;
     if (work == null) return const SizedBox.shrink();
@@ -400,7 +449,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     return _buildSection("WORK", rows);
   }
 
-  // --- CONNECTIONS ---
+  /// Connections section
   Widget _buildConnections() {
     final conn = widget.agent.connections;
     if (conn == null) return const SizedBox.shrink();
@@ -421,7 +470,9 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
 
   // --- SHARED BUILDERS ---
 
-  /// Wraps a list of info rows with a colored section header.
+  /// Wraps a list of info rows with colored section header.
+  /// 
+  /// Used by all detail sections
   Widget _buildSection(String title, List<Widget> rows) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -441,7 +492,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     );
   }
 
-  /// A single label/value row. Used by all sections above.
+  /// Single label/value row used in all detail sections.
   Widget _buildInfoRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -478,11 +529,17 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     return value != null && value.trim().isNotEmpty;
   }
 
-  // --- SAVE BUTTON — changes based on whether already saved ---
+  /// Save button with three states: saving (spinner), saved (disabled), ready.
+  /// 
+  /// States:
+  /// 1. Ready: Cyan/red button, "SAVE TO ROSTER" text
+  /// 2. Saving: Same button, shows spinner instead of text
+  /// 3. Saved: Disabled gray button, "ALREADY IN ROSTER ✓" text
   Widget _buildSaveButton() {
     if (_isSaved) {
+      // Already saved - show disabled button
       return ElevatedButton(
-        onPressed: null, // Disabled
+        onPressed: null,
         style: ElevatedButton.styleFrom(
           backgroundColor: Theme.of(context).colorScheme.primary,
           disabledBackgroundColor: Theme.of(
@@ -501,6 +558,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
       );
     }
 
+    // Ready to save or currently saving
     return ElevatedButton(
       onPressed: _isSaving ? null : _saveAgent,
       style: ElevatedButton.styleFrom(

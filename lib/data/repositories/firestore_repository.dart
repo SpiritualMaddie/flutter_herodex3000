@@ -3,6 +3,7 @@ import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 import 'package:flutter_herodex3000/barrel_files/models.dart';
 import 'package:flutter_herodex3000/barrel_files/firebase.dart';
 
+///
 /// Handles saving/loading the user's roster in Firestore.
 ///
 /// Structure in Firestore:
@@ -11,6 +12,7 @@ import 'package:flutter_herodex3000/barrel_files/firebase.dart';
 /// Each agent is its own document so adding/removing one agent
 /// doesn't rewrite the whole list.
 /// 
+
 class FirestoreRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
@@ -22,16 +24,16 @@ class FirestoreRepository {
       : _firestore = firestore ?? FirebaseFirestore.instance,
         _auth = auth ?? FirebaseAuth.instance;
 
-  // Returns the collection reference for the current user's saved agents.
-  // Throws if no user is signed in.
+  /// Returns the collection reference for the current user's saved agents.
+  /// Throws if no user is signed in.
   CollectionReference<Map<String, dynamic>> get _collection {
     final uid = _auth.currentUser?.uid;
     if (uid == null) throw Exception('No authenticated user');
     return _firestore.collection('users').doc(uid).collection('saved_agents');
   }
 
-  // Saves an agent to the user's roster.
-  // Uses the agent's ID as the document ID so duplicates overwrite cleanly.
+  /// Saves an agent to the user's roster.
+  /// Uses the agent's ID as the document ID so duplicates overwrite cleanly.
   Future<void> saveAgent(AgentModel agent) async {
     try {
       await _collection.doc(agent.agentId).set(agent.toJson());
@@ -41,7 +43,7 @@ class FirestoreRepository {
     }
   }
 
-  // Removes an agent from the user's roster by ID.
+  /// Removes an agent from the user's roster by ID.
   Future<void> deleteAgent(String agentId) async {
     try {
       await _collection.doc(agentId).delete();
@@ -51,8 +53,8 @@ class FirestoreRepository {
     }
   }
 
-  // Loads all saved agents for the current user
-  // Returns an empty list on any error
+  /// Loads all saved agents for the current user
+  /// Returns an empty list on any error
   Future<List<AgentModel>> getAllSavedAgents() async {
     try {
       final snapshot = await _collection.get();

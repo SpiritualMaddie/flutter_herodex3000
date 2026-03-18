@@ -4,7 +4,10 @@ import 'package:flutter_herodex3000/barrel_files/managers.dart';
 import 'package:flutter_herodex3000/barrel_files/screens.dart';
 import 'package:flutter_herodex3000/barrel_files/routing.dart';
 
-// Creates the GoRouter configuration for the app.
+///
+/// Creates the GoRouter configuration for the app.
+/// 
+
 GoRouter createAppRouter(AuthCubit authCubit, SettingsManager settingsManager) {
   final refresh = AppRouterRefresh(authCubit, settingsManager);
 
@@ -12,7 +15,7 @@ GoRouter createAppRouter(AuthCubit authCubit, SettingsManager settingsManager) {
     initialLocation: "/",
     refreshListenable: refresh,
     routes: [
-      // Splash screen and login are outside shell
+      /// Splash screen and login are outside shell
       GoRoute(
         path: "/",
         name: "Splash",
@@ -29,7 +32,7 @@ GoRouter createAppRouter(AuthCubit authCubit, SettingsManager settingsManager) {
         builder: (context, state) => const OnboardingScreen(),
       ),
 
-      // Bottom tab bar (only for authenticated routes)
+      /// Navigation bar (only for authenticated routes)
       ShellRoute(
         builder: (context, state, child) {
           return RootNavigation(child: child);
@@ -67,11 +70,11 @@ GoRouter createAppRouter(AuthCubit authCubit, SettingsManager settingsManager) {
       final atSplash = state.uri.path == "/";
 
       if (authState is AuthAuthenticated) {
-        // If authenticated and not completed onboarding, go to onboarding
+        /// If authenticated and not completed onboarding, go to onboarding
         if (!onboardingCompleted && !goingToOnboarding) {
           return "/onboarding";
         }
-        // If authenticated and completed onboarding, go to home
+        /// If authenticated and completed onboarding, go to home
         if (onboardingCompleted &&
             (goingToLogin || atSplash || goingToOnboarding)) {
           return "/home";
@@ -80,27 +83,27 @@ GoRouter createAppRouter(AuthCubit authCubit, SettingsManager settingsManager) {
       }
 
       if (authState is AuthUnauthenticated) {
-        // If unauthenticated, always go to login (unless already there)
+        /// If unauthenticated, always go to login (unless already there)
         if (!goingToLogin) return "/login";
         return null;
       }
 
-      // Unknown/loading → show splash
+      /// Unknown/loading → show splash
       if (!atSplash) return "/";
       return null;
     },
   );
 }
 
-/// Notifies GoRouter when auth or settings change so it can re-evaluate redirects.
+/// Notifies GoRouter when auth or settings change so it can re-evaluate redirects
 class AppRouterRefresh extends ChangeNotifier {
   AppRouterRefresh(this.authCubit, this.settingsManager) {
-    // Listen to auth changes
+    /// Listen to auth changes
     _authSub = authCubit.stream.listen((_) {
       notifyListeners();
     });
 
-    // Listen to settings changes
+    /// Listen to settings changes
     settingsManager.addListener(notifyListeners);
   }
 

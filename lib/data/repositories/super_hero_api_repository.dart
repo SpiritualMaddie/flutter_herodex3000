@@ -4,6 +4,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_herodex3000/barrel_files/models.dart';
 import 'package:flutter_herodex3000/barrel_files/interfaces.dart';
 
+///
+/// Handles getting superheros, villains and neutrals [AgentModel]
+/// from the API https://superheroapi.com/
+///
+
 class SuperHeroApiRepository implements ISuperHeroApiRepository {
   final String baseUrl;
   final IHttpClientFactory clientFactory;
@@ -17,25 +22,25 @@ class SuperHeroApiRepository implements ISuperHeroApiRepository {
     }
   }
 
-  // List of CORS proxies to try (in order)
+  /// List of CORS proxies to try (in order)
   static const List<String> _corsProxies = [
-    'https://corsproxy.io/?', // Usually more reliable
+    'https://corsproxy.io/?url=', // Usually more reliable
     'https://api.allorigins.win/raw?url=',
   ];
 
-  // Proxy API requests on web to bypass CORS.
-  // On mobile, use direct URL.
-  // Tries multiple proxies as fallback.
+  /// Proxy API requests on web to bypass CORS.
+  /// On mobile, use direct URL.
+  /// Tries multiple proxies as fallback.
   String _getProxiedUrl(String endpoint, {int proxyIndex = 0}) {
     final fullUrl = "$baseUrl$endpoint";
 
-    // On mobile/desktop: use direct URL
+    /// On mobile/desktop: use direct URL
     if (!kIsWeb) return fullUrl;
 
-    // On web: try proxy at given index
+    /// On web: try proxy at given index
     if (proxyIndex >= _corsProxies.length) {
       debugPrint('⚠️ All CORS proxies exhausted, trying direct URL');
-      return fullUrl; // Last resort: try direct
+      return fullUrl; /// Last resort: try direct
     }
 
     final proxy = _corsProxies[proxyIndex];
@@ -44,10 +49,10 @@ class SuperHeroApiRepository implements ISuperHeroApiRepository {
     return proxiedUrl;
   }
 
-  // Function to get hero/villain by name from the API https://superheroapi.com/
+  /// Function to get hero/villain/neutral by name
   @override
   Future<List<AgentModel>> getAgentByName(String agentName) async {
-    // Try each proxy
+    /// Try each proxy
     for (int proxyIndex = 0; proxyIndex <= _corsProxies.length; proxyIndex++) {
       final searchUrl = Uri.parse(_getProxiedUrl("/search/$agentName", proxyIndex: proxyIndex));
       debugPrint('🔍 Searching: $agentName (proxy attempt ${proxyIndex + 1}/${_corsProxies.length + 1})');
@@ -82,16 +87,16 @@ class SuperHeroApiRepository implements ISuperHeroApiRepository {
         }
       } on FormatException catch (e) {
         debugPrint("❌ JSON decode error (proxy ${proxyIndex + 1}): $e");
-        // Try next proxy
+        /// Try next proxy
         continue;
       } on SocketException catch (e) {
         debugPrint("❌ Network error (proxy ${proxyIndex + 1}): $e");
-        // Try next proxy
+        /// Try next proxy
         continue;
       } catch (e, stack) {
         debugPrint("❌ Unknown error (proxy ${proxyIndex + 1}): $e");
         debugPrint("Stacktrace: $stack");
-        // Try next proxy
+        /// Try next proxy
         continue;
       }
     }
@@ -100,6 +105,7 @@ class SuperHeroApiRepository implements ISuperHeroApiRepository {
     return [];
   }
 
+  /// Function to parse hero/villain/neutral from API json to [AgentModel]
   Future<List<AgentModel>> _parseAgents(String responseBody) async {
     try {
       final jsonBody = jsonDecode(responseBody);

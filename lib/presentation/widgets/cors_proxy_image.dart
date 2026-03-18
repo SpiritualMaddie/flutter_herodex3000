@@ -1,16 +1,22 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
-/// Displays images with automatic CORS proxy on web + in-memory caching.
 ///
-/// On mobile/desktop: loads image directly from URL
-/// On web: tries multiple CORS proxies as fallback
-///
+/// Image widget with automatic CORS proxy fallback on web.
+/// 
+/// Problem: SuperHeroAPI blocks direct web requests (CORS policy)
+/// Solution: Try multiple CORS proxy services as fallbacks
+/// 
+/// Behavior by platform:
+/// - Mobile/Desktop: Use direct URL
+/// - Web: Try proxy chain (corsproxy.io → allorigins.win → direct)
+/// 
 /// Features:
-/// - Loading spinner while fetching
-/// - Automatic proxy fallback
-/// - Error handling
-/// - Placeholder/Fallback if image wont show up
+/// - Automatic proxy fallback on error
+/// - Loading spinner with progress (if available)
+/// - Error handling with placeholder fallback
+/// - Prevents "setState during build" errors with addPostFrameCallback
+/// 
 
 class CorsProxyImage extends StatefulWidget {
   final String? imageUrl;
@@ -36,11 +42,16 @@ class CorsProxyImage extends StatefulWidget {
 
 class _CorsProxyImageState extends State<CorsProxyImage> {
 
-  // List of CORS proxies to try (in order)
+  /// List of CORS proxies to try in order.
+  /// 
+  /// Order matters:
+  /// 1. corsproxy.io: Usually most reliable
+  /// 2. allorigins.win: Backup proxy
+  /// 3. Empty string: Direct URL as last resort
   static const List<String> _corsProxies = [
-    'https://corsproxy.io/?url=', // Usually more reliable
+    'https://corsproxy.io/?url=',
     'https://api.allorigins.win/raw?url=',
-    '', // Last attempt: try direct URL (might work for some images)
+    '',
   ];
 
   int _currentProxyIndex = 0;
@@ -53,6 +64,12 @@ class _CorsProxyImageState extends State<CorsProxyImage> {
     _loadImage();
   }
 
+  /// Gets current proxied URL based on platform and proxy index.
+  /// 
+  /// Returns:
+  /// - null: If imageUrl is null/empty
+  /// - Direct URL: On mobile/desktop
+  /// - Proxied URL: On web, with current proxy prefix
   String? get _currentProxiedUrl {
     if (widget.imageUrl == null || widget.imageUrl!.isEmpty) return null;
 
@@ -67,6 +84,9 @@ class _CorsProxyImageState extends State<CorsProxyImage> {
     return '$proxy${Uri.encodeComponent(widget.imageUrl!)}';
   }
 
+  /// Initiates image loading with current proxy.
+  /// 
+  /// Sets loading state, actual loading happens in Image.network.
   void _loadImage() {
     final url = _currentProxiedUrl;
     if (url == null) {
@@ -77,13 +97,18 @@ class _CorsProxyImageState extends State<CorsProxyImage> {
       return;
     }
 
-    // Otherwise, Image.network will handle loading
+    // Image.network will handle actual loading
     setState(() {
       _isLoading = true;
       _hasError = false;
     });
   }
 
+  /// Tries next proxy in chain when current one fails.
+  /// 
+  /// Flow:
+  /// 1. If more proxies available → increment index, try next
+  /// 2. If all proxies exhausted → set error state, show fallback
   void _tryNextProxy() {
     if (_currentProxyIndex < _corsProxies.length - 1) {
       setState(() {
@@ -128,13 +153,13 @@ class _CorsProxyImageState extends State<CorsProxyImage> {
           return child;
         }
 
-        // Still loading - show spinner
+        // Still loading - show spinner or custom placeholder
         return widget.placeholder ?? _buildLoadingSpinner(loadingProgress);
       },
       errorBuilder: (context, error, stackTrace) {
         debugPrint('❌ CorsProxyImage error (proxy ${_currentProxyIndex + 1}/${_corsProxies.length}): ${widget.imageUrl}\nError: $error');
 
-        // Try next proxy
+        // Try next proxy using addPostFrameCallback to avoid setState during build
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             _tryNextProxy();
@@ -152,6 +177,11 @@ class _CorsProxyImageState extends State<CorsProxyImage> {
     );
   }
 
+  /// Loading spinner with optional progress indicator.
+  /// 
+  /// Shows:
+  /// - Circular progress indicator (cyan)
+  /// - Download progress in KB (if available)
   Widget _buildLoadingSpinner(ImageChunkEvent? loadingProgress) {
     return Container(
       width: widget.width,
@@ -173,6 +203,7 @@ class _CorsProxyImageState extends State<CorsProxyImage> {
                     : null,
               ),
             ),
+            // Show KB downloaded if size is known
             if (loadingProgress?.expectedTotalBytes != null) ...[
               const SizedBox(height: 8),
               Text(
@@ -189,6 +220,9 @@ class _CorsProxyImageState extends State<CorsProxyImage> {
     );
   }
 
+  /// Fallback widget when all image loading attempts fail.
+  /// 
+  /// Shows: Person icon (white) on dark background.
   Widget _buildFallback() {
     return Container(
       width: widget.width,

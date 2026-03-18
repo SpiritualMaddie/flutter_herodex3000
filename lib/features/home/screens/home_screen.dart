@@ -2,6 +2,22 @@ import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 import 'package:flutter_herodex3000/barrel_files/widgets.dart';
 import 'package:flutter_herodex3000/barrel_files/managers.dart';
 
+///
+/// Mission Control / Dashboard screen showing roster statistics and war updates.
+/// 
+/// Features:
+/// - Real-time statistics: hero count, villain count, total fighting power
+/// - War narrative cards that adapt to user's roster composition
+/// - Auto-refreshes when tab becomes active (via didChangeDependencies)
+/// - Loading states with placeholder "—" characters
+/// 
+/// Data Flow:
+/// 1. Screen loads → fetches all agents from Firestore
+/// 2. Calculates stats locally (hero/villain counts, strength, power)
+/// 3. Displays stats in cards + generates dynamic war narrative
+/// 
+/// Note: Does NOT track neutral agents yet (future improvement).
+/// 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -12,18 +28,35 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final AgentDataManager _agentdatarepo = AgentDataManager();
 
+  // Loading and stats state
   bool _isLoading = true;
   int _heroCount = 0;
   int _villainCount = 0;
   int _totalStrength = 0;
   int _totalPower = 0;
 
+  /// Called whenever dependencies change, including when returning to this tab.
+  /// 
+  /// Why use this instead of initState:
+  /// - This screen is inside a ShellRoute (bottom nav bar)
+  /// - initState only runs once when widget is first created
+  /// - didChangeDependencies runs every time tab becomes active
+  /// - This ensures stats are fresh when user switches between tabs
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _loadStats();
   }
 
+  /// Fetches all agents from Firestore and calculates statistics.
+  /// 
+  /// Counts:
+  /// - Heroes: alignment == 'good'
+  /// - Villains: alignment == 'bad'
+  /// - Total Strength: sum of all powerstats.strength
+  /// - Total Power: sum of all powerstats.power
+  /// 
+  /// TODO: Add neutral agent tracking (currently excluded from counts).
   Future<void> _loadStats() async {
     try {
       final agents = await _agentdatarepo.getAllAgentsFromFirestore();
@@ -58,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title
+            // Screen title
             const SectionHeader(
               icon: Icons.home,
               title: "HUB",
@@ -66,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: EdgeInsets.only(bottom: 20),
             ),
 
-            // Top row: hero count, villain count
+            // Top row: hero and villain count cards
             Row(
               children: [
                 Expanded(
@@ -90,15 +123,17 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Fighting power card
+            // Fighting power card (combined strength + power)
             _FightingPowerCard(
               isLoading: _isLoading,
               totalStrength: _totalStrength,
               totalPower: _totalPower,
             ),
 
-            // War section
+            // War narrative section
             const SectionHeader(title: "THE INVASION"),
+
+            // Situation report card
             InfoCard(
               icon: Icons.public,
               title: "SITUATION REPORT",
@@ -107,6 +142,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   "The resistance holds firm, but the enemy adapts quickly. "
                   "Every agent we deploy tips the balance further in our favor.",
             ),
+
+            // Recent developments card
             InfoCard(
               icon: Icons.timeline,
               title: "RECENT DEVELOPMENTS",
@@ -116,6 +153,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   "may be vulnerable if we can assemble enough firepower. "
                   "Every hero and villain in your roster brings us closer to victory.",
             ),
+
+            // User contribution card (dynamic based on roster)
             InfoCard(
               icon: Icons.trending_up,
               title: "YOUR CONTRIBUTION",
@@ -134,9 +173,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Stat card (hero/villain count)
-// ---------------------------------------------------------------------------
+// ===========================================================================
+// PRIVATE WIDGETS (Only used in HomeScreen)
+// ===========================================================================
+
+/// Card displaying a single statistic (hero or villain count).
+/// 
+/// Layout:
+/// - Icon in colored circle on left
+/// - Label and value on right
+/// - Border color matches accent color
 class _StatCard extends StatelessWidget {
   final String label;
   final String value;
@@ -161,6 +207,7 @@ class _StatCard extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Icon container
           Container(
             width: 44,
             height: 44,
@@ -173,6 +220,8 @@ class _StatCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 14),
+
+          // Label and value
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,9 +253,17 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Fighting power card
-// ---------------------------------------------------------------------------
+/// Card showing combined fighting power (strength + power).
+/// 
+/// Features:
+/// - Large total number at top
+/// - Visual breakdown bar showing strength vs power ratio
+/// - Sub-stats with color-coded labels below bar
+/// 
+/// Why separate strength and power:
+/// - Gives users insight into roster composition
+/// - Strength (physical combat) vs Power (special abilities)
+/// - Visual bar shows which stat dominates their roster
 class _FightingPowerCard extends StatelessWidget {
   final bool isLoading;
   final int totalStrength;
@@ -231,7 +288,7 @@ class _FightingPowerCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // Header row with "COMBINED" badge
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -264,7 +321,7 @@ class _FightingPowerCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
 
-          // Big total
+          // Total fighting power (strength + power combined)
           Text(
             isLoading ? "—" : (totalStrength + totalPower).toString(),
             style: TextStyle(
@@ -275,11 +332,13 @@ class _FightingPowerCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
 
-          // Breakdown bar
+          // Visual breakdown bar showing ratio of strength to power
+          // Uses flex values to proportionally size each segment
           Row(
             children: [
+              // Strength portion (left side)
               Expanded(
-                flex: isLoading ? 1 : (totalStrength + 1),
+                flex: isLoading ? 1 : (totalStrength + 1), // +1 prevents zero flex
                 child: Container(
                   height: 6,
                   decoration: BoxDecoration(
@@ -291,8 +350,9 @@ class _FightingPowerCard extends StatelessWidget {
                   ),
                 ),
               ),
+              // Power portion (right side)
               Expanded(
-                flex: isLoading ? 1 : (totalPower + 1),
+                flex: isLoading ? 1 : (totalPower + 1), // +1 prevents zero flex
                 child: Container(
                   height: 6,
                   decoration: BoxDecoration(
@@ -308,7 +368,7 @@ class _FightingPowerCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // Labels
+          // Labels showing individual strength and power values
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -322,6 +382,12 @@ class _FightingPowerCard extends StatelessWidget {
   }
 }
 
+/// Small label + value pair used in fighting power breakdown.
+/// 
+/// Shows:
+/// - Color square matching the bar segment
+/// - Label (STRENGTH or POWER)
+/// - Numeric value
 class _SubStat extends StatelessWidget {
   final String label;
   final int value;
@@ -334,6 +400,7 @@ class _SubStat extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
+        // Color indicator (matches bar segment)
         Container(
           width: 10,
           height: 10,
@@ -343,9 +410,13 @@ class _SubStat extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
+
+        // Label
         Text(label, style: TextStyle(
           color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 10, letterSpacing: 0.9, fontWeight: .bold)),
         const SizedBox(width: 8),
+
+        // Value
         Text(
           isLoading ? "—" : value.toString(),
           style: TextStyle(
@@ -358,572 +429,3 @@ class _SubStat extends StatelessWidget {
     );
   }
 }
-
-// import 'package:flutter/material.dart';
-// import 'package:flutter_herodex3000/data/repositories/saved_agents_repository.dart';
-
-// class HomeScreen extends StatefulWidget {
-//   const HomeScreen({super.key});
-
-//   @override
-//   State<HomeScreen> createState() => _HomeScreenState();
-// }
-
-// class _HomeScreenState extends State<HomeScreen> {
-//   final AgentDataManager _agentdatarepo = AgentDataManager();
-
-//   bool _isLoading = true;
-//   int _heroCount = 0;
-//   int _villainCount = 0;
-//   int _totalStrength = 0;
-//   int _totalPower = 0;
-
-//   @override
-//   void didChangeDependencies() {
-//     super.didChangeDependencies();
-//     _loadStats();
-//   }
-
-//   /// Single fetch, all stats derived from it.
-//   Future<void> _loadStats() async {
-//     try {
-//       final agents = await _agentdatarepo.getAllSavedAgents();
-//       if (!mounted) return;
-
-//       setState(() {
-//         _heroCount = agents.where((a) => a.biography.alignment.trim().toLowerCase() == 'good').length;
-//         _villainCount = agents.where((a) => a.biography.alignment.trim().toLowerCase() == 'bad').length;
-//         _totalStrength = agents.fold(0, (sum, a) => sum + a.powerstats.strength);
-//         _totalPower = agents.fold(0, (sum, a) => sum + a.powerstats.power);
-//         _isLoading = false;
-//       });
-//     } catch (e, st) {
-//       debugPrint('❌ HomeScreen._loadStats: $e\n$st');
-//       if (!mounted) return;
-//       setState(() => _isLoading = false);
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: const Color(0xFF0A111A),
-//       body: SingleChildScrollView(
-//         padding: const EdgeInsets.only(top: 56, bottom: 24),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             // Title
-//             const Padding(
-//               padding: EdgeInsets.symmetric(horizontal: 16),
-//               child: Text(
-//                 "HUB",
-//                 style: TextStyle(
-//                   color: Colors.cyan,
-//                   fontSize: 18,
-//                   letterSpacing: 2,
-//                 ),
-//               ),
-//             ),
-//             const SizedBox(height: 20),
-
-//             // --- Top row: hero count, villain count ---
-//             Padding(
-//               padding: const EdgeInsets.symmetric(horizontal: 16),
-//               child: Row(
-//                 children: [
-//                   Expanded(
-//                     child: _buildCountCard(
-//                       label: "HEROES",
-//                       value: _heroCount,
-//                       icon: Icons.shield,
-//                       accentColor: Colors.cyan,
-//                     ),
-//                   ),
-//                   const SizedBox(width: 12),
-//                   Expanded(
-//                     child: _buildCountCard(
-//                       label: "VILLAINS",
-//                       value: _villainCount,
-//                       icon: Icons.warning_amber,
-//                       accentColor: Colors.redAccent,
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//             const SizedBox(height: 12),
-
-//             // --- Fighting power card (strength + power combined) ---
-//             Padding(
-//               padding: const EdgeInsets.symmetric(horizontal: 16),
-//               child: _buildFightingPowerCard(),
-//             ),
-//             const SizedBox(height: 24),
-
-//             // --- War section header ---
-//             const Padding(
-//               padding: EdgeInsets.symmetric(horizontal: 16),
-//               child: Text(
-//                 "THE INVASION",
-//                 style: TextStyle(
-//                   color: Colors.cyan,
-//                   fontSize: 12,
-//                   letterSpacing: 2,
-//                 ),
-//               ),
-//             ),
-//             const SizedBox(height: 12),
-
-//             // --- War narrative cards ---
-//             Padding(
-//               padding: const EdgeInsets.symmetric(horizontal: 16),
-//               child: _buildWarCard(
-//                 title: "SITUATION REPORT",
-//                 icon: Icons.public,
-//                 text:
-//                     "The invasion continues to spread across the globe. "
-//                     "Communications are being restored sector by sector. "
-//                     "The resistance holds firm, but the enemy adapts quickly. "
-//                     "Every agent we deploy tips the balance further in our favor.",
-//               ),
-//             ),
-//             const SizedBox(height: 12),
-//             Padding(
-//               padding: const EdgeInsets.symmetric(horizontal: 16),
-//               child: _buildWarCard(
-//                 title: "RECENT DEVELOPMENTS",
-//                 icon: Icons.timeline,
-//                 text:
-//                     "Infrastructure in major cities is coming back online. "
-//                     "Agent recruitment efforts have intensified. "
-//                     "Intelligence reports suggest the enemy's central command "
-//                     "may be vulnerable if we can assemble enough firepower. "
-//                     "Every hero and villain in your roster brings us closer to victory.",
-//               ),
-//             ),
-//             const SizedBox(height: 12),
-//             Padding(
-//               padding: const EdgeInsets.symmetric(horizontal: 16),
-//               child: _buildWarCard(
-//                 title: "YOUR CONTRIBUTION",
-//                 icon: Icons.trending_up,
-//                 text: _isLoading
-//                     ? "Loading your roster data..."
-//                     : _heroCount + _villainCount == 0
-//                         ? "Your roster is empty. Head to SEARCH and start recruiting agents to help fight the invasion."
-//                         : "Your roster contributes ${_heroCount + _villainCount} agent${(_heroCount + _villainCount) > 1 ? 's' : ''} "
-//                           "with a combined fighting power of ${_totalStrength + _totalPower}. "
-//                           "Keep recruiting to strengthen the resistance.",
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-
-//   // --- COUNT CARD (Heroes / Villains) ---
-//   Widget _buildCountCard({
-//     required String label,
-//     required int value,
-//     required IconData icon,
-//     required Color accentColor,
-//   }) {
-//     return Container(
-//       padding: const EdgeInsets.all(16),
-//       decoration: BoxDecoration(
-//         color: const Color(0xFF121F2B),
-//         borderRadius: BorderRadius.circular(12),
-//         border: Border.all(color: accentColor.withAlpha(24)),
-//       ),
-//       child: Row(
-//         children: [
-//           Container(
-//             width: 44,
-//             height: 44,
-//             decoration: BoxDecoration(
-//               color: accentColor.withAlpha(20),
-//               borderRadius: BorderRadius.circular(10),
-//             ),
-//             child: Center(
-//               child: Icon(icon, color: accentColor, size: 22),
-//             ),
-//           ),
-//           const SizedBox(width: 14),
-//           Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Text(
-//                 label,
-//                 style: const TextStyle(
-//                   color: Colors.grey,
-//                   fontSize: 10,
-//                   letterSpacing: 1.2,
-//                   fontWeight: FontWeight.bold,
-//                 ),
-//               ),
-//               const SizedBox(height: 4),
-//               AnimatedSwitcher(
-//                 duration: const Duration(milliseconds: 300),
-//                 child: Text(
-//                   _isLoading ? "—" : value.toString(),
-//                   key: ValueKey(value),
-//                   style: TextStyle(
-//                     color: accentColor,
-//                     fontSize: 26,
-//                     fontWeight: FontWeight.w900,
-//                   ),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
-//   // --- FIGHTING POWER CARD (combined strength + power) ---
-//   Widget _buildFightingPowerCard() {
-//     return Container(
-//       width: double.infinity,
-//       padding: const EdgeInsets.all(18),
-//       decoration: BoxDecoration(
-//         color: const Color(0xFF121F2B),
-//         borderRadius: BorderRadius.circular(12),
-//         border: Border.all(color: Colors.cyan.withAlpha(24)),
-//       ),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           // Header row
-//           Row(
-//             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//             children: [
-//               const Text(
-//                 "FIGHTING POWER",
-//                 style: TextStyle(
-//                   color: Colors.grey,
-//                   fontSize: 10,
-//                   letterSpacing: 1.2,
-//                   fontWeight: FontWeight.bold,
-//                 ),
-//               ),
-//               Container(
-//                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-//                 decoration: BoxDecoration(
-//                   color: Colors.cyan.withAlpha(20),
-//                   borderRadius: BorderRadius.circular(6),
-//                 ),
-//                 child: const Text(
-//                   "COMBINED",
-//                   style: TextStyle(
-//                     color: Colors.cyan,
-//                     fontSize: 9,
-//                     letterSpacing: 1,
-//                     fontWeight: FontWeight.bold,
-//                   ),
-//                 ),
-//               ),
-//             ],
-//           ),
-//           const SizedBox(height: 10),
-
-//           // Big total number
-//           AnimatedSwitcher(
-//             duration: const Duration(milliseconds: 300),
-//             child: Text(
-//               _isLoading ? "—" : ((_totalStrength + _totalPower)).toString(),
-//               key: ValueKey(_totalStrength + _totalPower),
-//               style: const TextStyle(
-//                 color: Colors.white,
-//                 fontSize: 36,
-//                 fontWeight: FontWeight.w900,
-//               ),
-//             ),
-//           ),
-//           const SizedBox(height: 14),
-
-//           // Breakdown bar
-//           Row(
-//             children: [
-//               // Strength portion
-//               Expanded(
-//                 flex: _isLoading ? 1 : (_totalStrength + 1),
-//                 child: Container(
-//                   height: 6,
-//                   decoration: BoxDecoration(
-//                     color: Colors.cyan,
-//                     borderRadius: const BorderRadius.only(
-//                       topLeft: Radius.circular(3),
-//                       bottomLeft: Radius.circular(3),
-//                     ),
-//                   ),
-//                 ),
-//               ),
-//               // Power portion
-//               Expanded(
-//                 flex: _isLoading ? 1 : (_totalPower + 1),
-//                 child: Container(
-//                   height: 6,
-//                   decoration: BoxDecoration(
-//                     color: Colors.brown,
-//                     borderRadius: const BorderRadius.only(
-//                       topRight: Radius.circular(3),
-//                       bottomRight: Radius.circular(3),
-//                     ),
-//                   ),
-//                 ),
-//               ),
-//             ],
-//           ),
-//           const SizedBox(height: 12),
-
-//           // Labels under the bar
-//           Row(
-//             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//             children: [
-//               _buildSubStat("STRENGTH", _totalStrength, Colors.cyan),
-//               _buildSubStat("POWER", _totalPower, Colors.brown),
-//             ],
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
-//   /// Small label + value pair used in the fighting power breakdown.
-//   Widget _buildSubStat(String label, int value, Color color) {
-//     return Row(
-//       children: [
-//         Container(
-//           width: 10,
-//           height: 10,
-//           decoration: BoxDecoration(
-//             color: color,
-//             borderRadius: BorderRadius.circular(2),
-//           ),
-//         ),
-//         const SizedBox(width: 8),
-//         Text(
-//           label,
-//           style: const TextStyle(color: Colors.grey, fontSize: 10),
-//         ),
-//         const SizedBox(width: 8),
-//         Text(
-//           _isLoading ? "—" : value.toString(),
-//           style: TextStyle(
-//             color: color,
-//             fontSize: 10,
-//             fontWeight: FontWeight.bold,
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-
-//   // --- WAR NARRATIVE CARD ---
-//   Widget _buildWarCard({
-//     required String title,
-//     required IconData icon,
-//     required String text,
-//   }) {
-//     return Container(
-//       width: double.infinity,
-//       padding: const EdgeInsets.all(16),
-//       decoration: BoxDecoration(
-//         color: const Color(0xFF121F2B),
-//         borderRadius: BorderRadius.circular(12),
-//         border: Border.all(color: Colors.cyan.withAlpha(24)),
-//       ),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           Row(
-//             children: [
-//               Icon(icon, color: Colors.cyan, size: 16),
-//               const SizedBox(width: 8),
-//               Text(
-//                 title,
-//                 style: const TextStyle(
-//                   color: Colors.cyan,
-//                   fontSize: 13,
-//                   fontWeight: FontWeight.bold,
-//                   letterSpacing: 0.8,
-//                 ),
-//               ),
-//             ],
-//           ),
-//           const SizedBox(height: 10),
-//           Text(
-//             text,
-//             style: const TextStyle(
-//               color: Colors.grey,
-//               fontSize: 13,
-//               height: 1.6,
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-
-
-// import 'package:flutter/material.dart';
-// import 'package:flutter_herodex3000/data/models/agent_model.dart';
-// import 'package:flutter_herodex3000/data/repositories/saved_agents_repository.dart';
-
-// class HomeScreen extends StatelessWidget {
-//   const HomeScreen({super.key});
-
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: Text("Home")),
-//       body: Column(
-//         spacing: 16,
-//         children: [
-//           Padding(
-//             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-//             child: Row(
-//               children: [
-//                 Expanded(
-//                   child: _buildSingleStatCard("HEROES", _numerOfHeroesInRoster, Colors.cyan),
-//                 ),
-//                 const SizedBox(width: 12, height: 8),
-//                 Expanded(
-//                   child: _buildSingleStatCard("VILLAINS", _numerOfVillainsInRoster, Colors.red),
-//                 ),
-//                 const SizedBox(width: 12, height: 8),
-//                 Expanded(
-//                   child: _buildSingleStatCard("POWER", _amountOfPowerInRoster, Colors.cyan),
-//                 ),
-//               ],
-//             ),
-//           ),
-//           Padding(
-//             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-//             child: Card(
-//               child: _buildCardWithTitleAndText(
-//                 "Invationen",
-//                 "Hittils har invationen påverkat....",
-//                 Colors.black,
-//                 const Color.fromARGB(255, 19, 104, 116),
-//               ),
-//             ),
-//           ),
-//           Padding(
-//             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-//             child: Card(
-//               child: _buildCardWithTitleAndText(
-//                 "Framsteg",
-//                 "Det som har hänt är: ......",
-//                 Colors.black,
-//                 const Color.fromARGB(255, 19, 104, 116),
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-// Future<int> _numerOfHeroesInRoster() async {
-//   final AgentDataManager savedAgentsRepo = AgentDataManager();
-//   List<AgentModel> allAgents = await savedAgentsRepo.getAllSavedAgents();
-//   return allAgents.where((h) => h.biography.alignment == "good").length;
-// }
-
-// Future<int> _numerOfVillainsInRoster() async {
-//   final AgentDataManager savedAgentsRepo = AgentDataManager();
-//   List<AgentModel> allAgents = await savedAgentsRepo.getAllSavedAgents();
-//   return allAgents.where((h) => h.biography.alignment == "bad").length;
-// }
-
-// // Future<int> _amountOfPowerInRoster() async {
-// //   final AgentDataManager savedAgentsRepo = AgentDataManager();
-// //   List<AgentModel> allAgents = await savedAgentsRepo.getAllSavedAgents();
-// //   allAgents.
-// // }
-
-
-// Widget _buildSingleStatCard(String label, int value, Color accentColor) {
-//   return Container(
-//     padding: const EdgeInsets.all(16),
-//     decoration: BoxDecoration(
-//       color: Colors.white,
-//       borderRadius: .circular(16),
-//       boxShadow: [
-//         BoxShadow(
-//           color: Colors.black.withAlpha(15),
-//           blurRadius: 10,
-//           offset: const Offset(0, 4),
-//         ),
-//       ],
-//     ),
-//     child: Column(
-//       crossAxisAlignment: .start,
-//       children: [
-//         Text(
-//           label,
-//           style: TextStyle(
-//             fontSize: 12,
-//             fontWeight: .bold,
-//             color: Colors.grey[600],
-//             letterSpacing: 1.2,
-//           ),
-//         ),
-//         const SizedBox(height: 8),
-//         Text(
-//           value.toString(),
-//           style: TextStyle(fontSize: 22, fontWeight: .w900, color: accentColor),
-//         ),
-//       ],
-//     ),
-//   );
-// }
-
-// Widget _buildCardWithTitleAndText(
-//   String label,
-//   String text,
-//   Color textColor,
-//   Color labelColor,
-// ) {
-//   return Container(
-//     padding: const EdgeInsets.all(16),
-//     decoration: BoxDecoration(
-//       color: Colors.white,
-//       borderRadius: .circular(16),
-//       boxShadow: [
-//         BoxShadow(
-//           color: Colors.black.withAlpha(3),
-//           blurRadius: 10,
-//           offset: const Offset(0, 4),
-//         ),
-//       ],
-//     ),
-//     child: Column(
-//       crossAxisAlignment: .start,
-//       children: [
-//         Text(
-//           label,
-//           style: TextStyle(
-//             fontSize: 21,
-//             fontWeight: .bold,
-//             color: labelColor,
-//             letterSpacing: 1.2,
-//           ),
-//         ),
-//         const SizedBox(height: 8),
-//         Text(
-//           text,
-//           style: TextStyle(fontSize: 12, fontWeight: .w500, color: textColor),
-//         ),
-//       ],
-//     ),
-//   );
-// }

@@ -6,6 +6,22 @@ import 'package:flutter_herodex3000/barrel_files/managers.dart';
 import 'package:flutter_herodex3000/barrel_files/theme.dart';
 import 'package:flutter_herodex3000/barrel_files/authentication.dart';
 
+/// Settings screen for managing app preferences and permissions.
+/// 
+/// Sections:
+/// 1. Data Protocols - Toggle Analytics, Crashlytics, iOS ATT
+/// 2. System Manifest - App version, creator info, year
+/// 3. App Alignment - Theme picker (Hero/Villain/Neutral × Dark/Light)
+/// 4. Logout - Sign out button
+/// 
+/// Features:
+/// - Real-time permission updates (saves to SharedPreferences + Firebase)
+/// - Version display with DEV/STABLE suffix based on build mode
+/// - iOS ATT informational dialog (can't change programmatically)
+/// - Responsive layout with CustomScrollView
+/// 
+
+/// Late-initialized package info future (fetched once on screen load).
 late Future<PackageInfo> _packageInfo;
 
 class SettingsScreen extends StatefulWidget {
@@ -19,6 +35,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    // Fetch app version info once when screen loads
     _packageInfo = PackageInfo.fromPlatform();
   }
 
@@ -31,12 +48,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: SafeArea(
         child: CustomScrollView(
           slivers: [
-            // App bar as sliver
+            // App bar as sliver (allows scrolling under it)
             SliverAppBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
-              pinned: false,
-              title: // Title
+              pinned: false, // Scrolls away with content
+              title:
               const SectionHeader(
                 icon: Icons.settings,
                 title: "SETTINGS",
@@ -45,18 +62,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
 
-            // All content in one sliver list
+            // All content in single sliver
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Data protocols section
+                    // === DATA PROTOCOLS SECTION ===
                     const SectionHeader(
                       title: "DATA PROTOCOLS",
                       subtitle: "Manage tracking permissions",
                     ),
+
+                    // Analytics toggle
                     _ProtocolTile(
                       icon: Icons.analytics,
                       title: "Analytics Tracking",
@@ -66,6 +85,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onChanged: (val) =>
                           settings.saveAnalyticsPreferences(value: val),
                     ),
+
+                    // Crashlytics toggle
                     _ProtocolTile(
                       icon: Icons.bug_report,
                       title: "Crash Tracking",
@@ -75,6 +96,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onChanged: (val) =>
                           settings.saveCrashAnalyticsPreferences(value: val),
                     ),
+
+                    // Location toggle
                     // _ProtocolTile(
                     //   icon: Icons.location_on,
                     //   title: "Location Tracking",
@@ -85,7 +108,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     //       settings.saveLocationAnalyticsPreferences(value: val),
                     // ),
 
-                    // iOS ATT if applicable
+                    // iOS ATT tile (read-only, shows dialog on tap)
                     if (defaultTargetPlatform == TargetPlatform.iOS)
                       _ProtocolTile(
                         icon: Icons.privacy_tip,
@@ -95,12 +118,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         value: settings.iosAttEnabled,
                         onChanged: (val) {
                           // Can't change ATT programmatically after initial request
-                          // Show dialog explaining they need to go to Settings
+                          // Show dialog explaining user must go to iOS Settings
                           _showATTDialog(context);
                         },
                       ),
 
-                    // System manifest section
+                    // === SYSTEM MANIFEST SECTION ===
                     const SectionHeader(title: "SYSTEM MANIFEST"),
                     InfoCard(
                       child: Column(
@@ -115,6 +138,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ).colorScheme.primary.withAlpha(40),
                             height: 24,
                           ),
+                          // Version row (async, waits for PackageInfo)
                           buildVersionRow(),
                           Divider(
                             color: Theme.of(
@@ -136,20 +160,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ],
                       ),
                     ),
-                    // Theme picker section
+                    
+                    // === THEME PICKER SECTION ===
                     const SectionHeader(
                       title: "APP ALIGNMENT",
                       subtitle: "Manage app theme",
                     ),
                     ThemePicker(
                       onThemeSelected: (theme) {
+                        // Update theme immediately via Cubit
                         context.read<ThemeCubit>().setTheme(theme);
+                        // Save to SharedPreferences for persistence
                         settings.saveCurrentAppTheme(value: theme.name);
                       },
                     ),
                     const SizedBox(height: 32),
 
-                    // Logout button
+                    // === LOGOUT BUTTON ===
                     _LogoutButton(),
 
                     const SizedBox(height: 24),
@@ -163,6 +190,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /// Builds version row with async PackageInfo fetch.
+  /// 
+  /// Displays:
+  /// - Version number (e.g., "v1.0.0")
+  /// - Build suffix: "DEV" (debug mode) or "STABLE" (release mode)
+  /// 
+  /// Why FutureBuilder:
+  /// - PackageInfo.fromPlatform() is async (reads from native code)
+  /// - Shows placeholder "v–" while loading
+  /// - Rebuilds when future completes
 Widget buildVersionRow() {
   return FutureBuilder<PackageInfo>(
     future: PackageInfo.fromPlatform(),
@@ -175,6 +212,7 @@ Widget buildVersionRow() {
       }
 
       final info = snapshot.data!;
+      // Debug builds show "DEV", release builds show "STABLE"
       final suffix = kReleaseMode ? " STABLE" : " DEV";
 
       return _ManifestRow(
@@ -185,7 +223,12 @@ Widget buildVersionRow() {
   );
 }
 
-
+  /// Shows dialog explaining iOS ATT must be changed in iOS Settings.
+  /// 
+  /// Why this dialog:
+  /// - Apple's ATT can only prompt once per app install
+  /// - After initial prompt, permission can only be changed in iOS Settings
+  /// - This dialog informs users where to go if they want to change it
   void _showATTDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -216,9 +259,18 @@ Widget buildVersionRow() {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Protocol toggle tile
-// ---------------------------------------------------------------------------
+// ===========================================================================
+// PRIVATE WIDGETS
+// ===========================================================================
+
+/// Toggle tile for data protocol permissions.
+/// 
+/// Layout:
+/// - Icon in colored square on left
+/// - Title and status subtitle in middle
+/// - Switch toggle on right
+/// 
+/// Used for Analytics, Crashlytics, and iOS ATT toggles.
 class _ProtocolTile extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -240,6 +292,7 @@ class _ProtocolTile extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       child: Row(
         children: [
+          // Icon container
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -249,6 +302,8 @@ class _ProtocolTile extends StatelessWidget {
             child: Icon(icon, color: Theme.of(context).colorScheme.primary),
           ),
           const SizedBox(width: 16),
+
+          // Title and subtitle
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,6 +325,8 @@ class _ProtocolTile extends StatelessWidget {
               ],
             ),
           ),
+
+          // Switch toggle
           Switch(
             value: value,
             onChanged: onChanged,
@@ -287,9 +344,10 @@ class _ProtocolTile extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Manifest row
-// ---------------------------------------------------------------------------
+/// Label/value row in system manifest section.
+/// 
+/// Displays app metadata like version, creator, year.
+/// Uses monospace font for values (terminal aesthetic).
 class _ManifestRow extends StatelessWidget {
   final String label;
   final String value;
@@ -315,7 +373,7 @@ class _ManifestRow extends StatelessWidget {
           style: TextStyle(
             color: Theme.of(context).colorScheme.onSurface,
             fontSize: 11,
-            fontFamily: 'monospace',
+            fontFamily: 'monospace', // Terminal-style font
             letterSpacing: 1
           ),
         ),
@@ -324,15 +382,20 @@ class _ManifestRow extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Logout button
-// ---------------------------------------------------------------------------
+/// Logout button that calls AuthCubit.signOut().
+/// 
+/// On success:
+/// - AuthCubit emits AuthUnauthenticated
+/// - Router automatically redirects to /login
+/// - SharedPreferences cleared (see AuthCubit implementation)
 class _LogoutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return OutlinedButton(
       onPressed: () async {
+        // Sign out via AuthCubit (handles all cleanup)
         await context.read<AuthCubit>().signOut();
+        // Router handles navigation automatically
       },
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(double.infinity, 56),

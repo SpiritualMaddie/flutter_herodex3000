@@ -5,7 +5,9 @@ import 'package:flutter_herodex3000/barrel_files/services.dart';
 import 'package:flutter_herodex3000/barrel_files/theme.dart';
 import 'package:provider/provider.dart';
 
-// Creates all the providers for the app.
+///
+/// Creates all the providers for the app.
+/// 
 
 Widget createAppProviders({
   required SharedPreferencesService prefsService,
@@ -13,26 +15,26 @@ Widget createAppProviders({
 }) {
   return MultiProvider(
     providers: [
-      // SharedPreferences service (already initialized in main)
+      /// SharedPreferences service (already initialized in main)
       Provider<SharedPreferencesService>.value(value: prefsService),
 
-      // Settings manager (depends on SharedPreferences)
+      /// Settings manager (depends on SharedPreferences)
       ChangeNotifierProvider<SettingsManager>(
         create: (context) =>
             SettingsManager(context.read<SharedPreferencesService>()),
       ),
 
-      // Auth repository
+      /// Auth repository
       RepositoryProvider<AuthRepository>(
         create: (_) => AuthRepository(),
       ),
 
-      // Auth cubit (depends on AuthRepository)
+      /// Auth cubit (depends on AuthRepository)
       BlocProvider<AuthCubit>(
         create: (context) => AuthCubit(context.read<AuthRepository>()),
       ),
 
-      // Theme cubit
+      /// Theme cubit
       BlocProvider<ThemeCubit>(
         create: (context) => ThemeCubit(),
       ),
