@@ -240,17 +240,7 @@ class _RosterScreenState extends State<RosterScreen> {
 
       // Show error to user
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Center(
-              child: Text(
-                "❌ Failed to remove agent. Try again.",
-                style: TextStyle(fontWeight: .bold, letterSpacing: 1.5),
-              ),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnackbar.error(context, "❌ Failed to remove agent. Try again.");
       }
     }
   }
@@ -592,21 +582,7 @@ class _RosterScreenState extends State<RosterScreen> {
             onDismiss: () {
               // Handle swipe-to-delete
               _removeAgent(agents[index]);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Center(
-                    child: Text(
-                      "${agents[index].name} removed from roster ✅",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: .bold,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                  ),
-                  backgroundColor: Colors.green.withAlpha(90),
-                ),
-              );
+              AppSnackbar.success(context, "${agents[index].name} removed from roster ✅");
             },
           );
         },

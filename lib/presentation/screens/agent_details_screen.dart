@@ -91,21 +91,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Center(
-          child: Text(
-            successMessage,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: .bold,
-              letterSpacing: 1.5,
-            ),
-          ),
-        ),
-        backgroundColor: Colors.green.withAlpha(90),
-      ),
-    );
+    AppSnackbar.success(context, successMessage);
 
     if (popOnSuccess && mounted) {
       Navigator.pop(context, true); // Signal that action was completed
@@ -609,17 +595,8 @@ class _AgentActionButtonState extends State<_AgentActionButton> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Center(
-            child: Text(
-              "❌ Operation failed. Try again.",
-              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.5),
-            ),
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppSnackbar.error(context, "❌ Operation failed. Try again.");
+      
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);

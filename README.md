@@ -275,7 +275,7 @@ HeroDex 3000 follows **Clean Architecture** principles with clear separation of 
 │   └── 📁 widgets
 │       ├── 📄 agent_card.dart
 │       ├── 📄 cors_proxy_image.dart
-│       ├── 📄 custom_snackbar.dart
+│       ├── 📄 app_snackbar.dart
 │       ├── 📄 info_card.dart
 │       ├── 📄 responsive_scaffold.dart
 │       ├── 📄 screen_header.dart
