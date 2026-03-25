@@ -573,9 +573,9 @@ class _RosterScreenState extends State<RosterScreen> {
           return AgentCard(
             agent: agentSummary,
             layout: AgentCardLayout.list,
-            onTap: () {
+            onTap: () async {
               // Navigate to details (without save button since already in roster)
-              Navigator.push(
+              final wasDeleted = await Navigator.push<bool>(
                 context,
                 MaterialPageRoute(
                   builder: (context) => AgentDetailsScreen(
@@ -584,6 +584,10 @@ class _RosterScreenState extends State<RosterScreen> {
                   ),
                 ),
               );
+
+              if(wasDeleted == true && mounted){
+                _loadAgents();
+              }
             },
             onDismiss: () {
               // Handle swipe-to-delete

@@ -6,7 +6,7 @@ import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 
 ///
 /// Full details view that takes an [AgentModel] and display all available information.
-/// 
+///
 /// Features:
 /// - Collapsing image header (SliverAppBar)
 /// - Complete biography, appearance, work, and connections data
@@ -14,21 +14,21 @@ import 'package:flutter_herodex3000/barrel_files/dart_flutter_packages.dart';
 /// - Conditional save button (hidden when viewed from Roster)
 /// - Checks Firestore to see if already saved (disables button)
 /// - Optimistic UI with error handling
-/// 
+///
 /// Data Sections (only shown if data exists):
 /// - Intel: Place of birth, first appearance, publisher, aliases
 /// - Appearance: Gender, race, eye/hair color, height, weight
 /// - Work: Occupation, base of operations
 /// - Connections: Group affiliation, relatives
-/// 
+///
 /// Why conditional sections: API data is inconsistent - some agents have
 /// full bios, others have minimal info. Hiding empty sections keeps UI clean.
-/// 
+///
 class AgentDetailsScreen extends StatefulWidget {
   final AgentModel agent;
 
   /// Controls save button visibility.
-  /// 
+  ///
   /// true: Opened from Search → show save button
   /// false: Opened from Roster → hide save button (already saved)
   final bool showSaveButton;
@@ -46,10 +46,6 @@ class AgentDetailsScreen extends StatefulWidget {
 class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   final AgentDataManager _agentDataRepo = AgentDataManager();
   bool _isSaved = false;
-  bool _isSaving = false;
-  String goodAlignment = "hero";
-  String badAlignment = "villian";
-  String neutralAlignment = "neutral";
 
   // Convenience getters for alignment-based styling
   bool get _isHero =>
@@ -66,7 +62,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   }
 
   /// Checks if agent already exists in user's Firestore roster.
-  /// 
+  ///
   /// Called only when showSaveButton is true (opened from Search).
   /// Updates _isSaved state to disable save button if already saved.
   Future<void> _checkIfSaved() async {
@@ -81,60 +77,61 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     }
   }
 
-  /// Saves agent to Firestore with optimistic UI update.
-  /// 
-  /// Flow:
-  /// 1. Prevent double-saves with _isSaving lock
-  /// 2. Set _isSaving = true (shows spinner on button)
-  /// 3. Call Firestore save
-  /// 4. On success: Set _isSaved = true (disables button), show success SnackBar
-  /// 5. On error: Keep button enabled, show error SnackBar
-  Future<void> _saveAgent() async {
-    if (_isSaving) return;
-    setState(() => _isSaving = true);
+  /// Generic action handler for save/delete operations.
+  ///
+  /// Returns a Future that can be awaited by the action button.
+  /// Throws on error so button can show error state.
+  Future<void> _performAction({
+    required Future<void> Function() action,
+    required String successMessage,
+    required String errorMessage,
+    bool popOnSuccess = false,
+  }) async {
+    await action();
 
-    try {
-      await _agentDataRepo.saveAgentToFirestore(widget.agent);
-      if (!mounted) return;
-      setState(() {
-        _isSaved = true;
-        _isSaving = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Center(
-              child: Text(
-                "${widget.agent.name} saved to roster ✅",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: .bold,
-                  letterSpacing: 1.5,
-                ),
-              ),
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Center(
+          child: Text(
+            successMessage,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: .bold,
+              letterSpacing: 1.5,
             ),
-            backgroundColor: Colors.green.withAlpha(90),
           ),
-        );
-      }
-    } catch (e, st) {
-      debugPrint('❌ AgentDetailsScreen._saveAgent: $e\n$st');
-      if (!mounted) return;
-      setState(() => _isSaving = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Center(
-              child: Text(
-                "❌ Failed to save. Try again.",
-                style: TextStyle(fontWeight: .bold, letterSpacing: 1.5),
-              ),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+        ),
+        backgroundColor: Colors.green.withAlpha(90),
+      ),
+    );
+
+    if (popOnSuccess && mounted) {
+      Navigator.pop(context, true); // Signal that action was completed
     }
+  }
+
+  /// Saves agent to Firestore
+  Future<void> _saveAgent() async {
+    await _performAction(action: () async {
+      await _agentDataRepo.saveAgentToFirestore(widget.agent);
+      if(mounted) setState(() => _isSaved = true);
+    }, 
+    successMessage: "${widget.agent.name} saved to roster ✅", 
+    errorMessage: "❌ Failed to save. Try again.",
+    popOnSuccess: false,
+    );
+  }
+
+  /// Deletes agent from Firestore
+  Future<void> _deleteAgent() async {
+    await _performAction(
+      action: () => _agentDataRepo.deleteAgentFromFirestore(widget.agent.agentId),
+      successMessage: "${widget.agent.name} deleted from roster ✅", 
+      errorMessage: "❌ Failed to delete. Try again.",
+      popOnSuccess: true, // Pop back to roster after successful delete
+      );
   }
 
   @override
@@ -162,8 +159,33 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
                   const SizedBox(height: 24),
                   _buildConnections(),
                   const SizedBox(height: 48),
-                  // Only show save button if opened from Search
-                  if (widget.showSaveButton) _buildSaveButton(),
+                  // Show Save button from Search and Delete button from Roster
+                  widget.showSaveButton
+                      ? _AgentActionButton(
+                          onPressed: _saveAgent,
+                          isDisabled: _isSaved,
+                          disabledText: "ALREADY IN ROSTER ✓",
+                          activeText: "SAVE TO ROSTER",
+                          backgroundColor: _isSaved
+                              ? Theme.of(
+                                  context,
+                                ).colorScheme.primary.withAlpha(50)
+                              : _accentColor,
+                          textColor: _isSaved
+                              ? Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withAlpha(90)
+                              : (_accentColor ==
+                                        Theme.of(context).colorScheme.primary
+                                    ? Colors.black
+                                    : Colors.white),
+                        )
+                      : _AgentActionButton(
+                          onPressed: _deleteAgent,
+                          activeText: "DELETE FROM ROSTER",
+                          backgroundColor: Colors.redAccent,
+                          textColor: Colors.black,
+                        ),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -175,7 +197,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   }
 
   /// Collapsing app bar with agent image.
-  /// 
+  ///
   /// Features:
   /// - CorsProxyImage with error handling
   /// - Custom back button with accent color
@@ -208,8 +230,11 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
                     imageUrl: imageUrl,
                     height: 200,
                     fit: BoxFit.contain,
-                    errorWidget:
-                        Icon(Icons.shield, size: 120, color: _accentColor),
+                    errorWidget: Icon(
+                      Icons.shield,
+                      size: 120,
+                      color: _accentColor,
+                    ),
                   )
                 : Icon(Icons.shield, size: 120, color: _accentColor),
           ),
@@ -294,7 +319,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   }
 
   /// Six powerstats with labeled progress bars.
-  /// 
+  ///
   /// - Progress bar (0-100 normalized to 0.0-1.0)
   Widget _buildAllStats() {
     final stats = widget.agent.powerstats;
@@ -311,7 +336,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   }
 
   /// Single powerstat row with label, value, and progress bar.
-  /// 
+  ///
   /// Value is clamped to 0-100 (API sometimes returns out-of-range values).
   Widget _buildStatRow(String label, int value) {
     return Padding(
@@ -359,7 +384,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   }
 
   /// Biography section
-  /// 
+  ///
   /// Section only renders if at least one field has content.
   /// Uses _hasContent() to filter out null/empty strings.
   Widget _buildBiography() {
@@ -388,7 +413,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   }
 
   /// Appearance section
-  /// 
+  ///
   /// Height/weight are arrays like ["6'2\"", "188 cm"] - joined with " / ".
   /// Filters out null/empty values before joining.
   Widget _buildAppearance() {
@@ -407,7 +432,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     if (_hasContent(app.hairColor)) {
       rows.add(_buildInfoRow("Hair Color", app.hairColor!));
     }
-  
+
     if (app.height.isNotEmpty) {
       final heightStr = app.height
           .where((v) => v != null && v.toString().trim().isNotEmpty)
@@ -471,7 +496,7 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
   // --- SHARED BUILDERS ---
 
   /// Wraps a list of info rows with colored section header.
-  /// 
+  ///
   /// Used by all detail sections
   Widget _buildSection(String title, List<Widget> rows) {
     return Column(
@@ -529,28 +554,95 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
     return value != null && value.trim().isNotEmpty;
   }
 
-  /// Save button with three states: saving (spinner), saved (disabled), ready.
-  /// 
-  /// States:
-  /// 1. Ready: Cyan/red button, "SAVE TO ROSTER" text
-  /// 2. Saving: Same button, shows spinner instead of text
-  /// 3. Saved: Disabled gray button, "ALREADY IN ROSTER ✓" text
-  Widget _buildSaveButton() {
-    if (_isSaved) {
-      // Already saved - show disabled button
+}
+
+// ===========================================================================
+// REUSABLE ACTION BUTTON WIDGET
+// ===========================================================================
+
+/// Reusable action button for agent operations (save/delete).
+///
+/// Features:
+/// - Automatic loading state management
+/// - Error handling with SnackBar
+/// - Disabled state support
+/// - Customizable colors and text
+/// - Spinner while loading
+///
+class _AgentActionButton extends StatefulWidget {
+  final Future<void> Function() onPressed;
+  final String activeText;
+  final String? disabledText; // If null, button is never disabled
+  final bool isDisabled;
+  final Color backgroundColor;
+  final Color textColor;
+  final void Function(bool isLoading)? onLoadingChange;
+
+  const _AgentActionButton({
+    required this.onPressed,
+    required this.activeText,
+    this.disabledText,
+    this.isDisabled = false,
+    required this.backgroundColor,
+    required this.textColor,
+    // ignore: unused_element_parameter
+    this.onLoadingChange,
+  });
+
+  @override
+  State<_AgentActionButton> createState() => _AgentActionButtonState();
+}
+
+class _AgentActionButtonState extends State<_AgentActionButton> {
+  bool _isLoading = false;
+
+  Future<void> _handlePress() async {
+    if (_isLoading || widget.isDisabled) return;
+
+    setState(() => _isLoading = true);
+    widget.onLoadingChange?.call(true);
+
+    try {
+      await widget.onPressed();
+    } catch (e, st) {
+      debugPrint('❌ _AgentActionButton error: $e\n$st');
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Center(
+            child: Text(
+              "❌ Operation failed. Try again.",
+              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.5),
+            ),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        widget.onLoadingChange?.call(false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Show disabled state if isDisabled is true
+    if (widget.isDisabled && widget.disabledText != null) {
       return ElevatedButton(
         onPressed: null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          disabledBackgroundColor: Theme.of(
-            context,
-          ).colorScheme.primary.withAlpha(50),
+          backgroundColor: widget.backgroundColor,
+          disabledBackgroundColor: widget.backgroundColor,
           minimumSize: const Size(double.infinity, 56),
         ),
         child: Text(
-          "ALREADY IN ROSTER ✓",
+          widget.disabledText!,
           style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface.withAlpha(90),
+            color: widget.textColor,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.5,
           ),
@@ -558,28 +650,26 @@ class _AgentDetailsScreenState extends State<AgentDetailsScreen> {
       );
     }
 
-    // Ready to save or currently saving
+    // Active button
     return ElevatedButton(
-      onPressed: _isSaving ? null : _saveAgent,
+      onPressed: _isLoading ? null : _handlePress,
       style: ElevatedButton.styleFrom(
-        backgroundColor: _accentColor,
+        backgroundColor: widget.backgroundColor,
         minimumSize: const Size(double.infinity, 56),
       ),
-      child: _isSaving
+      child: _isLoading
           ? SizedBox(
               height: 24,
               width: 24,
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
-                color: Theme.of(context).colorScheme.onSurface,
+                color: widget.textColor,
               ),
             )
           : Text(
-              "SAVE TO ROSTER",
+              widget.activeText,
               style: TextStyle(
-                color: _accentColor == Theme.of(context).colorScheme.primary
-                    ? Colors.black
-                    : Colors.white,
+                color: widget.textColor,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1,
               ),
