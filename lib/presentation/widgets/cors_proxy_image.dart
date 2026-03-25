@@ -50,9 +50,9 @@ class _CorsProxyImageState extends State<CorsProxyImage> {
   /// 3. api.codetabs: Backup proxy
   /// 4. Empty string: Direct URL as last resort
   static const List<String> _corsProxies = [
+    'https://api.codetabs.com/v1/proxy/?quest=',
     'https://corsproxy.io/?url=',
     'https://cors-anywhere.com/',
-    'https://api.codetabs.com/v1/proxy/?quest=',
     '',
   ];
 
