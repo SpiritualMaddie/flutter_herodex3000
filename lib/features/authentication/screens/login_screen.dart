@@ -63,21 +63,11 @@ class _LoginScreenState extends State<LoginScreen> {
     } on FirebaseAuthException catch (e) {
       // Firebase-specific errors (wrong password, user not found, etc.)
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Center(child: Text("❌ Sign in failed. \n${e.message}")),
-          backgroundColor: const Color.fromARGB(255, 247, 224, 224),
-        ),
-      );
+      AppSnackbar.error(context, "❌ Sign in failed. \n${e.message}");
     } catch (e) {
       // Unexpected errors (network issues, etc.)
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Center(child: Text("❌ Sign in failed. \n${e.toString()}")),
-          backgroundColor: const Color.fromARGB(255, 247, 224, 224),
-        ),
-      );
+      AppSnackbar.error(context, "❌ Sign in failed. \n${e.toString()}");
     }
   }
 
@@ -289,32 +279,6 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
   final _passwordController = TextEditingController();
   bool _loading = false;
 
-  /// Shows success/error snackbar.
-  /// 
-  /// Note: We don't pop the dialog here because BlocListener handles it.
-  /// Popping synchronously can cause "Navigator locked" errors during
-  /// simultaneous state changes.
-  void _showStatusSnackbar(BuildContext context, bool success, String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: success ? const Color.fromARGB(255, 163, 240, 202) : const Color.fromARGB(255, 247, 224, 224),
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(20),
-        content: Center(
-          child: Text(
-            message,
-            style: const TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.5,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -336,18 +300,14 @@ class _EnlistAgentModalState extends State<EnlistAgentModal> {
     try {
       await context.read<AuthCubit>().signUp(email, password);
       if (!mounted) return;
-      _showStatusSnackbar(
-        context,
-        true,
-        "✅ Agent enrolled successfully. \nWelcome!",
-      );
+      AppSnackbar.success(context, "✅ Agent enrolled successfully. \nWelcome!");
     } on FirebaseAuthException catch (e) {
       // Firebase errors (email already in use, weak password, etc.)
-      _showStatusSnackbar(context, false, "❌ Sign up failed. \n${e.message}");
+      AppSnackbar.error(context, "❌ Sign up failed. \n${e.message}");
       
     } catch (e) {
       if (!mounted) return;
-      _showStatusSnackbar(context, false, "❌ Enlistment failed. \n${e.toString()}");
+      AppSnackbar.error(context, "❌ Enlistment failed. \n${e.toString()}");
     } finally {
       if (mounted) setState(() => _loading = false);
     }
